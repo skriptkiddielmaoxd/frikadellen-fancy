@@ -6,66 +6,82 @@
 
 ## Overview
 
-**frikadellen-fancy** is an extended version of the [frikadellen-baf-121](https://github.com/TreXito/frikadellen-baf-121) project by [@TreXito](https://github.com/TreXito), featuring additional integration and a C# interface layer.
+**frikadellen-fancy** is an extended version of [frikadellen-baf-121](https://github.com/TreXito/frikadellen-baf-121) by [@TreXito](https://github.com/TreXito), adding a modern, cross-platform interface and improved integration capabilities.
 
-The repository is developed and maintained by [@skriptkiddielmaoxd](https://github.com/skriptkiddielmaoxd), and works in tandem with the upstream repository to deliver enhanced features, better interoperability, and a modern interface suitable for .NET/C# applications.
+- **Cross-platform Powered by Avalonia:** The UI is built using [Avalonia](https://avaloniaui.net/), enabling native performance on **Windows, Linux, macOS**, and more.
+- **Standalone Compatible:** The original core application (written in Rust) still functions as a standalone app. You can use it independently or via this enhanced interface.
+- **C# Interface:** Provides a robust .NET/C# API for integration into new or existing C# projects.
+- **Parallel Development:** Tracks changes and features in the [upstream repo](https://github.com/TreXito/frikadellen-baf-121) for close compatibility.
 
-## Key Features
+## Features
 
-- ✨ **C# Interface** — Easily integrate with C# applications via a well-documented API.
-- 🤝 **Parallel Development** — Tracks updates alongside [frikadellen-baf-121](https://github.com/TreXito/frikadellen-baf-121) for compatibility and feature parity.
-- 🔗 **Interoperability** — Bridges between the core logic and a C#/dotnet layer.
-- 🛠️ **Open for Collaboration** — Contributions, issues, and suggestions are very welcome!
+- 🖥️ **Avalonia UI:** True cross-platform support—run the same UI everywhere.
+- 🤝 **Rust Backend:** Leverages the power and reliability of the original Rust app.
+- 💻 **C#/.NET Compatibility:** Integrate the backend from your .NET applications or via the Avalonia UI.
+- 🔗 **Interoperability:** C# layer bridges the original logic and modern desktop environments.
+- 🛠️ **Open Collaboration:** Contributions, feedback, and suggestions are always welcome!
 
 ## Getting Started
 
 ### Prerequisites
 
-- [.NET SDK](https://dotnet.microsoft.com/download)
-- A basic understanding of C#, or see the example below
+- [.NET SDK (6+ recommended)](https://dotnet.microsoft.com/download)
+- [Rust (for standalone/backend use)](https://www.rust-lang.org/)
+- Basic understanding of C# and/or Rust
 
 ### Installation
 
-1. **Clone the repository**  
+1. **Clone the repository**
    ```bash
    git clone https://github.com/skriptkiddielmaoxd/frikadellen-fancy.git
    cd frikadellen-fancy
    ```
 
-2. **Build the solution**  
+2. **Build the solution**
    ```bash
    dotnet build
    ```
 
-3. **Run tests (if available)**  
+3. **Run the Avalonia App**
    ```bash
-   dotnet test
+   dotnet run --project src/Frikadellen.Fancy.Interface
    ```
+
+4. *(Optional)* **Build and use the original Rust backend**  
+   For instructions, see [frikadellen-baf-121](https://github.com/TreXito/frikadellen-baf-121).
 
 ### Usage Example
 
 ```csharp
 using Frikadellen.Fancy.Interface;
 
-// Create an instance of the main interface
+// Create and use the main interface
 var frikadellen = new FancyFrikadellen();
-// Call a method - adjust as per actual API
+// Call your platform-independent methods
 frikadellen.DoSomethingFancy();
 ```
 
-*See API documentation or code comments for more examples and advanced usage.*
+*Explore the [Avalonia](https://avaloniaui.net/) docs for theming or platform customization!*
 
 ## Project Structure
 
-- `/src` — Source code and C# interface
+- `/src` — C# interface and Avalonia UI
+- `/backend` — (Optional) Rust backend logic
 - `/tests` — Unit and integration tests
-- `/docs` — Documentation and design notes (if available)
+- `/docs` — Documentation and design notes
 
-## Development & Collaboration
+## Compatibility
 
-This project is developed in close collaboration with [@TreXito](https://github.com/TreXito)'s [frikadellen-baf-121](https://github.com/TreXito/frikadellen-baf-121). Changes to **fancy** will often track or extend features originated in the upstream project.
+- **Avalonia-powered UI**: Works on Windows, Linux, macOS, and other platforms supported by Avalonia.
+- **Headless/Backend**: Frikadellen-baf-121 (Rust) still works as a standalone app.
+- **Interfacing**: Use the C# layer or interact directly with the backend per your requirements.
 
-Feel free to open issues, suggest features, or submit pull requests!
+## Community & Support
+
+- **Discord Server:** [frikadellenBAF on Discord](https://discord.gg/bxqXBefY)  
+- **Contact:** skriptkiddielmaoxd (@_standonit_ on Discord)
+
+Join the conversation, get support, or share your feedback—everyone is welcome!
 
 ## License
 
@@ -74,6 +90,6 @@ This project is licensed under the terms of the [LICENSE](./LICENSE) file.
 ---
 
 **Related Projects**
-- [frikadellen-baf-121](https://github.com/TreXito/frikadellen-baf-121) — The upstream core
+- [frikadellen-baf-121](https://github.com/TreXito/frikadellen-baf-121) — The upstream Rust core
 
-*Special thanks to @TreXito for inspiration and collaboration.*
+*Many thanks to @TreXito for original inspiration and ongoing collaboration.*
