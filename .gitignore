@@ -21,6 +21,9 @@ installer/staging/
 # Inno Setup output
 *.exe
 
+# Local recovery clone used for packaging/dev — ignore to avoid accidental commits
+recover_clone/
+
 # Editor and OS files
 *.log
 .DS_Store
