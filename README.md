@@ -1,76 +1,79 @@
-# Frikadellen BAF
-Frikadellen BAF in the newest minecraft version based on Rust
+# frikadellen-fancy
 
-#if you get banned well you know you risked it its a macro in very early access
-also send me logs of bans on [Discord](https://discord.gg/42DvX6T9jh) thanks
+[![GitHub issues](https://img.shields.io/github/issues/skriptkiddielmaoxd/frikadellen-fancy)](https://github.com/skriptkiddielmaoxd/frikadellen-fancy/issues)
+[![GitHub stars](https://img.shields.io/github/stars/skriptkiddielmaoxd/frikadellen-fancy)](https://github.com/skriptkiddielmaoxd/frikadellen-fancy/stargazers)
+[![License](https://img.shields.io/github/license/skriptkiddielmaoxd/frikadellen-fancy)](./LICENSE)
 
+## Overview
 
-## Features
+**frikadellen-fancy** is an extended version of the [frikadellen-baf-121](https://github.com/TreXito/frikadellen-baf-121) project by [@TreXito](https://github.com/TreXito), featuring additional integration and a C# interface layer.
 
-- **Automated Auction House Flips**: Monitors and executes profitable BIN (Buy It Now) auctions
-- **Bazaar Trading**: Automated bazaar order management and flipping
-- **Microsoft Authentication**: Secure login with your Microsoft/Minecraft account
-- **Hypixel Integration**: Direct connection to Hypixel Skyblock servers
-- **Real-time Updates**: WebSocket connection to Coflnet for flip notifications
-- **Configurable**: Easy-to-use configuration system
+The repository is developed and maintained by [@skriptkiddielmaoxd](https://github.com/skriptkiddielmaoxd), and works in tandem with the upstream repository to deliver enhanced features, better interoperability, and a modern interface suitable for .NET/C# applications.
 
-# Installation on a Linux VPS:
-wget https://github.com/TreXito/frikadellen-baf-121/releases/latest/download/frikadellen_baf-linux-x86_64 && chmod +x frikadellen_baf-linux-x86_64
-then you can run it everytime with ./frikadellen_baf-linux-x86_64
+## Key Features
 
-## Quick Start
+- ✨ **C# Interface** — Easily integrate with C# applications via a well-documented API.
+- 🤝 **Parallel Development** — Tracks updates alongside [frikadellen-baf-121](https://github.com/TreXito/frikadellen-baf-121) for compatibility and feature parity.
+- 🔗 **Interoperability** — Bridges between the core logic and a C#/dotnet layer.
+- 🛠️ **Open for Collaboration** — Contributions, issues, and suggestions are very welcome!
 
-1. Download the latest release for your platform from the [Releases](../../releases) page
-2. Run the executable
-3. Enter your Minecraft username when prompted
-4. Complete Microsoft authentication in the browser that opens
-5. The bot will connect to Hypixel and start monitoring for flips
+## Getting Started
 
-Follow the prompts shown in the terminal and browser for Microsoft authentication setup.
+### Prerequisites
 
-## Configuration
+- [.NET SDK](https://dotnet.microsoft.com/download)
+- A basic understanding of C#, or see the example below
 
-The application creates a `config.toml` file in the same directory as the executable. You can manually edit this file to customize settings:
+### Installation
 
-- `ingame_name`: Your Minecraft username
-- `enable_ah_flips`: Enable/disable auction house flips
-- `enable_bazaar_flips`: Enable/disable bazaar flips
-- `web_gui_port`: Port for the web interface (default: 8080)
+1. **Clone the repository**  
+   ```bash
+   git clone https://github.com/skriptkiddielmaoxd/frikadellen-fancy.git
+   cd frikadellen-fancy
+   ```
 
-## Requirements
+2. **Build the solution**  
+   ```bash
+   dotnet build
+   ```
 
-- Minecraft: Java Edition license linked to a Microsoft account
-- Access to Hypixel server (not banned)
-- Internet connection
+3. **Run tests (if available)**  
+   ```bash
+   dotnet test
+   ```
 
-## Troubleshooting
+### Usage Example
 
-If authentication fails, rerun the app and complete the Microsoft login flow again in the opened browser window.
+```csharp
+using Frikadellen.Fancy.Interface;
 
-## Building from Source
-
-Requires Rust nightly toolchain:
-
-```bash
-rustup install nightly
-rustup default nightly
-cargo build --release
+// Create an instance of the main interface
+var frikadellen = new FancyFrikadellen();
+// Call a method - adjust as per actual API
+frikadellen.DoSomethingFancy();
 ```
 
-### Using the Launcher Script
+*See API documentation or code comments for more examples and advanced usage.*
 
-For convenience, you can use the `frikadellen-baf-121` launcher script:
+## Project Structure
 
-```bash
-chmod +x frikadellen-baf-121
-./frikadellen-baf-121
-```
+- `/src` — Source code and C# interface
+- `/tests` — Unit and integration tests
+- `/docs` — Documentation and design notes (if available)
 
-The launcher script will:
-- Check for an existing binary
-- Automatically build from source if needed
-- Run the application with any arguments you provide
+## Development & Collaboration
+
+This project is developed in close collaboration with [@TreXito](https://github.com/TreXito)'s [frikadellen-baf-121](https://github.com/TreXito/frikadellen-baf-121). Changes to **fancy** will often track or extend features originated in the upstream project.
+
+Feel free to open issues, suggest features, or submit pull requests!
 
 ## License
 
-MIT
+This project is licensed under the terms of the [LICENSE](./LICENSE) file.
+
+---
+
+**Related Projects**
+- [frikadellen-baf-121](https://github.com/TreXito/frikadellen-baf-121) — The upstream core
+
+*Special thanks to @TreXito for inspiration and collaboration.*
