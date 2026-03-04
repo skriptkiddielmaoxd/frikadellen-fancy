@@ -1,0 +1,12 @@
+﻿src\bot\client.rs
+src\config\loader.rs
+src\config\types.rs
+src\lib.rs
+src\logging\logger.rs
+src\main.rs
+src\types.rs
+src\web\mod.rs
+src\web\routes.rs
+src\web\state.rs
+src\web\static\index.html
+src\websocket\client.rs

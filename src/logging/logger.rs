@@ -19,7 +19,10 @@ pub fn init_logger() -> Result<()> {
     let filter = EnvFilter::try_from_default_env()
         .unwrap_or_else(|_| {
             EnvFilter::new("info")
-                // Suppress Azalea chunk entity warnings (they're just noise)
+                // Suppress Azalea chunk/entity/client protocol warnings (they're just noise)
+                .add_directive("azalea=error".parse().unwrap())
+                .add_directive("azalea_client=error".parse().unwrap())
+                .add_directive("azalea_protocol=error".parse().unwrap())
                 .add_directive("azalea_world=error".parse().unwrap())
                 .add_directive("azalea_entity=error".parse().unwrap())
         });
