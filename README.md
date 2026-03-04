@@ -1,76 +1,95 @@
-# Frikadellen BAF
-Frikadellen BAF in the newest minecraft version based on Rust
+# frikadellen-fancy
 
-#if you get banned well you know you risked it its a macro in very early access
-also send me logs of bans on [Discord](https://discord.gg/42DvX6T9jh) thanks
+[![GitHub issues](https://img.shields.io/github/issues/skriptkiddielmaoxd/frikadellen-fancy)](https://github.com/skriptkiddielmaoxd/frikadellen-fancy/issues)
+[![GitHub stars](https://img.shields.io/github/stars/skriptkiddielmaoxd/frikadellen-fancy)](https://github.com/skriptkiddielmaoxd/frikadellen-fancy/stargazers)
+[![License](https://img.shields.io/github/license/skriptkiddielmaoxd/frikadellen-fancy)](./LICENSE)
 
+## Overview
+
+**frikadellen-fancy** is an extended version of [frikadellen-baf-121](https://github.com/TreXito/frikadellen-baf-121) by [@TreXito](https://github.com/TreXito), adding a modern, cross-platform interface and improved integration capabilities.
+
+- **Cross-platform Powered by Avalonia:** The UI is built using [Avalonia](https://avaloniaui.net/), enabling native performance on **Windows, Linux, macOS**, and more.
+- **Standalone Compatible:** The original core application (written in Rust) still functions as a standalone app. You can use it independently or via this enhanced interface.
+- **C# Interface:** Provides a robust .NET/C# API for integration into new or existing C# projects.
+- **Parallel Development:** Tracks changes and features in the [upstream repo](https://github.com/TreXito/frikadellen-baf-121) for close compatibility.
 
 ## Features
 
-- **Automated Auction House Flips**: Monitors and executes profitable BIN (Buy It Now) auctions
-- **Bazaar Trading**: Automated bazaar order management and flipping
-- **Microsoft Authentication**: Secure login with your Microsoft/Minecraft account
-- **Hypixel Integration**: Direct connection to Hypixel Skyblock servers
-- **Real-time Updates**: WebSocket connection to Coflnet for flip notifications
-- **Configurable**: Easy-to-use configuration system
+- 🖥️ **Avalonia UI:** True cross-platform support—run the same UI everywhere.
+- 🤝 **Rust Backend:** Leverages the power and reliability of the original Rust app.
+- 💻 **C#/.NET Compatibility:** Integrate the backend from your .NET applications or via the Avalonia UI.
+- 🔗 **Interoperability:** C# layer bridges the original logic and modern desktop environments.
+- 🛠️ **Open Collaboration:** Contributions, feedback, and suggestions are always welcome!
 
-# Installation on a Linux VPS:
-wget https://github.com/TreXito/frikadellen-baf-121/releases/latest/download/frikadellen_baf-linux-x86_64 && chmod +x frikadellen_baf-linux-x86_64
-then you can run it everytime with ./frikadellen_baf-linux-x86_64
+## Getting Started
 
-## Quick Start
+### Prerequisites
 
-1. Download the latest release for your platform from the [Releases](../../releases) page
-2. Run the executable
-3. Enter your Minecraft username when prompted
-4. Complete Microsoft authentication in the browser that opens
-5. The bot will connect to Hypixel and start monitoring for flips
+- [.NET SDK (6+ recommended)](https://dotnet.microsoft.com/download)
+- [Rust (for standalone/backend use)](https://www.rust-lang.org/)
+- Basic understanding of C# and/or Rust
 
-Follow the prompts shown in the terminal and browser for Microsoft authentication setup.
+### Installation
 
-## Configuration
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/skriptkiddielmaoxd/frikadellen-fancy.git
+   cd frikadellen-fancy
+   ```
 
-The application creates a `config.toml` file in the same directory as the executable. You can manually edit this file to customize settings:
+2. **Build the solution**
+   ```bash
+   dotnet build
+   ```
 
-- `ingame_name`: Your Minecraft username
-- `enable_ah_flips`: Enable/disable auction house flips
-- `enable_bazaar_flips`: Enable/disable bazaar flips
-- `web_gui_port`: Port for the web interface (default: 8080)
+3. **Run the Avalonia App**
+   ```bash
+   dotnet run --project src/Frikadellen.Fancy.Interface
+   ```
 
-## Requirements
+4. *(Optional)* **Build and use the original Rust backend**  
+   For instructions, see [frikadellen-baf-121](https://github.com/TreXito/frikadellen-baf-121).
 
-- Minecraft: Java Edition license linked to a Microsoft account
-- Access to Hypixel server (not banned)
-- Internet connection
+### Usage Example
 
-## Troubleshooting
+```csharp
+using Frikadellen.Fancy.Interface;
 
-If authentication fails, rerun the app and complete the Microsoft login flow again in the opened browser window.
-
-## Building from Source
-
-Requires Rust nightly toolchain:
-
-```bash
-rustup install nightly
-rustup default nightly
-cargo build --release
+// Create and use the main interface
+var frikadellen = new FancyFrikadellen();
+// Call your platform-independent methods
+frikadellen.DoSomethingFancy();
 ```
 
-### Using the Launcher Script
+*Explore the [Avalonia](https://avaloniaui.net/) docs for theming or platform customization!*
 
-For convenience, you can use the `frikadellen-baf-121` launcher script:
+## Project Structure
 
-```bash
-chmod +x frikadellen-baf-121
-./frikadellen-baf-121
-```
+- `/src` — C# interface and Avalonia UI
+- `/backend` — (Optional) Rust backend logic
+- `/tests` — Unit and integration tests
+- `/docs` — Documentation and design notes
 
-The launcher script will:
-- Check for an existing binary
-- Automatically build from source if needed
-- Run the application with any arguments you provide
+## Compatibility
+
+- **Avalonia-powered UI**: Works on Windows, Linux, macOS, and other platforms supported by Avalonia.
+- **Headless/Backend**: Frikadellen-baf-121 (Rust) still works as a standalone app.
+- **Interfacing**: Use the C# layer or interact directly with the backend per your requirements.
+
+## Community & Support
+
+- **Discord Server:** [frikadellenBAF on Discord](https://discord.gg/bxqXBefY)  
+- **Contact:** skriptkiddielmaoxd (@_standonit_ on Discord)
+
+Join the conversation, get support, or share your feedback—everyone is welcome!
 
 ## License
 
-MIT
+This project is licensed under the terms of the [LICENSE](./LICENSE) file.
+
+---
+
+**Related Projects**
+- [frikadellen-baf-121](https://github.com/TreXito/frikadellen-baf-121) — The upstream Rust core
+
+*Many thanks to @TreXito for original inspiration and ongoing collaboration.*
