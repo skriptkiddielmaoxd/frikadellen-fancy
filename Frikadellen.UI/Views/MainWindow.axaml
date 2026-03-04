@@ -1,0 +1,233 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Frikadellen.UI.ViewModels"
+        xmlns:views="using:Frikadellen.UI.Views"
+        x:Class="Frikadellen.UI.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Frikadellen"
+        Width="1280" Height="780"
+        MinWidth="900" MinHeight="550"
+        SystemDecorations="None"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        WindowStartupLocation="CenterScreen">
+
+  <Window.Styles>
+    <!-- Animate content opacity for view transitions -->
+    <Style Selector="ContentControl.viewHost">
+      <Style.Animations>
+        <Animation Duration="0:0:0.3" Easing="CubicEaseOut">
+          <KeyFrame Cue="0%">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="TranslateTransform.Y" Value="12" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="TranslateTransform.Y" Value="0" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+
+    <!-- Hero logo animation on load -->
+    <Style Selector="Image.hero-logo">
+      <Style.Animations>
+        <Animation Duration="0:0:0.8" Easing="CubicEaseOut" FillMode="Forward">
+          <KeyFrame Cue="0%">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="ScaleTransform.ScaleX" Value="0.5" />
+            <Setter Property="ScaleTransform.ScaleY" Value="0.5" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="ScaleTransform.ScaleX" Value="1" />
+            <Setter Property="ScaleTransform.ScaleY" Value="1" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+
+    <!-- Window chrome button hover -->
+    <Style Selector="Button.chrome-btn:pointerover">
+      <Setter Property="Background" Value="#30FFFFFF" />
+    </Style>
+    <Style Selector="Button.chrome-close:pointerover">
+      <Setter Property="Background" Value="#E74C3C" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
+  </Window.Styles>
+
+  <!-- Root border: rounded + shadow -->
+  <Border CornerRadius="16"
+          ClipToBounds="True"
+          BoxShadow="0 4 24 0 #60000000"
+          Background="{DynamicResource SurfaceDark}">
+    <Border.Styles>
+      <!-- Override surface for light theme -->
+      <Style Selector="Border">
+        <!-- handled by ThemeVariant resource binding -->
+      </Style>
+    </Border.Styles>
+
+    <Grid RowDefinitions="44,*" ColumnDefinitions="Auto,*">
+
+      <!-- ═══ CUSTOM TITLE BAR ═══ -->
+      <Border Grid.Row="0" Grid.ColumnSpan="2"
+              Background="#181E24"
+              Name="TitleBar">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <!-- Left: logo + title -->
+          <StackPanel Grid.Column="0" Orientation="Horizontal"
+                      Margin="14,0,0,0" VerticalAlignment="Center" Spacing="10">
+            <Image Source="avares://Frikadellen.UI/Assets/logo.png"
+                   Width="22" Height="22"
+                   Classes="hero-logo"
+                   RenderTransformOrigin="0.5,0.5">
+              <Image.RenderTransform>
+                <ScaleTransform />
+              </Image.RenderTransform>
+            </Image>
+            <TextBlock Text="Frikadellen" FontSize="14" FontWeight="Bold"
+                       Foreground="#DFE6E9" VerticalAlignment="Center" />
+            <!-- Status chip -->
+            <Border CornerRadius="8" Padding="8,3" Background="#6C5CE7"
+                    VerticalAlignment="Center">
+              <TextBlock Text="{Binding StatusText}" FontSize="11"
+                         Foreground="White" FontWeight="SemiBold" />
+            </Border>
+          </StackPanel>
+
+          <!-- Centre: drag area -->
+          <Border Grid.Column="1" Background="Transparent" Name="DragRegion" />
+
+          <!-- Right: chrome buttons -->
+          <StackPanel Grid.Column="2" Orientation="Horizontal"
+                      VerticalAlignment="Center" Margin="0,0,6,0" Spacing="2">
+            <!-- Theme toggle -->
+            <Button Classes="chrome-btn" Background="Transparent" Foreground="#B2BEC3"
+                    Width="34" Height="28" FontSize="14" CornerRadius="6"
+                    Content="◐" ToolTip.Tip="Toggle theme"
+                    Command="{Binding ToggleThemeCommand}" />
+            <Button Classes="chrome-btn" Background="Transparent" Foreground="#B2BEC3"
+                    Width="34" Height="28" FontSize="14" CornerRadius="6"
+                    Content="—" ToolTip.Tip="Minimize"
+                    Name="MinimizeButton" />
+            <Button Classes="chrome-btn" Background="Transparent" Foreground="#B2BEC3"
+                    Width="34" Height="28" FontSize="14" CornerRadius="6"
+                    Content="☐" ToolTip.Tip="Maximize / Restore"
+                    Name="MaximizeButton" />
+            <Button Classes="chrome-btn chrome-close" Background="Transparent" Foreground="#B2BEC3"
+                    Width="34" Height="28" FontSize="14" CornerRadius="6"
+                    Content="✕" ToolTip.Tip="Close"
+                    Name="CloseButton" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- ═══ SIDEBAR ═══ -->
+      <Border Grid.Row="1" Grid.Column="0"
+              Width="{Binding SidebarWidth}"
+              Background="#232B31"
+              CornerRadius="0,0,0,16"
+              Padding="8,12">
+        <Border.Transitions>
+          <Transitions>
+            <DoubleTransition Property="Width" Duration="0:0:0.25" Easing="CubicEaseInOut" />
+          </Transitions>
+        </Border.Transitions>
+        <DockPanel>
+          <!-- Collapse toggle at bottom -->
+          <Button DockPanel.Dock="Bottom" Classes="sidebar-item"
+                  HorizontalAlignment="Stretch" Margin="0,8,0,0"
+                  Command="{Binding ToggleSidebarCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Text="{Binding SidebarCollapseIcon}" FontSize="16" Width="20"
+                         TextAlignment="Center" />
+              <TextBlock Text="Collapse" FontSize="13"
+                         IsVisible="{Binding IsSidebarExpanded}" />
+            </StackPanel>
+          </Button>
+
+          <!-- Nav items -->
+          <StackPanel Spacing="4">
+            <Button Classes="sidebar-item"
+                    Command="{Binding NavigateCommand}"
+                    CommandParameter="Dashboard">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="📊" FontSize="16" Width="20" TextAlignment="Center" />
+                <TextBlock Text="Dashboard" FontSize="13"
+                           IsVisible="{Binding IsSidebarExpanded}" />
+              </StackPanel>
+            </Button>
+
+            <Button Classes="sidebar-item"
+                    Command="{Binding NavigateCommand}"
+                    CommandParameter="Events">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="📋" FontSize="16" Width="20" TextAlignment="Center" />
+                <TextBlock Text="Events" FontSize="13"
+                           IsVisible="{Binding IsSidebarExpanded}" />
+              </StackPanel>
+            </Button>
+
+            <Button Classes="sidebar-item"
+                    Command="{Binding NavigateCommand}"
+                    CommandParameter="Config">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="🔧" FontSize="16" Width="20" TextAlignment="Center" />
+                <TextBlock Text="Config" FontSize="13"
+                           IsVisible="{Binding IsSidebarExpanded}" />
+              </StackPanel>
+            </Button>
+
+            <Button Classes="sidebar-item"
+                    Command="{Binding NavigateCommand}"
+                    CommandParameter="Settings">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="⚙" FontSize="16" Width="20" TextAlignment="Center" />
+                <TextBlock Text="Settings" FontSize="13"
+                           IsVisible="{Binding IsSidebarExpanded}" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </DockPanel>
+      </Border>
+
+      <!-- ═══ MAIN CONTENT ═══ -->
+      <Border Grid.Row="1" Grid.Column="1"
+              Padding="20,16" CornerRadius="0,0,16,0"
+              ClipToBounds="True">
+        <ContentControl Content="{Binding CurrentView}"
+                        Classes="viewHost">
+          <ContentControl.RenderTransform>
+            <TranslateTransform />
+          </ContentControl.RenderTransform>
+          <ContentControl.ContentTemplate>
+            <DataTemplate>
+              <ContentControl Content="{Binding}">
+                <ContentControl.DataTemplates>
+                  <DataTemplate DataType="vm:DashboardViewModel">
+                    <views:DashboardView />
+                  </DataTemplate>
+                  <DataTemplate DataType="vm:EventsViewModel">
+                    <views:EventsView />
+                  </DataTemplate>
+                  <DataTemplate DataType="vm:ConfigViewModel">
+                    <views:ConfigView />
+                  </DataTemplate>
+                  <DataTemplate DataType="vm:SettingsViewModel">
+                    <views:SettingsView />
+                  </DataTemplate>
+                </ContentControl.DataTemplates>
+              </ContentControl>
+            </DataTemplate>
+          </ContentControl.ContentTemplate>
+        </ContentControl>
+      </Border>
+
+    </Grid>
+  </Border>
+</Window>

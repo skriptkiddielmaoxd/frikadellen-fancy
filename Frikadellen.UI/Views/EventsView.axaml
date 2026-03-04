@@ -1,0 +1,101 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Frikadellen.UI.ViewModels"
+             xmlns:m="using:Frikadellen.UI.Models"
+             x:Class="Frikadellen.UI.Views.EventsView"
+             x:DataType="vm:EventsViewModel">
+
+  <UserControl.Styles>
+    <!-- New item slide-in animation -->
+    <Style Selector="Border.event-item">
+      <Style.Animations>
+        <Animation Duration="0:0:0.35" Easing="CubicEaseOut" FillMode="Forward">
+          <KeyFrame Cue="0%">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="TranslateTransform.X" Value="-30" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="TranslateTransform.X" Value="0" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+
+    <Style Selector="Border.event-item:pointerover">
+      <Setter Property="Background" Value="#18FFFFFF" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid ColumnDefinitions="*,320">
+
+    <!-- ═══ EVENT LIST ═══ -->
+    <DockPanel Grid.Column="0" Margin="0,0,12,0">
+      <TextBlock DockPanel.Dock="Top" Text="Live Events" FontSize="26" FontWeight="Bold"
+                 Foreground="{DynamicResource TextPrimaryDark}" Margin="0,0,0,12" />
+      <ListBox ItemsSource="{Binding Events}"
+               SelectedItem="{Binding SelectedEvent}"
+               Background="Transparent"
+               ScrollViewer.VerticalScrollBarVisibility="Auto">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="m:EventItem">
+            <Border Classes="event-item" CornerRadius="10" Padding="12,8"
+                    Margin="0,3" Background="#10FFFFFF"
+                    RenderTransformOrigin="0,0.5">
+              <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
+              <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
+                <!-- Avatar -->
+                <TextBlock Grid.RowSpan="2" Text="{Binding Avatar}" FontSize="22"
+                           VerticalAlignment="Center" Margin="0,0,10,0" />
+                <!-- Message -->
+                <TextBlock Grid.Column="1" Grid.Row="0"
+                           Text="{Binding Message}" FontSize="13" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryDark}"
+                           TextTrimming="CharacterEllipsis" />
+                <!-- Tag -->
+                <Border Grid.Column="2" Grid.Row="0"
+                        CornerRadius="6" Padding="6,2"
+                        Background="{DynamicResource BrandPrimary}"
+                        VerticalAlignment="Center">
+                  <TextBlock Text="{Binding Tag}" FontSize="10" Foreground="White" />
+                </Border>
+                <!-- Timestamp -->
+                <TextBlock Grid.Column="1" Grid.Row="1"
+                           Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}"
+                           FontSize="11" Foreground="#636E72" Margin="0,2,0,0" />
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </DockPanel>
+
+    <!-- ═══ DETAIL PANEL ═══ -->
+    <Border Grid.Column="1" Classes="card" Background="{DynamicResource CardDark}">
+      <StackPanel Spacing="10">
+        <TextBlock Text="Event Details" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextPrimaryDark}" />
+
+        <TextBlock Text="{Binding SelectedEvent.Message, FallbackValue='Select an event'}"
+                   FontSize="14" FontWeight="Medium"
+                   Foreground="{DynamicResource TextPrimaryDark}"
+                   TextWrapping="Wrap" />
+
+        <TextBlock Text="{Binding SelectedEvent.Details, FallbackValue=''}"
+                   FontSize="12" Foreground="#B2BEC3"
+                   TextWrapping="Wrap" />
+
+        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,6,0,0">
+          <Border CornerRadius="6" Padding="8,3"
+                  Background="{DynamicResource BrandAccent}">
+            <TextBlock Text="{Binding SelectedEvent.Type, FallbackValue='-'}"
+                       FontSize="11" Foreground="White" FontWeight="SemiBold" />
+          </Border>
+          <TextBlock VerticalAlignment="Center" FontSize="11" Foreground="#636E72"
+                     Text="{Binding SelectedEvent.Id, FallbackValue='', StringFormat='ID: {0}'}" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+  </Grid>
+</UserControl>
