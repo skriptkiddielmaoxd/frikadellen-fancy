@@ -47,24 +47,23 @@ pub fn init_logger() -> Result<()> {
 }
 
 fn get_logs_dir() -> PathBuf {
-    // Use executable directory for log file
-    // This allows multiple instances to run with separate logs
-    let exe_dir = match std::env::current_exe() {
-        Ok(exe_path) => {
-            exe_path.parent()
-                .map(|p| p.to_path_buf())
-                .unwrap_or_else(|| {
-                    eprintln!("Warning: Could not get parent directory of executable, using current directory");
-                    PathBuf::from(".")
-                })
-        }
-        Err(e) => {
-            eprintln!("Warning: Could not get executable path ({}), using current directory", e);
-            PathBuf::from(".")
-        }
-    };
+    // Prefer a per-user local data directory for logs (e.g. %LOCALAPPDATA% on Windows).
+    // Writing logs to the executable directory under Program Files can cause
+    // permission errors for non-elevated users. Fall back to the executable
+    // directory if a platform-local data dir cannot be determined.
+    if let Some(mut data_dir) = dirs::data_local_dir() {
+        data_dir.push("Frikadellen BAF");
+        data_dir.push("logs");
+        return data_dir;
+    }
 
-    exe_dir.join("logs")
+    // Fallback: use executable directory so local dev runs behave the same
+    match std::env::current_exe() {
+        Ok(exe_path) => exe_path.parent()
+            .map(|p| p.join("logs"))
+            .unwrap_or_else(|| PathBuf::from("logs")),
+        Err(_) => PathBuf::from("logs"),
+    }
 }
 
 fn rotate_previous_latest_log(logs_dir: &Path) -> Result<()> {

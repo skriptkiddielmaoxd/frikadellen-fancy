@@ -15,24 +15,22 @@ impl ConfigLoader {
     }
 
     fn get_config_path() -> PathBuf {
-        // Use executable directory for config file
-        // This allows multiple instances to run with different configs
-        let exe_dir = match std::env::current_exe() {
-            Ok(exe_path) => {
-                exe_path.parent()
-                    .map(|p| p.to_path_buf())
-                    .unwrap_or_else(|| {
-                        eprintln!("Warning: Could not get parent directory of executable, using current directory");
-                        PathBuf::from(".")
-                    })
-            }
-            Err(e) => {
-                eprintln!("Warning: Could not get executable path ({}), using current directory", e);
-                PathBuf::from(".")
-            }
-        };
-        
-        exe_dir.join("config.toml")
+        // Prefer a per-user config location (e.g. %APPDATA% on Windows).
+        // Storing config in the executable directory causes permission errors
+        // when the app is installed to Program Files. Fall back to the
+        // current directory if a platform config dir cannot be determined.
+        if let Some(mut cfg_dir) = dirs::config_dir() {
+            cfg_dir.push("Frikadellen BAF");
+            return cfg_dir.join("config.toml");
+        }
+
+        // Fallback: use executable directory so local dev runs behave the same
+        match std::env::current_exe() {
+            Ok(exe_path) => exe_path.parent()
+                .map(|p| p.join("config.toml"))
+                .unwrap_or_else(|| PathBuf::from("config.toml")),
+            Err(_) => PathBuf::from("config.toml"),
+        }
     }
 
     pub fn load(&self) -> Result<Config> {

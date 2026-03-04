@@ -1,5 +1,6 @@
 use anyhow::Result;
 use dialoguer::{Input, Confirm};
+use atty::Stream;
 use frikadellen_baf::{
     config::ConfigLoader,
     logging::{init_logger, print_mc_chat},
@@ -71,30 +72,54 @@ async fn main() -> Result<()> {
     let config_loader = ConfigLoader::new();
     let mut config = config_loader.load()?;
 
+    // Detect whether we have a terminal attached. When started from the UI
+    // there is no controlling terminal and dialoguer will error with
+    // "IO error: not a terminal". In that case we skip interactive prompts
+    // and populate sensible defaults (or read from environment).
+    let interactive = atty::is(Stream::Stdin) && atty::is(Stream::Stdout);
+
     // Prompt for username if not set
     if config.ingame_name.is_none() {
-        let name: String = Input::new()
-            .with_prompt("Enter your ingame name")
-            .interact_text()?;
-        config.ingame_name = Some(name);
-        config_loader.save(&config)?;
+        if interactive {
+            let name: String = Input::new()
+                .with_prompt("Enter your ingame name")
+                .interact_text()?;
+            config.ingame_name = Some(name);
+            config_loader.save(&config)?;
+        } else {
+            // Non-interactive: try env var, else fallback to a default placeholder
+            let name = std::env::var("FRIKADELLEN_INGAME_NAME").unwrap_or_else(|_| "frikadellen_user".to_string());
+            config.ingame_name = Some(name);
+            config_loader.save(&config)?;
+        }
     }
 
     if config.enable_ah_flips && config.enable_bazaar_flips {
         // Both are enabled, ask user
     } else if !config.enable_ah_flips && !config.enable_bazaar_flips {
-        // Neither is configured, ask user
-        let enable_ah = Confirm::new()
-            .with_prompt("Enable auction house flips?")
-            .default(true)
-            .interact()?;
-        config.enable_ah_flips = enable_ah;
+        // Neither is configured, ask user (or use defaults in non-interactive)
+        if interactive {
+            let enable_ah = Confirm::new()
+                .with_prompt("Enable auction house flips?")
+                .default(true)
+                .interact()?;
+            config.enable_ah_flips = enable_ah;
 
-        let enable_bazaar = Confirm::new()
-            .with_prompt("Enable bazaar flips?")
-            .default(true)
-            .interact()?;
-        config.enable_bazaar_flips = enable_bazaar;
+            let enable_bazaar = Confirm::new()
+                .with_prompt("Enable bazaar flips?")
+                .default(true)
+                .interact()?;
+            config.enable_bazaar_flips = enable_bazaar;
+        } else {
+            // Non-interactive: keep defaults (AH enabled, bazaar disabled) or
+            // allow overrides via environment variables.
+            if let Ok(v) = std::env::var("FRIK_ENABLE_AH") {
+                config.enable_ah_flips = v == "1" || v.eq_ignore_ascii_case("true");
+            }
+            if let Ok(v) = std::env::var("FRIK_ENABLE_BAZAAR") {
+                config.enable_bazaar_flips = v == "1" || v.eq_ignore_ascii_case("true");
+            }
+        }
 
         config_loader.save(&config)?;
     }
@@ -102,46 +127,67 @@ async fn main() -> Result<()> {
     // Prompt for webhook URL if not yet configured (matches TypeScript configHelper.ts pattern
     // of adding new default values to existing config on first run of newer version)
     if config.webhook_url.is_none() {
-        let wants_webhook = Confirm::new()
-            .with_prompt("Configure Discord webhook for notifications? (optional)")
-            .default(false)
-            .interact()?;
-        if wants_webhook {
-            let url: String = Input::new()
-                .with_prompt("Enter Discord webhook URL")
-                .interact_text()?;
-            config.webhook_url = Some(url);
+        if interactive {
+            let wants_webhook = Confirm::new()
+                .with_prompt("Configure Discord webhook for notifications? (optional)")
+                .default(false)
+                .interact()?;
+            if wants_webhook {
+                let url: String = Input::new()
+                    .with_prompt("Enter Discord webhook URL")
+                    .interact_text()?;
+                config.webhook_url = Some(url);
+            } else {
+                // Mark as configured (empty = disabled) so we don't ask again
+                config.webhook_url = Some(String::new());
+            }
         } else {
-            // Mark as configured (empty = disabled) so we don't ask again
-            config.webhook_url = Some(String::new());
+            // Non-interactive: prefer explicit env var, else mark disabled
+            if let Ok(url) = std::env::var("FRIK_WEBHOOK_URL") {
+                config.webhook_url = Some(url);
+            } else {
+                config.webhook_url = Some(String::new());
+            }
         }
         config_loader.save(&config)?;
     }
 
     // Prompt for Discord bot token if not yet configured
     if config.discord_bot_token.is_none() {
-        let wants_bot = Confirm::new()
-            .with_prompt("Configure a Discord bot for start/stop commands & notifications? (optional)")
-            .default(false)
-            .interact()?;
-        if wants_bot {
-            let token: String = Input::new()
-                .with_prompt("Enter Discord bot token")
-                .interact_text()?;
-            config.discord_bot_token = Some(token);
+        if interactive {
+            let wants_bot = Confirm::new()
+                .with_prompt("Configure a Discord bot for start/stop commands & notifications? (optional)")
+                .default(false)
+                .interact()?;
+            if wants_bot {
+                let token: String = Input::new()
+                    .with_prompt("Enter Discord bot token")
+                    .interact_text()?;
+                config.discord_bot_token = Some(token);
 
-            let channel_id: String = Input::new()
-                .with_prompt("Enter the Discord channel ID for notifications & commands")
-                .interact_text()?;
-            match channel_id.trim().parse::<u64>() {
-                Ok(id) => config.discord_channel_id = Some(id),
-                Err(_) => {
-                    warn!("Invalid channel ID — event notifications will be disabled");
+                let channel_id: String = Input::new()
+                    .with_prompt("Enter the Discord channel ID for notifications & commands")
+                    .interact_text()?;
+                match channel_id.trim().parse::<u64>() {
+                    Ok(id) => config.discord_channel_id = Some(id),
+                    Err(_) => {
+                        warn!("Invalid channel ID — event notifications will be disabled");
+                    }
                 }
+            } else {
+                // Mark as configured (empty = disabled) so we don't ask again
+                config.discord_bot_token = Some(String::new());
             }
         } else {
-            // Mark as configured (empty = disabled) so we don't ask again
-            config.discord_bot_token = Some(String::new());
+            // Non-interactive: read from env if provided, else mark disabled
+            if let Ok(tok) = std::env::var("FRIK_DISCORD_BOT_TOKEN") {
+                config.discord_bot_token = Some(tok);
+                if let Ok(ch) = std::env::var("FRIK_DISCORD_CHANNEL_ID") {
+                    if let Ok(id) = ch.trim().parse::<u64>() { config.discord_channel_id = Some(id); }
+                }
+            } else {
+                config.discord_bot_token = Some(String::new());
+            }
         }
         config_loader.save(&config)?;
     }
