@@ -1,102 +1,75 @@
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Net.Http.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using Frikadellen.UI.Models;
 
 namespace Frikadellen.UI.Services;
 
+// ────────── DTOs (mirrors frikadellen-fancy REST API) ──────────
+
+/// <summary>Response from GET /api/stats</summary>
+public record StatsDto(
+    long   SessionProfit,
+    long   TotalCoinsSpent,
+    long   TotalCoinsEarned,
+    int    TotalFlips,
+    int    WinCount,
+    int    LossCount)
+{
+    public double WinRate => TotalFlips > 0
+        ? Math.Round(WinCount / (double)TotalFlips * 100, 1)
+        : 0.0;
+}
+
+/// <summary>Single flip entry from GET /api/flips</summary>
+public record FlipDto(
+    string ItemName,
+    long   BuyPrice,
+    long   SellPrice,
+    long?  BuySpeedMs,
+    string Finder,
+    string? ItemTag,
+    DateTimeOffset Timestamp);
+
 /// <summary>
-/// HTTP client for the Rust backend REST API running on localhost.
-/// All methods swallow exceptions and return null/false on failure so the
-/// UI remains functional even when the backend is unreachable.
+/// Thin HTTP client for the frikadellen-fancy Rust backend.
+/// All methods fail gracefully when the backend is offline.
 /// </summary>
 public sealed class BackendClient : IDisposable
 {
     private readonly HttpClient _http;
 
-    private static readonly JsonSerializerOptions JsonOpts = new()
+    public BackendClient(string baseUrl = "http://localhost:8080")
     {
-        PropertyNameCaseInsensitive = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    };
-
-    public int Port { get; }
-
-    public BackendClient(int port = 8080)
-    {
-        Port = port;
         _http = new HttpClient
         {
-            BaseAddress = new Uri($"http://127.0.0.1:{port}"),
-            Timeout = TimeSpan.FromSeconds(5)
+            BaseAddress = new Uri(baseUrl),
+            Timeout     = TimeSpan.FromSeconds(5),
         };
     }
 
-    /// <summary>GET /api/status — core telemetry for the dashboard.</summary>
-    public async Task<StatusDto?> GetStatusAsync()
+    // ── Status ──
+
+    /// <summary>GET /api/status — returns null when backend is offline.</summary>
+    public async Task<string?> GetStatusAsync(CancellationToken ct = default)
     {
         try
         {
-            var resp = await _http.GetAsync("/api/status");
-            resp.EnsureSuccessStatusCode();
-            var json = await resp.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<StatusDto>(json, JsonOpts);
+            return await _http.GetStringAsync("/api/status", ct);
         }
         catch { return null; }
     }
 
-    /// <summary>GET /api/config — full config from the Rust backend.</summary>
-    public async Task<ConfigDto?> GetConfigAsync()
-    {
-        try
-        {
-            var resp = await _http.GetAsync("/api/config");
-            resp.EnsureSuccessStatusCode();
-            var json = await resp.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<ConfigDto>(json, JsonOpts);
-        }
-        catch { return null; }
-    }
+    // ── Stats ──
 
-    /// <summary>PUT /api/config — persist config changes to disk.</summary>
-    public async Task<bool> UpdateConfigAsync(ConfigDto config)
+    /// <summary>GET /api/stats — returns null when backend is offline.</summary>
+    public async Task<StatsDto?> GetStatsAsync(CancellationToken ct = default)
     {
         try
         {
-            var json = JsonSerializer.Serialize(config, JsonOpts);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var resp = await _http.PutAsync("/api/config", content);
-            return resp.IsSuccessStatusCode;
-        }
-        catch { return false; }
-    }
-
-    /// <summary>POST /api/command — send a chat/cofl/slash command.</summary>
-    public async Task<bool> SendCommandAsync(string command)
-    {
-        try
-        {
-            var body = JsonSerializer.Serialize(new { command }, JsonOpts);
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var resp = await _http.PostAsync("/api/command", content);
-            return resp.IsSuccessStatusCode;
-        }
-        catch { return false; }
-    }
-
-    /// <summary>POST /api/toggle — flip the global running flag.</summary>
-    public async Task<bool?> ToggleRunningAsync()
-    {
-        try
-        {
-            var resp = await _http.PostAsync("/api/toggle", null);
-            resp.EnsureSuccessStatusCode();
-            var json = await resp.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(json);
-            return doc.RootElement.GetProperty("running").GetBoolean();
+            return await _http.GetFromJsonAsync<StatsDto>("/api/stats", ct);
         }
         catch { return null; }
     }
@@ -173,101 +146,27 @@ public sealed class BackendClient : IDisposable
         catch { return false; }
     }
 
-    /// <summary>POST /api/configs — save provided config under a name.</summary>
-    public async Task<bool> SaveNamedConfigAsync(string name, ConfigDto config)
+    /// <summary>GET /api/flips — returns an empty array when backend is offline.</summary>
+    public async Task<FlipDto[]> GetFlipsAsync(CancellationToken ct = default)
     {
         try
         {
-            var body = JsonSerializer.Serialize(new { name, config }, JsonOpts);
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var resp = await _http.PostAsync("/api/configs", content);
-            return resp.IsSuccessStatusCode;
+            return await _http.GetFromJsonAsync<FlipDto[]>("/api/flips", ct)
+                   ?? Array.Empty<FlipDto>();
         }
-        catch { return false; }
+        catch { return Array.Empty<FlipDto>(); }
     }
 
-    /// <summary>POST /api/configs/load — load a named config and apply it.</summary>
-    public async Task<ConfigDto?> LoadNamedConfigAsync(string name)
+    // ── Config ──
+
+    /// <summary>PUT /api/config — fire-and-forget; silently swallows errors.</summary>
+    public async Task PutConfigAsync(object configDto, CancellationToken ct = default)
     {
         try
         {
-            var body = JsonSerializer.Serialize(new { name }, JsonOpts);
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var resp = await _http.PostAsync("/api/configs/load", content);
-            resp.EnsureSuccessStatusCode();
-            var json = await resp.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(json);
-            if (doc.RootElement.TryGetProperty("config", out var cfg))
-            {
-                return JsonSerializer.Deserialize<ConfigDto>(cfg.GetRawText(), JsonOpts);
-            }
-            return null;
+            await _http.PutAsJsonAsync("/api/config", configDto, ct);
         }
-        catch { return null; }
-    }
-
-    /// <summary>POST /api/configs/delete — delete a named config on the backend.</summary>
-    public async Task<bool> DeleteNamedConfigAsync(string name)
-    {
-        try
-        {
-            var body = JsonSerializer.Serialize(new { name }, JsonOpts);
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var resp = await _http.PostAsync("/api/configs/delete", content);
-            return resp.IsSuccessStatusCode;
-        }
-        catch { return false; }
-    }
-
-    /// <summary>GET /api/inventory — real Minecraft player inventory (36 slots, name + count).</summary>
-    public async Task<InventorySlotDto[]?> GetInventoryAsync()
-    {
-        try
-        {
-            var resp = await _http.GetAsync("/api/inventory");
-            resp.EnsureSuccessStatusCode();
-            var json = await resp.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(json);
-
-            // Response: { "inventory": { "slots": [...46 items...], "inventoryStart": 9, "inventoryEnd": 45 } }
-            if (!doc.RootElement.TryGetProperty("inventory", out var inv) ||
-                inv.ValueKind == JsonValueKind.Null)
-                return null;
-
-            if (!inv.TryGetProperty("slots", out var slotsEl) ||
-                slotsEl.ValueKind != JsonValueKind.Array)
-                return null;
-
-            var slots = new InventorySlotDto[36];
-            for (int i = 0; i < 36; i++)
-                slots[i] = new InventorySlotDto();
-
-            // The slots array has 46 entries (0-45). Mineflayer indices 9-44 are the
-            // 36 player inventory slots; we map them to 0-based display indices 0-35.
-            int arrIdx = 0;
-            foreach (var slot in slotsEl.EnumerateArray())
-            {
-                if (arrIdx >= 9 && arrIdx <= 44)
-                {
-                    int displayIdx = arrIdx - 9;
-                    if (slot.ValueKind != JsonValueKind.Null)
-                    {
-                        var name = slot.TryGetProperty("name", out var nameEl) ? nameEl.GetString() ?? "" : "";
-                        var count = slot.TryGetProperty("count", out var countEl) ? countEl.GetInt32() : 1;
-                        slots[displayIdx] = new InventorySlotDto { Name = name, Count = count };
-                    }
-                }
-                arrIdx++;
-                if (arrIdx > 44) break;
-            }
-
-            return slots;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[BackendClient] GetInventoryAsync failed: {ex.Message}");
-            return null;
-        }
+        catch { /* backend offline – ignore */ }
     }
 
     public void Dispose() => _http.Dispose();

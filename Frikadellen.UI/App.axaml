@@ -87,6 +87,12 @@
       <Setter Property="BorderBrush"   Value="{DynamicResource BorderSubtleBrush}" />
       <Setter Property="BorderThickness" Value="1" />
     </Style>
+    <Style Selector="Button.pill-primary:pointerover">
+      <Setter Property="Background" Value="#F0ABFC" />
+    </Style>
+    <Style Selector="Button.pill-primary:pressed">
+      <Setter Property="Background" Value="#C026D3" />
+    </Style>
 
     <Style Selector="Border.card-hover">
       <Setter Property="Background"    Value="{DynamicResource BgCardBrush}" />

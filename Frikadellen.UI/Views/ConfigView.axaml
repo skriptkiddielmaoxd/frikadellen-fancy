@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Frikadellen.UI.ViewModels"
              x:Class="Frikadellen.UI.Views.ConfigView"

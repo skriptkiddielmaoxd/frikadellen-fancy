@@ -11,6 +11,7 @@ public sealed class EventsViewModel : ViewModelBase
 {
     private readonly DispatcherTimer _mockTimer;
     private EventItem? _selectedEvent;
+    private bool _isRunning;
 
     public ObservableCollection<EventItem> Events { get; } = new();
 
