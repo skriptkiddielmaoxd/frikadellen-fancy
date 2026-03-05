@@ -47,7 +47,3 @@ jobs:
           fi
         shell: bash
 
-      - name: Warn if GH_PAT is not set
-        if: env.GH_PAT == ''
-        run: echo "GH_PAT secret not set; skipping push."
-        shell: bash
