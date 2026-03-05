@@ -105,10 +105,10 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore .NET packages
-        run: dotnet restore
+        run: dotnet restore Frikadellen.UI/Frikadellen.UI.sln
 
       - name: Build .NET solution
-        run: dotnet build -c Release --no-restore
+        run: dotnet build Frikadellen.UI/Frikadellen.UI.sln -c Release --no-restore
 
       - name: (Optional) Run .NET tests if present
         run: |
@@ -143,6 +143,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate workflow YAML files
-        uses: rhysd/actionlint@v1
-        with:
-          files: .github/workflows/*.yml
+        uses: rhysd/actionlint@v1.7.7

@@ -1,3 +1,5 @@
+name: Release
+
 on:
   release:
     types: [created]
@@ -135,8 +137,8 @@ jobs:
 
       - name: Publish Avalonia UI (Windows single-file exe)
         run: |
-          dotnet restore src/Frikadellen.UI/Frikadellen.UI.csproj
-          dotnet publish src/Frikadellen.UI/Frikadellen.UI.csproj -c Release -r win-x64 -p:SelfContained=true -p:PublishSingleFile=true -o publish/Frikadellen.UI
+          dotnet restore Frikadellen.UI/Frikadellen.UI.csproj
+          dotnet publish Frikadellen.UI/Frikadellen.UI.csproj -c Release -r win-x64 -p:SelfContained=true -p:PublishSingleFile=true -o Frikadellen.UI/publish
 
       - name: Run installer build script
         shell: pwsh
