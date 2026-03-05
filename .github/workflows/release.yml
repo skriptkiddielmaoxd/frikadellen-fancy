@@ -14,7 +14,6 @@ jobs:
     name: Build Linux binary & publish release asset
     runs-on: ubuntu-latest
     env:
-      RUSTC_WRAPPER: sccache
       RUSTFLAGS: -C codegen-units=16
     steps:
       - name: Checkout
@@ -35,10 +34,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-sccache-
 
-      - name: Install sccache
+      - name: Install sccache and enable RUSTC_WRAPPER
+        id: install_sccache
         run: |
-          cargo install sccache || true
+          set -e
+          cargo install sccache
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          sccache --version
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
         shell: bash
 
       - name: Show environment
