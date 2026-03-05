@@ -51,7 +51,7 @@ jobs:
         run: |
           set -e
           echo "Installing sccache..."
-          cargo install sccache
+          cargo install sccache --force
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           sccache --version
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
@@ -67,7 +67,7 @@ jobs:
 
       - name: Build Rust backend (release)
         run: cargo build -p frikadellen-baf-121 --release
-        
+
       - name: Run Rust tests
         run: cargo test -p frikadellen-baf-121 --all-features -- --nocapture
 
