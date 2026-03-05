@@ -1,4 +1,4 @@
-<UserControl
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Frikadellen.UI.ViewModels"
              xmlns:m="using:Frikadellen.UI.Models"
@@ -72,6 +72,7 @@
         </Animation>
       </Style.Animations>
     </Style>
+  </UserControl.Styles>
 
   <ScrollViewer HorizontalScrollBarVisibility="Disabled">
     <StackPanel Spacing="0" Margin="0,0,8,0">

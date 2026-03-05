@@ -1,5 +1,7 @@
 using System;
 using System.Windows.Input;
+using Avalonia.Threading;
+using Frikadellen.UI.Models;
 using Frikadellen.UI.Services;
 
 namespace Frikadellen.UI.ViewModels;
@@ -35,7 +37,7 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-        _backend = new BackendClient(8080);
+        _backend = new BackendClient();
         _socket  = new BackendSocket(8080);
 
         // Start with the splash screen
@@ -105,16 +107,8 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     public string StatusText
     {
-        get => _currentPhase;
-        private set
-        {
-            if (SetField(ref _currentPhase, value))
-            {
-                OnPropertyChanged(nameof(IsSplash));
-                OnPropertyChanged(nameof(IsLogin));
-                OnPropertyChanged(nameof(IsShell));
-            }
-        }
+        get => _statusText;
+        set => SetField(ref _statusText, value);
     }
 
     public string StatusChipColor => StatusText switch
@@ -212,18 +206,9 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     // ── WebSocket event handlers ──
 
-    private void OnSplashCompleted()
+    private void OnStatusReceived(StatusDto status)
     {
-        var saved = _settings.Load();
-        if (!saved.FirstRunComplete)
-        {
-            // Show the login / setup screen on first run
-            var login = new LoginViewModel(_settings, saved);
-            login.Completed += OnLoginCompleted;
-            CurrentPhase = Phase.Login;
-            CurrentView  = login;
-        }
-        else
+        Dispatcher.UIThread.Post(() =>
         {
             StatusText = status.Running ? "Running" : status.State;
             OnPropertyChanged(nameof(StatusChipColor));
@@ -235,7 +220,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         });
     }
 
-    private void OnLoginCompleted()
+    private void OnEventReceived(string kind, string message)
     {
         var avatar = kind switch
         {
@@ -267,7 +252,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         Dispatcher.UIThread.Post(() => _events?.AddEvent(evt));
     }
 
-    private void TransitionToShell()
+    private void OnFlipReceived(string item, long cost, long target, int buySpeedMs, string tag)
     {
         var flip = new FlipRecord
         {

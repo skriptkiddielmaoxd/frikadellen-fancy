@@ -93,7 +93,57 @@ public class UiSettings
     public int MaxActionsPerMinute { get; set; } = 30;
 }
 
-// ────────── Helpers ──────────
+// ────────── Toast notifications ──────────
+
+public enum ToastType { Info, Success, Warning, Error }
+
+public class ToastItem
+{
+    public string Message { get; set; } = "";
+    public ToastType Type { get; set; } = ToastType.Info;
+}
+
+// ────────── Analytics models ──────────
+
+public class AnalyticsData
+{
+    public long TotalProfit { get; set; }
+    public long AvgProfitPerFlip { get; set; }
+    public string BestFlipItem { get; set; } = "";
+    public long BestFlipProfit { get; set; }
+    public double FlipsPerHour { get; set; }
+    public double AvgBuySpeedMs { get; set; }
+    public double WinRate { get; set; }
+    public List<(string Item, int Count, long TotalProfit, long AvgProfit, long BestProfit)> TopItems { get; set; } = new();
+}
+
+public class TopItemEntry
+{
+    public int Rank { get; set; }
+    public string ItemName { get; set; } = "";
+    public int TimesFlipped { get; set; }
+    public string TotalProfitLabel { get; set; } = "";
+    public string AvgProfitLabel { get; set; } = "";
+    public string BestProfitLabel { get; set; } = "";
+    public string RankLabel => $"#{Rank}";
+}
+
+// ────────── Bazaar models ──────────
+
+public class BazaarOrder
+{
+    public string ItemName { get; set; } = "";
+    public string OrderType { get; set; } = "BUY";
+    public int Amount { get; set; }
+    public long PricePerUnit { get; set; }
+    public DateTimeOffset PlacedAt { get; set; } = DateTimeOffset.Now;
+
+    public string Status => "Active";
+    public string StatusColor => OrderType == "BUY" ? "#4ADE80" : "#FB7185";
+    public string PriceLabel => Fmt.Coins(PricePerUnit);
+    public string TimeLabel => PlacedAt.ToString("HH:mm:ss");
+}
+
 
 public static class Fmt
 {
