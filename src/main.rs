@@ -13,6 +13,7 @@ use frikadellen_fancy::{
     state::CommandQueue,
     types::Flip,
     web::{WebEventLog, WebState},
+    web::state::{FlipHistory, SessionStats},
     websocket::CoflWebSocket,
 };
 use serde_json;
@@ -229,7 +230,13 @@ async fn main() -> Result<()> {
         }
     }
 
-    let ingame_name = config.ingame_name.clone().unwrap();
+    let ingame_name = match config.ingame_name.clone() {
+        Some(name) if !name.is_empty() => name,
+        _ => {
+            tracing::error!("ingame_name is not set in config.toml — cannot start.");
+            return Ok(());
+        }
+    };
 
     info!("Configuration loaded for player: {}", ingame_name);
     info!(
@@ -326,6 +333,10 @@ async fn main() -> Result<()> {
     // ── Web event log (shared with the web GUI dashboard) ──────────
     let web_event_log = WebEventLog::new();
 
+    // ── Flip history and session stats (shared with /api/flips and /api/stats) ──
+    let web_flip_history = FlipHistory::new();
+    let web_session_stats = Arc::new(SessionStats::new());
+
     // ── UI broadcast channel (for WebSocket streaming to Avalonia UI) ──
     let (ui_broadcast_tx, _) = tokio::sync::broadcast::channel::<String>(1024);
 
@@ -417,6 +428,8 @@ async fn main() -> Result<()> {
             command_queue: command_queue.clone(),
             ws_client: ws_client.clone(),
             event_log: web_event_log.clone(),
+            flip_history: web_flip_history.clone(),
+            session_stats: web_session_stats.clone(),
             config: config.clone(),
             config_loader: Arc::new(ConfigLoader::new()),
             start_time: std::time::Instant::now(),
@@ -1885,7 +1898,7 @@ async fn main() -> Result<()> {
                     }
                 } else {
                     // Bare /cofl or /baf command - send as chat type with empty data
-                    let data_json = serde_json::to_string("").unwrap();
+                    let data_json = serde_json::to_string("").unwrap_or_else(|_| r#""""#.to_string());
                     let message = serde_json::json!({
                         "type": "chat",
                         "data": data_json
