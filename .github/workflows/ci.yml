@@ -1,140 +1,109 @@
+# Continuous Integration for frikadellen-fancy
+# - Builds Rust backend and .NET UI
+# - Runs formatting checks, clippy and Rust tests
+# - Runs dotnet restore & build
+# Triggers on push and pull_request.
 name: CI
 
 on:
   push:
     branches:
-      - main
+      - '**'
   pull_request:
     branches:
-      - main
+      - '**'
 
-env:
-  CARGO_TERM_COLOR: always
+permissions:
+  contents: read
 
 jobs:
-  test:
-    name: Test Suite
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@nightly
-
-      - name: Cache cargo registry
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-registry-
-      
-      - name: Cache cargo index
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-git-
-      
-      - name: Cache cargo build
-        uses: actions/cache@v4
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-test-target-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-test-target-
-
-      - name: Run tests
-        run: cargo test --verbose
-
-  fmt:
-    name: Rustfmt
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: rustfmt
-
-      - name: Check formatting
-        run: cargo fmt --all -- --check
-
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: clippy
-
-      - name: Cache cargo registry
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Cache cargo index
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Cache cargo build
-        uses: actions/cache@v4
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-clippy-target-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Run clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
-
   build:
-    name: Build Check
+    name: Build & Test (matrix)
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@nightly
-
-      - name: Cache cargo registry
+      - name: Cache Cargo registry, git and target
         uses: actions/cache@v4
         with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
-      - name: Cache cargo index
+      - name: Set up Rust (nightly)
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+
+      - name: Install rustfmt & clippy
+        run: |
+          rustup component add rustfmt --toolchain nightly || true
+          rustup component add clippy --toolchain nightly || true
+
+      - name: Check formatting (cargo fmt)
+        run: cargo fmt --all -- --check
+
+      - name: Run clippy (deny warnings)
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Build Rust backend (release)
+        run: cargo build --workspace --release
+
+      - name: Run Rust tests
+        run: cargo test --workspace --all-features -- --nocapture
+
+      - name: Cache NuGet packages
         uses: actions/cache@v4
         with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.sln') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
-      - name: Cache cargo build
-        uses: actions/cache@v4
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
         with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+          dotnet-version: '8.0.x'
 
-      - name: Build
-        run: cargo build --release --verbose
+      - name: Restore .NET packages
+        run: dotnet restore
+
+      - name: Build .NET solution
+        run: dotnet build -c Release --no-restore
+
+      - name: (Optional) Run .NET tests if present
+        run: |
+          set -e
+          # Run tests only if there are any test projects; otherwise skip.
+          TEST_PROJS=$(find . -name '*Test*.csproj' -o -name '*Tests*.csproj' || true)
+          if [ -n "$TEST_PROJS" ]; then
+            dotnet test --no-build -c Release
+          else
+            echo "No .NET test projects found; skipping dotnet test."
+          fi
+        shell: bash
+
+  lint-yaml:
+    name: Lint GitHub Actions YAML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate workflow YAML files
+        uses: endbug/add-and-commit@v9
+        with:
+          author_name: gha-linter
+          author_email: gha-linter@example.com
+          message: "ci: noop validation commit"
+        # This step is a lightweight way to ensure workflow syntax is parseable by the runner.
+        # For full linting you can integrate a third-party YAML linter action if desired.

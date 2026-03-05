@@ -1,75 +1,132 @@
-name: Release on tag (automatic)
-
-# Builds release artifacts for Linux, Windows and macOS when a tag like
-# `v*` is pushed, then creates a GitHub Release and uploads the artifacts.
+# Builds Windows artifacts and packages an installer, then uploads it to the GitHub Release.
+# Triggers:
+#  - release.created (when you create a Release in GitHub)
+#  - push of tags matching v* (e.g. v1.2.3)
+#  - manual workflow_dispatch
+on:
+  release:
+    types: [created]
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
 
-on:
-  push:
-    tags:
-      - 'v*'
-
 jobs:
-  build:
-    name: Build (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+  build-package-and-publish:
+    name: Build package & publish release assets
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up Rust (nightly)
+        uses: actions-rs/toolchain@v1
         with:
-          fetch-depth: 0
+          profile: minimal
+          toolchain: nightly
+          components: clippy
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
 
-      - name: Build release
+      - name: Install Inno Setup (choco)
+        run: choco install innosetup -y
+
+      - name: Show environment
+        run: |
+          dotnet --info
+          rustc --version
+          cargo --version
+
+      - name: Build Rust backend (release)
         run: cargo build --release
 
-      - name: Prepare artifact
+      - name: Publish Avalonia UI (Windows single-file exe)
         run: |
-          mkdir -p out || true
-          if [ -f target/release/frikadellen_baf ]; then cp target/release/frikadellen_baf out/frikadellen_baf-${{ matrix.os }} || true; fi
-          if [ -f target/release/frikadellen_baf.exe ]; then cp target/release/frikadellen_baf.exe out/frikadellen_baf-${{ matrix.os }}.exe || true; fi
-        shell: bash
+          dotnet restore src/Frikadellen.UI/Frikadellen.UI.csproj
+          dotnet publish src/Frikadellen.UI/Frikadellen.UI.csproj -c Release -r win-x64 -p:SelfContained=true -p:PublishSingleFile=true -o publish/Frikadellen.UI
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frikadellen-${{ matrix.os }}
-          path: out/**
+      - name: Run installer build script
+        shell: pwsh
+        run: |
+          if (Test-Path .\installer\build-installer.ps1) {
+            .\installer\build-installer.ps1
+          } else {
+            Write-Error "installer\\build-installer.ps1 not found; packaging cannot continue."
+            exit 1
+          }
 
-  publish:
-    name: Create Release and upload artifacts
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.repository == 'skriptkiddielmaoxd/frikadellen-fancy'
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: out
-
-      - name: Create GitHub Release
+      # Create a release only when the workflow was triggered by a tag push.
+      - name: Create release (when not a release event)
+        id: create_release
+        if: github.event_name != 'release'
         uses: actions/create-release@v1
         with:
           tag_name: ${{ github.ref_name }}
           release_name: ${{ github.ref_name }}
-          body: |
-            Release ${{ github.ref_name }}
-            Artifacts built for linux/windows/macos.
+          body: "Automated release for ${{ github.ref_name }}"
           draft: false
           prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload release artifacts
-        uses: softprops/action-gh-release@v1
+      # Ensure we have a numeric release id in env for the upload step:
+      - name: Set RELEASE_ID for existing release
+        if: github.event_name == 'release'
+        run: echo "RELEASE_ID=${{ github.event.release.id }}" >> $GITHUB_ENV
+
+      - name: Set RELEASE_ID for created release
+        if: github.event_name != 'release'
+        run: echo "RELEASE_ID=${{ steps.create_release.outputs.id }}" >> $GITHUB_ENV
+
+      # Upload assets to the release using the Octokit API via github-script
+      - name: Upload installer to release
+        uses: actions/github-script@v6
         with:
-          files: out/**
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Look for installer in installer/output (match what build script produces)
+            const candidateDir = path.join(process.cwd(), 'installer', 'output');
+            if (!fs.existsSync(candidateDir)) {
+              core.setFailed(`Installer output directory not found: ${candidateDir}`);
+              return;
+            }
+
+            // pick first .exe or all assets
+            const files = fs.readdirSync(candidateDir).filter(f => /\.(exe|zip|msi)$/i.test(f));
+            if (files.length === 0) {
+              core.setFailed(`No installer assets found in ${candidateDir}.`);
+              return;
+            }
+
+            const releaseId = parseInt(process.env.RELEASE_ID || '');
+            if (!releaseId) {
+              core.setFailed('RELEASE_ID not set.');
+              return;
+            }
+
+            for (const file of files) {
+              const fullPath = path.join(candidateDir, file);
+              const stat = fs.statSync(fullPath);
+              const name = `${file.replace(/\.exe$/i, '')}-${process.env.GITHUB_REF_NAME || process.env.GITHUB_REF || 'artifact'}${path.extname(file)}`;
+
+              const data = fs.readFileSync(fullPath);
+              await github.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: releaseId,
+                name: name,
+                data,
+                headers: {
+                  'content-type': 'application/octet-stream',
+                  'content-length': stat.size
+                }
+              });
+              core.info(`Uploaded ${file} as ${name}`);
+            }
