@@ -68,6 +68,10 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Run clippy (deny warnings)
+        # Clippy invokes its own driver; sccache as RUSTC_WRAPPER can break it.
+        # Unset RUSTC_WRAPPER for this step so clippy runs normally.
+        env:
+          RUSTC_WRAPPER: ""
         run: cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Build Rust backend (release)
