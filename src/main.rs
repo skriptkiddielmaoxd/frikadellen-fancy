@@ -352,14 +352,14 @@ async fn main() -> Result<()> {
             let conn_id = match conn_id_init.lock() {
                 Ok(g) => g.clone(),
                 Err(poison) => {
-                    warn!("cofl_connection_id mutex poisoned at startup webhook; recovering");
+                    eprintln!("Mutex lock failed: conn_id_init: {:?}", poison);
                     poison.into_inner().clone()
                 }
             };
             let premium = match premium_init.lock() {
                 Ok(g) => g.clone(),
                 Err(poison) => {
-                    warn!("cofl_premium mutex poisoned at startup webhook; recovering");
+                    eprintln!("Mutex lock failed: premium_init: {:?}", poison);
                     poison.into_inner().clone()
                 }
             };
@@ -608,14 +608,14 @@ async fn main() -> Result<()> {
                         let conn_id = match cofl_connection_id_events.lock() {
                             Ok(g) => g.clone(),
                             Err(poison) => {
-                                warn!("cofl_connection_id_events mutex poisoned when sending startup webhook; recovering");
+                                eprintln!("Mutex lock failed: cofl_connection_id_events: {:?}", poison);
                                 poison.into_inner().clone()
                             }
                         };
                         let premium = match cofl_premium_events.lock() {
                             Ok(g) => g.clone(),
                             Err(poison) => {
-                                warn!("cofl_premium_events mutex poisoned when sending startup webhook; recovering");
+                                eprintln!("Mutex lock failed: cofl_premium_events: {:?}", poison);
                                 poison.into_inner().clone()
                             }
                         };
@@ -641,14 +641,14 @@ async fn main() -> Result<()> {
                         let conn_id = match cofl_connection_id_events.lock() {
                             Ok(g) => g.clone(),
                             Err(poison) => {
-                                warn!("cofl_connection_id_events mutex poisoned when notifying startup-complete; recovering");
+                                eprintln!("Mutex lock failed: cofl_connection_id_events: {:?}", poison);
                                 poison.into_inner().clone()
                             }
                         };
                         let premium = match cofl_premium_events.lock() {
                             Ok(g) => g.clone(),
                             Err(poison) => {
-                                warn!("cofl_premium_events mutex poisoned when notifying startup-complete; recovering");
+                                eprintln!("Mutex lock failed: cofl_premium_events: {:?}", poison);
                                 poison.into_inner().clone()
                             }
                         };
@@ -724,9 +724,25 @@ async fn main() -> Result<()> {
                                     (None, None, item_name.clone(), None)
                                 }
                             }
-                            Err(e) => {
-                                warn!("Flip tracker lock failed at ItemPurchased: {}", e);
-                                (None, None, item_name.clone(), None)
+                            Err(poison) => {
+                                eprintln!("Mutex lock failed: flip_tracker_events (ItemPurchased): {:?}", poison);
+                                let mut tracker = poison.into_inner();
+                                if let Some(entry) = tracker.get_mut(&key) {
+                                    entry.1 = price; // actual buy price
+                                    entry.2 = Instant::now(); // purchase time
+                                    let target = entry.0.target;
+                                    let ah_fee = calculate_ah_fee(target);
+                                    let expected_profit = target as i64 - price as i64 - ah_fee as i64;
+                                    let uuid = entry.0.uuid.clone();
+                                    (
+                                        Some(target),
+                                        Some(expected_profit),
+                                        entry.0.item_name.clone(),
+                                        uuid,
+                                    )
+                                } else {
+                                    (None, None, item_name.clone(), None)
+                                }
                             }
                         }
                     };
@@ -747,14 +763,14 @@ async fn main() -> Result<()> {
                             let key =
                                 frikadellen_fancy::utils::remove_minecraft_colors(&colored_name)
                                     .to_lowercase();
-                            match flip_tracker_events.lock() {
-                                Ok(t) => t.get(&key).map(|e| e.0.tag.clone()),
-                                Err(poison) => {
-                                    warn!("flip_tracker_events mutex poisoned when reading tag; recovering");
-                                    let t = poison.into_inner();
-                                    t.get(&key).map(|e| e.0.tag.clone())
+                                match flip_tracker_events.lock() {
+                                    Ok(t) => t.get(&key).map(|e| e.0.tag.clone()),
+                                    Err(poison) => {
+                                        eprintln!("Mutex lock failed: flip_tracker_events: {:?}", poison);
+                                        let t = poison.into_inner();
+                                        t.get(&key).map(|e| e.0.tag.clone())
+                                    }
                                 }
-                            }
                         };
                         let _ = ui_tx_events.send(
                             serde_json::json!({
@@ -869,9 +885,22 @@ async fn main() -> Result<()> {
                                     (None, None, None, None)
                                 }
                             }
-                            Err(e) => {
-                                warn!("Flip tracker lock failed at ItemSold: {}", e);
-                                (None, None, None, None)
+                            Err(poison) => {
+                                eprintln!("Mutex lock failed: flip_tracker_events (ItemSold): {:?}", poison);
+                                let mut tracker = poison.into_inner();
+                                if let Some(entry) = tracker.remove(&key) {
+                                    let (flip, buy_price, purchase_time, _receive_time) = entry;
+                                    if buy_price > 0 {
+                                        let ah_fee = calculate_ah_fee(price);
+                                        let profit = price as i64 - buy_price as i64 - ah_fee as i64;
+                                        let time_secs = purchase_time.elapsed().as_secs();
+                                        (Some(profit), Some(buy_price), Some(time_secs), flip.uuid)
+                                    } else {
+                                        (None, None, None, flip.uuid)
+                                    }
+                                } else {
+                                    (None, None, None, None)
+                                }
                             }
                         }
                     };
@@ -1146,7 +1175,7 @@ async fn main() -> Result<()> {
                                 tracker.insert(key, (flip.clone(), 0, now, now));
                             }
                             Err(poison) => {
-                                warn!("flip_tracker_ws mutex poisoned when inserting flip; recovering");
+                                eprintln!("Mutex lock failed: flip_tracker_ws: {:?}", poison);
                                 let mut tracker = poison.into_inner();
                                 let now = Instant::now();
                                 tracker.insert(key, (flip.clone(), 0, now, now));
@@ -1296,7 +1325,7 @@ async fn main() -> Result<()> {
                             match cofl_connection_id_ws.lock() {
                                 Ok(mut g) => *g = Some(conn_id),
                                 Err(poison) => {
-                                    warn!("cofl_connection_id_ws poisoned when writing connection id; recovering");
+                                    eprintln!("Mutex lock failed: cofl_connection_id_ws: {:?}", poison);
                                     let mut g = poison.into_inner();
                                     *g = Some(conn_id);
                                 }
@@ -1320,7 +1349,7 @@ async fn main() -> Result<()> {
                                 match cofl_premium_ws.lock() {
                                     Ok(mut g) => *g = Some((tier, expires)),
                                     Err(poison) => {
-                                        warn!("cofl_premium_ws poisoned when writing premium info; recovering");
+                                        eprintln!("Mutex lock failed: cofl_premium_ws: {:?}", poison);
                                         let mut g = poison.into_inner();
                                         *g = Some((tier, expires));
                                     }
@@ -1465,11 +1494,14 @@ async fn main() -> Result<()> {
                                     // Look up original purchase price from flip tracker for profit display
                                     let buy_cost = {
                                         let key = item_name.to_lowercase();
-                                        let cost = flip_tracker_ws
-                                            .lock()
-                                            .ok()
-                                            .and_then(|t| t.get(&key).map(|e| e.1))
-                                            .unwrap_or(0);
+                                        let cost = match flip_tracker_ws.lock() {
+                                            Ok(t) => t.get(&key).map(|e| e.1).unwrap_or(0),
+                                            Err(poison) => {
+                                                eprintln!("Mutex lock failed: flip_tracker_ws: {:?}", poison);
+                                                let t = poison.into_inner();
+                                                t.get(&key).map(|e| e.1).unwrap_or(0)
+                                            }
+                                        };
                                         info!(
                                             "[relist] Flip tracker lookup for '{}': buy_cost={}",
                                             key, cost
