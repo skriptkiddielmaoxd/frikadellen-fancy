@@ -1,3 +1,79 @@
+  build-linux-and-publish:
+    name: Build Linux binary & publish release asset
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust (nightly)
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          components: clippy
+
+      - name: Show environment
+        run: |
+          rustc --version
+          cargo --version
+
+      - name: Build Rust backend (release)
+        run: cargo build --release
+
+      # Create a release only when the workflow was triggered by a tag push.
+      - name: Create release (when not a release event)
+        id: create_release
+        if: github.event_name != 'release'
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
+          body: "Automated release for ${{ github.ref_name }}"
+          draft: false
+          prerelease: false
+
+      # Ensure we have a numeric release id in env for the upload step:
+      - name: Set RELEASE_ID for existing release
+        if: github.event_name == 'release'
+        run: echo "RELEASE_ID=${{ github.event.release.id }}" >> $GITHUB_ENV
+
+      - name: Set RELEASE_ID for created release
+        if: github.event_name != 'release'
+        run: echo "RELEASE_ID=${{ steps.create_release.outputs.id }}" >> $GITHUB_ENV
+
+      # Upload Linux binary to release
+      - name: Upload Linux binary to release
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const binPath = path.join(process.cwd(), 'target', 'release', 'frikadellen-baf-121');
+            if (!fs.existsSync(binPath)) {
+              core.setFailed(`Linux binary not found: ${binPath}`);
+              return;
+            }
+            const releaseId = parseInt(process.env.RELEASE_ID || '');
+            if (!releaseId) {
+              core.setFailed('RELEASE_ID not set.');
+              return;
+            }
+            const stat = fs.statSync(binPath);
+            const name = `frikadellen-baf-121-${process.env.GITHUB_REF_NAME || process.env.GITHUB_REF || 'artifact'}-linux`;
+            const data = fs.readFileSync(binPath);
+            await github.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: releaseId,
+              name: name,
+              data,
+              headers: {
+                'content-type': 'application/octet-stream',
+                'content-length': stat.size
+              }
+            });
+            core.info(`Uploaded Linux binary as ${name}`);
 # Builds Windows artifacts and packages an installer, then uploads it to the GitHub Release.
 # Triggers:
 #  - release.created (when you create a Release in GitHub)
