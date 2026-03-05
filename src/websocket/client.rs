@@ -1,10 +1,10 @@
-use super::messages::{parse_message_data, inject_referral_id, ChatMessage, WebSocketMessage};
+use super::messages::{inject_referral_id, parse_message_data, ChatMessage, WebSocketMessage};
 use crate::types::{BazaarFlipRecommendation, Flip};
 use anyhow::{Context, Result};
-use futures::{stream::SplitSink, StreamExt, SinkExt};
+use futures::{stream::SplitSink, SinkExt, StreamExt};
+use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex};
 use tokio_tungstenite::{connect_async, tungstenite::Message, MaybeTlsStream, WebSocketStream};
-use std::sync::Arc;
 use tracing::{debug, error, info, warn};
 
 pub enum CoflEvent {
@@ -108,7 +108,10 @@ impl CoflWebSocket {
                             break;
                         }
                         Err(e) => {
-                            error!("[WS] Reconnection failed (retry in {}s): {}", backoff_secs, e);
+                            error!(
+                                "[WS] Reconnection failed (retry in {}s): {}",
+                                backoff_secs, e
+                            );
                             backoff_secs = (backoff_secs * 2).min(60);
                         }
                     }
@@ -135,8 +138,8 @@ impl CoflWebSocket {
 
     fn handle_message(text: &str, tx: &mpsc::UnboundedSender<CoflEvent>) -> Result<()> {
         info!("[COFL <-] {}", text);
-        let msg: WebSocketMessage = serde_json::from_str(text)
-            .context("Failed to parse WebSocket message")?;
+        let msg: WebSocketMessage =
+            serde_json::from_str(text).context("Failed to parse WebSocket message")?;
 
         info!("[COFL <-] type={} data={}", msg.msg_type, msg.data);
 
@@ -173,7 +176,7 @@ impl CoflWebSocket {
                 if let Ok(messages) = parse_message_data::<Vec<ChatMessage>>(&msg.data) {
                     for msg in messages {
                         let msg_with_ref = msg.with_referral_id();
-                        
+
                         // If there's an onClick URL with authmod, this is an authentication prompt
                         if let Some(ref on_click) = msg_with_ref.on_click {
                             if on_click.contains("sky.coflnet.com/authmod") {
@@ -181,13 +184,13 @@ impl CoflWebSocket {
                                 continue;
                             }
                         }
-                        
+
                         let _ = tx.send(CoflEvent::ChatMessage(msg_with_ref.text));
                     }
                 } else if let Ok(chat) = parse_message_data::<ChatMessage>(&msg.data) {
                     // Single chat message (common for writeToChat)
                     let msg_with_ref = chat.with_referral_id();
-                    
+
                     // Check for authentication URL
                     if let Some(ref on_click) = msg_with_ref.on_click {
                         if on_click.contains("sky.coflnet.com/authmod") {
@@ -195,7 +198,7 @@ impl CoflWebSocket {
                             return Ok(());
                         }
                     }
-                    
+
                     let _ = tx.send(CoflEvent::ChatMessage(msg_with_ref.text));
                 } else if let Ok(text) = parse_message_data::<String>(&msg.data) {
                     // Fallback: plain text string
@@ -260,7 +263,9 @@ impl CoflWebSocket {
     /// Send a message to the COFL WebSocket
     pub async fn send_message(&self, message: &str) -> Result<()> {
         let mut write = self.write.lock().await;
-        write.send(Message::Text(message.to_string())).await
+        write
+            .send(Message::Text(message.to_string()))
+            .await
             .context("Failed to send message to WebSocket")?;
         info!("[COFL ->] {}", message);
         debug!("Sent WS message ({} bytes)", message.len());
@@ -321,7 +326,10 @@ mod tests {
         assert_eq!(flip.item_name, "§dTreacherous Rod of the Sea");
         assert_eq!(flip.starting_bid, 15000000);
         assert_eq!(flip.target, 29314940);
-        assert_eq!(flip.uuid.as_deref(), Some("4f1d2446974e43dbaf644fb13cd8af62"));
+        assert_eq!(
+            flip.uuid.as_deref(),
+            Some("4f1d2446974e43dbaf644fb13cd8af62")
+        );
     }
 
     #[test]

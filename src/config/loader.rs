@@ -26,7 +26,8 @@ impl ConfigLoader {
 
         // Fallback: use executable directory so local dev runs behave the same
         match std::env::current_exe() {
-            Ok(exe_path) => exe_path.parent()
+            Ok(exe_path) => exe_path
+                .parent()
                 .map(|p| p.join("config.toml"))
                 .unwrap_or_else(|| PathBuf::from("config.toml")),
             Err(_) => PathBuf::from("config.toml"),
@@ -35,47 +36,48 @@ impl ConfigLoader {
 
     pub fn load(&self) -> Result<Config> {
         if !self.config_path.exists() {
-            info!("Config file not found, creating default config at {:?}", self.config_path);
+            info!(
+                "Config file not found, creating default config at {:?}",
+                self.config_path
+            );
             let config = Config::default();
             self.save(&config)?;
             return Ok(config);
         }
 
-        let contents = fs::read_to_string(&self.config_path)
-            .context("Failed to read config file")?;
-        
+        let contents =
+            fs::read_to_string(&self.config_path).context("Failed to read config file")?;
+
         let config = Self::parse_config(&contents)?;
-        
+
         // Merge any missing fields from defaults into the loaded config
         // (matches TypeScript initConfigHelper: "add new default values to existing config
         //  if new property was added in newer version").
         // Currently there are no programmatic merges to perform here —
         // main.rs prompts the user for any missing interactive fields (e.g. webhook_url).
-        
+
         info!("Loaded configuration from {:?}", self.config_path);
         Ok(config)
     }
 
     fn parse_config(contents: &str) -> Result<Config> {
-        let value: toml::Value = toml::from_str(contents)
-            .context("Failed to parse config file")?;
+        let value: toml::Value = toml::from_str(contents).context("Failed to parse config file")?;
 
-        value.try_into().context("Failed to deserialize config file")
+        value
+            .try_into()
+            .context("Failed to deserialize config file")
     }
 
     pub fn save(&self, config: &Config) -> Result<()> {
         // Ensure parent directory exists
         if let Some(parent) = self.config_path.parent() {
-            fs::create_dir_all(parent)
-                .context("Failed to create config directory")?;
+            fs::create_dir_all(parent).context("Failed to create config directory")?;
         }
 
-        let toml_string = toml::to_string_pretty(config)
-            .context("Failed to serialize config")?;
-        
-        fs::write(&self.config_path, toml_string)
-            .context("Failed to write config file")?;
-        
+        let toml_string = toml::to_string_pretty(config).context("Failed to serialize config")?;
+
+        fs::write(&self.config_path, toml_string).context("Failed to write config file")?;
+
         info!("Saved configuration to {:?}", self.config_path);
         Ok(())
     }
@@ -132,7 +134,8 @@ impl ConfigLoader {
             .map(|p| p.join("configs"))
             .unwrap_or_else(|| PathBuf::from("configs"));
         configs_dir.push(format!("{}.toml", name));
-        let contents = fs::read_to_string(&configs_dir).context("Failed to read named config file")?;
+        let contents =
+            fs::read_to_string(&configs_dir).context("Failed to read named config file")?;
         Self::parse_config(&contents)
     }
 
@@ -167,8 +170,8 @@ mod tests {
 
     #[test]
     fn parse_config_does_not_map_confirm_skip_to_fastbuy() {
-        let config = ConfigLoader::parse_config("confirm_skip = true")
-            .expect("config should parse");
+        let config =
+            ConfigLoader::parse_config("confirm_skip = true").expect("config should parse");
         assert!(!config.fastbuy_enabled());
 
         let config = ConfigLoader::parse_config("fastbuy = true\nconfirm_skip = false")

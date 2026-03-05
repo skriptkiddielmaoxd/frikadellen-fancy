@@ -66,7 +66,6 @@ fn format_purse(n: u64) -> String {
     }
 }
 
-
 pub async fn send_webhook_initialized(
     ingame_name: &str,
     ah_enabled: bool,
@@ -131,8 +130,16 @@ pub async fn send_webhook_startup_complete(
 ) {
     let mut description = format!(
         "Ready to accept flips!\n\nAH Flips: {}\nBazaar Flips: {}",
-        if ah_enabled { "✅ Enabled" } else { "❌ Disabled" },
-        if bazaar_enabled { "✅ Enabled" } else { "❌ Disabled" }
+        if ah_enabled {
+            "✅ Enabled"
+        } else {
+            "❌ Disabled"
+        },
+        if bazaar_enabled {
+            "✅ Enabled"
+        } else {
+            "❌ Disabled"
+        }
     );
     if let Some((tier, expires)) = premium {
         description.push_str(&format!("\n\n**Coflnet {}** expires {}", tier, expires));
@@ -186,13 +193,11 @@ pub async fn send_webhook_item_purchased(
     auction_uuid: Option<&str>,
     webhook_url: &str,
 ) {
-    let mut fields = vec![
-        serde_json::json!({
-            "name": "💰 Purchase Price",
-            "value": format!("```fix\n{} coins\n```", format_number(price as f64)),
-            "inline": true
-        }),
-    ];
+    let mut fields = vec![serde_json::json!({
+        "name": "💰 Purchase Price",
+        "value": format!("```fix\n{} coins\n```", format_number(price as f64)),
+        "inline": true
+    })];
     if let Some(t) = target {
         fields.push(serde_json::json!({
             "name": "🎯 Target Price",
@@ -349,7 +354,11 @@ pub async fn send_webhook_bazaar_order_placed(
     purse: Option<u64>,
     webhook_url: &str,
 ) {
-    let order_type = if is_buy_order { "Buy Order" } else { "Sell Offer" };
+    let order_type = if is_buy_order {
+        "Buy Order"
+    } else {
+        "Sell Offer"
+    };
     let order_emoji = if is_buy_order { "🛒" } else { "🏷️" };
     let color: u32 = if is_buy_order { 0x00cccc } else { 0xff9900 };
     let safe_item = sanitize_item_name(item_name);
@@ -406,11 +415,7 @@ pub async fn send_webhook_auction_listed(
     post_embed(webhook_url, payload).await;
 }
 
-pub async fn send_webhook_banned(
-    ingame_name: &str,
-    reason: &str,
-    webhook_url: &str,
-) {
+pub async fn send_webhook_banned(ingame_name: &str, reason: &str, webhook_url: &str) {
     let payload = serde_json::json!({
         "embeds": [{
             "title": "⛔ Bot Banned / Disconnected",

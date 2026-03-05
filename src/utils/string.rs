@@ -5,14 +5,14 @@ pub fn format_number_with_separators(n: u64) -> String {
     let s = n.to_string();
     let mut result = String::new();
     let chars: Vec<char> = s.chars().collect();
-    
+
     for (i, ch) in chars.iter().enumerate() {
         if i > 0 && (chars.len() - i) % 3 == 0 {
             result.push(',');
         }
         result.push(*ch);
     }
-    
+
     result
 }
 
@@ -21,7 +21,7 @@ pub fn format_number_with_separators(n: u64) -> String {
 pub fn remove_minecraft_colors(text: &str) -> String {
     let mut result = String::new();
     let mut chars = text.chars();
-    
+
     while let Some(ch) = chars.next() {
         if ch == '§' || ch == '┬' {
             // Skip the next character (color code)
@@ -30,7 +30,7 @@ pub fn remove_minecraft_colors(text: &str) -> String {
             result.push(ch);
         }
     }
-    
+
     result
 }
 
@@ -63,10 +63,7 @@ mod tests {
 
     #[test]
     fn test_remove_minecraft_colors() {
-        assert_eq!(
-            remove_minecraft_colors("§aGreen§r Text"),
-            "Green Text"
-        );
+        assert_eq!(remove_minecraft_colors("§aGreen§r Text"), "Green Text");
         assert_eq!(
             remove_minecraft_colors("§6Buy Item Right Now"),
             "Buy Item Right Now"

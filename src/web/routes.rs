@@ -1,14 +1,14 @@
 use axum::{
-    extract::State,
     extract::ws::{Message, WebSocket, WebSocketUpgrade},
+    extract::State,
     http::StatusCode,
     response::{Html, IntoResponse, Json},
 };
 use futures::stream::StreamExt;
 use futures::SinkExt;
 use serde::Deserialize;
-use std::sync::Arc;
 use std::sync::atomic::Ordering;
+use std::sync::Arc;
 use tracing::{error, info};
 
 use super::state::WebState;
@@ -47,8 +47,7 @@ pub async fn inventory(State(state): State<Arc<WebState>>) -> Json<serde_json::V
         .get_cached_inventory_json()
         .unwrap_or_else(|| "null".to_string());
     // inv is already a JSON string from the bot — parse it so we don't double-encode.
-    let parsed: serde_json::Value =
-        serde_json::from_str(&inv).unwrap_or(serde_json::Value::Null);
+    let parsed: serde_json::Value = serde_json::from_str(&inv).unwrap_or(serde_json::Value::Null);
     Json(serde_json::json!({ "inventory": parsed }))
 }
 
@@ -71,7 +70,9 @@ pub async fn send_command(
 ) -> Result<Json<serde_json::Value>, StatusCode> {
     let input = body.command.trim().to_string();
     if input.is_empty() {
-        return Ok(Json(serde_json::json!({ "ok": false, "error": "empty command" })));
+        return Ok(Json(
+            serde_json::json!({ "ok": false, "error": "empty command" }),
+        ));
     }
 
     let lowercase = input.to_lowercase();
@@ -81,8 +82,7 @@ pub async fn send_command(
         if parts.len() > 1 {
             let command = parts[1].to_string();
             let args = parts[2..].join(" ");
-            let data_json =
-                serde_json::to_string(&args).unwrap_or_else(|_| "\"\"".to_string());
+            let data_json = serde_json::to_string(&args).unwrap_or_else(|_| "\"\"".to_string());
             let message = serde_json::json!({
                 "type": command,
                 "data": data_json
@@ -107,8 +107,7 @@ pub async fn send_command(
         info!("Web GUI queued Minecraft command: {}", input);
     } else {
         // Non-slash → send as COFL chat
-        let data_json =
-            serde_json::to_string(&input).unwrap_or_else(|_| "\"\"".to_string());
+        let data_json = serde_json::to_string(&input).unwrap_or_else(|_| "\"\"".to_string());
         let message = serde_json::json!({
             "type": "chat",
             "data": data_json
@@ -127,22 +126,20 @@ pub async fn send_command(
 }
 
 /// `POST /api/toggle` — start or stop the script.
-pub async fn toggle_running(
-    State(state): State<Arc<WebState>>,
-) -> Json<serde_json::Value> {
+pub async fn toggle_running(State(state): State<Arc<WebState>>) -> Json<serde_json::Value> {
     let was_running = state.script_running.load(Ordering::Relaxed);
     let now_running = !was_running;
     state.script_running.store(now_running, Ordering::Relaxed);
     let label = if now_running { "started" } else { "stopped" };
     info!("Script {} via Web GUI", label);
-    state.event_log.push("system", format!("Script {} via Web GUI", label));
+    state
+        .event_log
+        .push("system", format!("Script {} via Web GUI", label));
     Json(serde_json::json!({ "running": now_running }))
 }
 
 /// `GET /api/config` — return the current config as JSON.
-pub async fn get_config(
-    State(state): State<Arc<WebState>>,
-) -> Json<serde_json::Value> {
+pub async fn get_config(State(state): State<Arc<WebState>>) -> Json<serde_json::Value> {
     match state.config_loader.load() {
         Ok(cfg) => {
             // Serialize the Config struct to a serde_json::Value
@@ -216,7 +213,9 @@ pub async fn load_named_config(
                 return Json(serde_json::json!({ "ok": false, "error": format!("{}", e) }));
             }
             info!("Loaded named config: {}", body.name);
-            state.event_log.push("system", format!("Loaded named config: {}", body.name));
+            state
+                .event_log
+                .push("system", format!("Loaded named config: {}", body.name));
             // Return the applied config to the caller so UI can update immediately.
             let val = serde_json::to_value(&cfg).unwrap_or(serde_json::Value::Null);
             Json(serde_json::json!({ "ok": true, "config": val }))
@@ -236,7 +235,9 @@ pub async fn delete_named_config(
     match state.config_loader.delete_named_config(&body.name) {
         Ok(()) => {
             info!("Deleted named config: {}", body.name);
-            state.event_log.push("system", format!("Deleted named config: {}", body.name));
+            state
+                .event_log
+                .push("system", format!("Deleted named config: {}", body.name));
             Json(serde_json::json!({ "ok": true }))
         }
         Err(e) => {
@@ -274,7 +275,9 @@ pub async fn update_config(
     match result {
         Ok(()) => {
             info!("Config updated via UI API");
-            state.event_log.push("system", "Config updated via UI".to_string());
+            state
+                .event_log
+                .push("system", "Config updated via UI".to_string());
             Json(serde_json::json!({ "ok": true }))
         }
         Err(e) => {

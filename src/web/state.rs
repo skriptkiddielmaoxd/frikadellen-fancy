@@ -1,7 +1,7 @@
 use parking_lot::RwLock;
 use std::collections::VecDeque;
-use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
+use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::broadcast;
 

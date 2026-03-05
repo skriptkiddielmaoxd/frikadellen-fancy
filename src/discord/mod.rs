@@ -94,8 +94,10 @@ fn footer(ingame_name: &str, purse: Option<u64>) -> CreateEmbedFooter {
         Some(p) => format!("BAF • {} • Purse: {} coins", ingame_name, format_purse(p)),
         None => format!("BAF • {}", ingame_name),
     };
-    CreateEmbedFooter::new(text)
-        .icon_url(format!("https://mc-heads.net/avatar/{}/32.png", ingame_name))
+    CreateEmbedFooter::new(text).icon_url(format!(
+        "https://mc-heads.net/avatar/{}/32.png",
+        ingame_name
+    ))
 }
 
 // ── Event handler ───────────────────────────────────────────────────
@@ -142,15 +144,25 @@ impl EventHandler for Handler {
                     running.store(true, Ordering::Relaxed);
                     info!("Script started via Discord by {}", msg.author.name);
                     if let Some(log) = data.get::<EventLogKey>() {
-                        log.push("system", format!("Script started via Discord ({})", msg.author.name));
+                        log.push(
+                            "system",
+                            format!("Script started via Discord ({})", msg.author.name),
+                        );
                     }
                     CreateEmbed::new()
                         .title("✅ Script Started")
-                        .description(format!("Started by **{}**\n<t:{}:R>", msg.author.name, now_unix()))
+                        .description(format!(
+                            "Started by **{}**\n<t:{}:R>",
+                            msg.author.name,
+                            now_unix()
+                        ))
                         .color(Colour::from_rgb(61, 220, 132))
                         .footer(footer(&name, None))
                 };
-                let _ = msg.channel_id.send_message(&ctx.http, CreateMessage::new().embed(embed)).await;
+                let _ = msg
+                    .channel_id
+                    .send_message(&ctx.http, CreateMessage::new().embed(embed))
+                    .await;
             }
             "!stop" => {
                 let data = ctx.data.read().await;
@@ -167,15 +179,25 @@ impl EventHandler for Handler {
                     running.store(false, Ordering::Relaxed);
                     info!("Script stopped via Discord by {}", msg.author.name);
                     if let Some(log) = data.get::<EventLogKey>() {
-                        log.push("system", format!("Script stopped via Discord ({})", msg.author.name));
+                        log.push(
+                            "system",
+                            format!("Script stopped via Discord ({})", msg.author.name),
+                        );
                     }
                     CreateEmbed::new()
                         .title("🛑 Script Stopped")
-                        .description(format!("Stopped by **{}**\n<t:{}:R>", msg.author.name, now_unix()))
+                        .description(format!(
+                            "Stopped by **{}**\n<t:{}:R>",
+                            msg.author.name,
+                            now_unix()
+                        ))
                         .color(Colour::from_rgb(255, 82, 82))
                         .footer(footer(&name, None))
                 };
-                let _ = msg.channel_id.send_message(&ctx.http, CreateMessage::new().embed(embed)).await;
+                let _ = msg
+                    .channel_id
+                    .send_message(&ctx.http, CreateMessage::new().embed(embed))
+                    .await;
             }
             "!status" => {
                 let data = ctx.data.read().await;
@@ -193,7 +215,9 @@ impl EventHandler for Handler {
                     (Colour::from_rgb(255, 82, 82), "🔴 Stopped")
                 };
 
-                let purse_str = purse.map(|p| format!("{} coins", format_purse(p))).unwrap_or_else(|| "N/A".to_string());
+                let purse_str = purse
+                    .map(|p| format!("{} coins", format_purse(p)))
+                    .unwrap_or_else(|| "N/A".to_string());
 
                 let embed = CreateEmbed::new()
                     .title("📊 BAF Status")
@@ -207,7 +231,10 @@ impl EventHandler for Handler {
                     .footer(footer(&name, purse))
                     .timestamp(serenity::model::Timestamp::now());
 
-                let _ = msg.channel_id.send_message(&ctx.http, CreateMessage::new().embed(embed)).await;
+                let _ = msg
+                    .channel_id
+                    .send_message(&ctx.http, CreateMessage::new().embed(embed))
+                    .await;
             }
             _ => {}
         }
@@ -238,8 +265,14 @@ impl DiscordNotifier {
             .send_message(&self.http, CreateMessage::new().embed(embed))
             .await
         {
-            Ok(_) => warn!("[Discord] Embed sent successfully to channel {}", self.channel_id),
-            Err(e) => warn!("[Discord] Failed to send embed to channel {}: {}", self.channel_id, e),
+            Ok(_) => warn!(
+                "[Discord] Embed sent successfully to channel {}",
+                self.channel_id
+            ),
+            Err(e) => warn!(
+                "[Discord] Failed to send embed to channel {}: {}",
+                self.channel_id, e
+            ),
         }
     }
 
@@ -249,7 +282,10 @@ impl DiscordNotifier {
     pub async fn notify_bot_online(&self) {
         let embed = CreateEmbed::new()
             .title("🟢 Bot Online")
-            .description(format!("**{}** connected and ready for notifications.", self.ingame_name))
+            .description(format!(
+                "**{}** connected and ready for notifications.",
+                self.ingame_name
+            ))
             .color(Colour::from_rgb(46, 204, 113))
             .footer(footer(&self.ingame_name, None))
             .timestamp(serenity::model::Timestamp::now());
@@ -266,8 +302,16 @@ impl DiscordNotifier {
     ) {
         let mut desc = format!(
             "Ready to accept flips!\n\nAH Flips: {}\nBazaar Flips: {}",
-            if ah_enabled { "✅ Enabled" } else { "❌ Disabled" },
-            if bazaar_enabled { "✅ Enabled" } else { "❌ Disabled" },
+            if ah_enabled {
+                "✅ Enabled"
+            } else {
+                "❌ Disabled"
+            },
+            if bazaar_enabled {
+                "✅ Enabled"
+            } else {
+                "❌ Disabled"
+            },
         );
         if let Some((tier, expires)) = premium {
             desc.push_str(&format!("\n\n**Coflnet {}** expires {}", tier, expires));
@@ -312,11 +356,19 @@ impl DiscordNotifier {
             .description(format!("**{}** • <t:{}:R>", item_name, now_unix()))
             .color(Colour::from_rgb(0, 255, 0))
             .thumbnail(format!("https://sky.coflnet.com/static/icon/{}", safe_item))
-            .field("💰 Purchase Price", format!("```fix\n{} coins\n```", format_number(price as f64)), true)
+            .field(
+                "💰 Purchase Price",
+                format!("```fix\n{} coins\n```", format_number(price as f64)),
+                true,
+            )
             .footer(footer(&self.ingame_name, purse));
 
         if let Some(t) = target {
-            embed = embed.field("🎯 Target Price", format!("```fix\n{} coins\n```", format_number(t as f64)), true);
+            embed = embed.field(
+                "🎯 Target Price",
+                format!("```fix\n{} coins\n```", format_number(t as f64)),
+                true,
+            );
         }
         if let Some(p) = profit {
             let sign = if p >= 0 { "+" } else { "" };
@@ -329,14 +381,30 @@ impl DiscordNotifier {
             } else {
                 String::new()
             };
-            embed = embed.field("📈 Expected Profit", format!("```diff\n{}{} coins{}\n```", sign, format_number(p as f64), roi_str), true);
+            embed = embed.field(
+                "📈 Expected Profit",
+                format!(
+                    "```diff\n{}{} coins{}\n```",
+                    sign,
+                    format_number(p as f64),
+                    roi_str
+                ),
+                true,
+            );
         }
         if let Some(ms) = buy_speed_ms {
             embed = embed.field("⚡ Buy Speed", format!("```\n{}ms\n```", ms), true);
         }
         if let Some(uuid) = auction_uuid {
             if !uuid.is_empty() {
-                embed = embed.field("🔗 Auction Link", format!("[View on Coflnet](https://sky.coflnet.com/auction/{}?refId=9KKPN9)", uuid), false);
+                embed = embed.field(
+                    "🔗 Auction Link",
+                    format!(
+                        "[View on Coflnet](https://sky.coflnet.com/auction/{}?refId=9KKPN9)",
+                        uuid
+                    ),
+                    false,
+                );
             }
         }
 
@@ -367,12 +435,20 @@ impl DiscordNotifier {
             .color(Colour::from_rgb(0, 153, 255))
             .thumbnail(format!("https://sky.coflnet.com/static/icon/{}", safe_item))
             .field("👤 Buyer", format!("```\n{}\n```", buyer), true)
-            .field("💵 Sale Price", format!("```fix\n{} coins\n```", format_number(price as f64)), true)
+            .field(
+                "💵 Sale Price",
+                format!("```fix\n{} coins\n```", format_number(price as f64)),
+                true,
+            )
             .footer(footer(&self.ingame_name, purse));
 
         if let Some(p) = profit {
             let sign = if p >= 0 { "+" } else { "" };
-            embed = embed.field("💰 Net Profit", format!("```diff\n{}{} coins\n```", sign, format_number(p as f64)), true);
+            embed = embed.field(
+                "💰 Net Profit",
+                format!("```diff\n{}{} coins\n```", sign, format_number(p as f64)),
+                true,
+            );
             if let Some(bp) = buy_price {
                 if bp > 0 {
                     let roi = (p as f64 / bp as f64) * 100.0;
@@ -381,11 +457,22 @@ impl DiscordNotifier {
             }
         }
         if let Some(secs) = time_to_sell_secs {
-            embed = embed.field("⏱️ Time to Sell", format!("```\n{}\n```", format_duration(secs)), true);
+            embed = embed.field(
+                "⏱️ Time to Sell",
+                format!("```\n{}\n```", format_duration(secs)),
+                true,
+            );
         }
         if let Some(uuid) = auction_uuid {
             if !uuid.is_empty() {
-                embed = embed.field("🔗 Auction Link", format!("[View on Coflnet](https://sky.coflnet.com/auction/{}?refId=9KKPN9)", uuid), false);
+                embed = embed.field(
+                    "🔗 Auction Link",
+                    format!(
+                        "[View on Coflnet](https://sky.coflnet.com/auction/{}?refId=9KKPN9)",
+                        uuid
+                    ),
+                    false,
+                );
             }
         }
 
@@ -407,8 +494,16 @@ impl DiscordNotifier {
             .description(format!("**{}** • <t:{}:R>", item_name, now_unix()))
             .color(Colour::from_rgb(230, 126, 34))
             .thumbnail(format!("https://sky.coflnet.com/static/icon/{}", safe_item))
-            .field("💵 BIN Price", format!("```fix\n{} coins\n```", format_number(starting_bid as f64)), true)
-            .field("⏳ Duration", format!("```\n{}h\n```", duration_hours), true)
+            .field(
+                "💵 BIN Price",
+                format!("```fix\n{} coins\n```", format_number(starting_bid as f64)),
+                true,
+            )
+            .field(
+                "⏳ Duration",
+                format!("```\n{}h\n```", duration_hours),
+                true,
+            )
             .field("📅 Expires", format!("<t:{}:R>", expires_unix), true)
             .footer(footer(&self.ingame_name, purse));
 
@@ -478,4 +573,3 @@ pub async fn start_discord_bot(
 
     notifier
 }
-
