@@ -1,17 +1,16 @@
+use once_cell::sync::Lazy;
 use parking_lot::RwLock;
 use regex::Regex;
 use serde_json::Value as JsonValue;
 use std::sync::Arc;
 use tracing::{debug, info};
-use once_cell::sync::Lazy;
 
 use crate::types::WindowType;
 
 // ── Static regexes (compiled once, reused on every call) ──────────────
 
-static RE_COLOR_CODES: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"§[0-9a-fk-or]").expect("RE_COLOR_CODES regex is valid")
-});
+static RE_COLOR_CODES: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"§[0-9a-fk-or]").expect("RE_COLOR_CODES regex is valid"));
 
 static RE_LORE_PRICE: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"(?:Price|Cost):\s*([0-9,\.]+)\s*([KMB])?\s*coins?")
@@ -19,8 +18,7 @@ static RE_LORE_PRICE: Lazy<Regex> = Lazy::new(|| {
 });
 
 static RE_BAZAAR_SIGN_PRICE: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"Instant-(?:Buy|Sell):\s*([0-9,\.]+)")
-        .expect("RE_BAZAAR_SIGN_PRICE regex is valid")
+    Regex::new(r"Instant-(?:Buy|Sell):\s*([0-9,\.]+)").expect("RE_BAZAAR_SIGN_PRICE regex is valid")
 });
 
 /// Event handlers for bot events

@@ -6,9 +6,8 @@ use tracing_subscriber::{
     filter::LevelFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Layer,
 };
 
-static RE_MC_COLORS: Lazy<regex::Regex> = Lazy::new(|| {
-    regex::Regex::new(r"§[0-9a-fk-or]").expect("RE_MC_COLORS regex is valid")
-});
+static RE_MC_COLORS: Lazy<regex::Regex> =
+    Lazy::new(|| regex::Regex::new(r"§[0-9a-fk-or]").expect("RE_MC_COLORS regex is valid"));
 
 pub fn init_logger() -> Result<()> {
     let logs_dir = get_logs_dir();

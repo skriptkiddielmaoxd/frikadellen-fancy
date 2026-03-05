@@ -131,7 +131,9 @@ impl EventHandler for Handler {
         match content.as_str() {
             "!start" => {
                 let data = ctx.data.read().await;
-                let Some(running) = data.get::<ScriptRunning>() else { return; };
+                let Some(running) = data.get::<ScriptRunning>() else {
+                    return;
+                };
                 let running = running.clone();
                 let name = data.get::<IngameNameKey>().cloned().unwrap_or_default();
                 let was = running.load(Ordering::Relaxed);
@@ -167,7 +169,9 @@ impl EventHandler for Handler {
             }
             "!stop" => {
                 let data = ctx.data.read().await;
-                let Some(running) = data.get::<ScriptRunning>() else { return; };
+                let Some(running) = data.get::<ScriptRunning>() else {
+                    return;
+                };
                 let running = running.clone();
                 let name = data.get::<IngameNameKey>().cloned().unwrap_or_default();
                 let was = running.load(Ordering::Relaxed);
@@ -203,10 +207,16 @@ impl EventHandler for Handler {
             }
             "!status" => {
                 let data = ctx.data.read().await;
-                let Some(running_arc) = data.get::<ScriptRunning>() else { return; };
+                let Some(running_arc) = data.get::<ScriptRunning>() else {
+                    return;
+                };
                 let running = running_arc.load(Ordering::Relaxed);
-                let Some(bot) = data.get::<BotClientKey>() else { return; };
-                let Some(queue) = data.get::<CommandQueueKey>() else { return; };
+                let Some(bot) = data.get::<BotClientKey>() else {
+                    return;
+                };
+                let Some(queue) = data.get::<CommandQueueKey>() else {
+                    return;
+                };
                 let name = data.get::<IngameNameKey>().cloned().unwrap_or_default();
                 let bot_state = format!("{:?}", bot.state());
                 let purse = bot.get_purse();

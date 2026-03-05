@@ -12,8 +12,8 @@ use frikadellen_fancy::{
     logging::{init_logger, print_mc_chat},
     state::CommandQueue,
     types::Flip,
-    web::{WebEventLog, WebState},
     web::state::{FlipHistory, SessionStats},
+    web::{WebEventLog, WebState},
     websocket::CoflWebSocket,
 };
 use serde_json;
@@ -1898,7 +1898,8 @@ async fn main() -> Result<()> {
                     }
                 } else {
                     // Bare /cofl or /baf command - send as chat type with empty data
-                    let data_json = serde_json::to_string("").unwrap_or_else(|_| r#""""#.to_string());
+                    let data_json =
+                        serde_json::to_string("").unwrap_or_else(|_| r#""""#.to_string());
                     let message = serde_json::json!({
                         "type": "chat",
                         "data": data_json

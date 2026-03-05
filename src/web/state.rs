@@ -109,29 +109,31 @@ impl FlipHistory {
 
 /// Atomic session stats (profit, flip count, win count, coins in/out).
 pub struct SessionStats {
-    pub session_profit:      AtomicI64,
-    pub total_coins_spent:   AtomicI64,
-    pub total_coins_earned:  AtomicI64,
-    pub total_flips:         AtomicU32,
-    pub win_count:           AtomicU32,
+    pub session_profit: AtomicI64,
+    pub total_coins_spent: AtomicI64,
+    pub total_coins_earned: AtomicI64,
+    pub total_flips: AtomicU32,
+    pub win_count: AtomicU32,
 }
 
 impl SessionStats {
     pub fn new() -> Self {
         Self {
-            session_profit:     AtomicI64::new(0),
-            total_coins_spent:  AtomicI64::new(0),
+            session_profit: AtomicI64::new(0),
+            total_coins_spent: AtomicI64::new(0),
             total_coins_earned: AtomicI64::new(0),
-            total_flips:        AtomicU32::new(0),
-            win_count:          AtomicU32::new(0),
+            total_flips: AtomicU32::new(0),
+            win_count: AtomicU32::new(0),
         }
     }
 
     pub fn record_flip(&self, buy_price: i64, sell_price: i64) {
         let profit = sell_price - buy_price;
         self.session_profit.fetch_add(profit, Ordering::Relaxed);
-        self.total_coins_spent.fetch_add(buy_price, Ordering::Relaxed);
-        self.total_coins_earned.fetch_add(sell_price, Ordering::Relaxed);
+        self.total_coins_spent
+            .fetch_add(buy_price, Ordering::Relaxed);
+        self.total_coins_earned
+            .fetch_add(sell_price, Ordering::Relaxed);
         self.total_flips.fetch_add(1, Ordering::Relaxed);
         if profit > 0 {
             self.win_count.fetch_add(1, Ordering::Relaxed);

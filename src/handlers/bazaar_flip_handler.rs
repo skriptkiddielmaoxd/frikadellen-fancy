@@ -25,13 +25,10 @@ use crate::utils::to_title_case;
 use once_cell::sync::Lazy;
 
 static RE_ORDER: Lazy<regex::Regex> = Lazy::new(|| {
-    regex::Regex::new(r"(\d+)x\s+([^\s]+(?:\s+[^\s]+)*?)\s+for")
-        .expect("RE_ORDER regex is valid")
+    regex::Regex::new(r"(\d+)x\s+([^\s]+(?:\s+[^\s]+)*?)\s+for").expect("RE_ORDER regex is valid")
 });
-static RE_PRICE: Lazy<regex::Regex> = Lazy::new(|| {
-    regex::Regex::new(r"for\s+([\d.]+[KkMm]?)\(")
-        .expect("RE_PRICE regex is valid")
-});
+static RE_PRICE: Lazy<regex::Regex> =
+    Lazy::new(|| regex::Regex::new(r"for\s+([\d.]+[KkMm]?)\(").expect("RE_PRICE regex is valid"));
 
 /// Configuration constants
 #[allow(dead_code)]
