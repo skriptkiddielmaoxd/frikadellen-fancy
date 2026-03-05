@@ -35,7 +35,7 @@ The core bot is written in **Rust** using [Azalea](https://github.com/azalea-rs/
 | 🤖 Discord Bot | `!start` / `!stop` / `!status` commands; rich embed notifications on flips, purchases, bans |
 | 🪝 Discord Webhook | One-way webhook for flip notifications (no bot required) |
 | 🌐 Web GUI | Real-time dashboard at `http://localhost:8080` (password-protected) |
-| 🖥️ Avalonia UI | Optional cross-platform desktop UI (prototype, mocked data) |
+| 🖥️ Avalonia UI | Optional cross-platform desktop UI |
 | ⚙️ Configurable | All behaviour controlled via a single `config.toml` file |
 
 ---
