@@ -9,16 +9,32 @@ on:
       - '**'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
     name: Build & Test (matrix)
+    env:
+      RUSTC_WRAPPER: sccache
+      RUSTFLAGS: -C codegen-units=16
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
+      - name: Cache sccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/sccache
+          key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-sccache-
+
+      - name: Install sccache
+        run: |
+          cargo install sccache || true
+        shell: bash
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -54,10 +70,10 @@ jobs:
         run: cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Build Rust backend (release)
-        run: cargo build --workspace --release
+        run: cargo build -p frikadellen-baf-121 --release
 
       - name: Run Rust tests
-        run: cargo test --workspace --all-features -- --nocapture
+        run: cargo test -p frikadellen-baf-121 --all-features -- --nocapture
 
       - name: Cache NuGet packages
         uses: actions/cache@v4

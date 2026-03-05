@@ -13,7 +13,23 @@ jobs:
   build-linux-and-publish:
     name: Build Linux binary & publish release asset
     runs-on: ubuntu-latest
+    env:
+      RUSTC_WRAPPER: sccache
+      RUSTFLAGS: -C codegen-units=16
     steps:
+      - name: Cache sccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/sccache
+          key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-sccache-
+
+      - name: Install sccache
+        run: |
+          cargo install sccache || true
+        shell: bash
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -30,7 +46,7 @@ jobs:
           cargo --version
 
       - name: Build Rust backend (release)
-        run: cargo build --release
+        run: cargo build -p frikadellen-baf-121 --release
 
       # Create a release only when the workflow was triggered by a tag push.
       - name: Create release (when not a release event)
@@ -89,7 +105,23 @@ jobs:
   build-package-and-publish:
     name: Build package & publish release assets
     runs-on: windows-latest
+    env:
+      RUSTC_WRAPPER: sccache
+      RUSTFLAGS: -C codegen-units=16
     steps:
+      - name: Cache sccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/sccache
+          key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-sccache-
+
+      - name: Install sccache
+        run: |
+          cargo install sccache || true
+        shell: bash
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -115,7 +147,7 @@ jobs:
           cargo --version
 
       - name: Build Rust backend (release)
-        run: cargo build --release
+        run: cargo build -p frikadellen-baf-121 --release
 
       - name: Publish Avalonia UI (Windows single-file exe)
         run: |
