@@ -109,32 +109,49 @@ public sealed class RustProcessLauncher : IDisposable
 
     private static string? ResolveBinaryPath()
     {
-        var binaryName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? "frikadellen_fancy.exe"
-            : "frikadellen_fancy";
+        // Try multiple possible binary names to be robust across build/artifact naming:
+        // - frikadellen-fancy (cargo default with hyphen)
+        // - frikadellen_fancy (underscore variant)
+        // - frikadellen_baf (legacy name)
+        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        var candidates = new[]
+        {
+            isWindows ? "frikadellen-fancy.exe" : "frikadellen-fancy",
+            isWindows ? "frikadellen_fancy.exe" : "frikadellen_fancy",
+            isWindows ? "frikadellen_baf.exe" : "frikadellen_baf",
+        };
+
+        // Helper to test a path for any candidate names
+        string? CheckCandidates(params string[] paths)
+        {
+            foreach (var name in candidates)
+            {
+                foreach (var p in paths)
+                {
+                    var full = Path.Combine(p, name);
+                    if (File.Exists(full)) return full;
+                }
+            }
+            return null;
+        }
 
         // 1. Next to the UI executable
         var baseDir = AppContext.BaseDirectory;
-        var candidate = Path.Combine(baseDir, binaryName);
-        if (File.Exists(candidate)) return candidate;
+        var found = CheckCandidates(baseDir);
+        if (found != null) return found;
 
-        // 2. Sibling "target/debug" (development layout)
-        //    UI runs from Frikadellen.UI/bin/Debug/net8.0/ → walk up to repo root
+        // 2. Sibling "target/debug" and "target/release" (development layout)
         var dir = new DirectoryInfo(baseDir);
         for (var i = 0; i < 6 && dir != null; i++)
         {
-            candidate = Path.Combine(dir.FullName, "target", "debug", binaryName);
-            if (File.Exists(candidate)) return candidate;
-
-            candidate = Path.Combine(dir.FullName, "target", "release", binaryName);
-            if (File.Exists(candidate)) return candidate;
-
+            found = CheckCandidates(Path.Combine(dir.FullName, "target", "debug"), Path.Combine(dir.FullName, "target", "release"));
+            if (found != null) return found;
             dir = dir.Parent;
         }
 
         // 3. Same directory the working directory points to (manual override)
-        candidate = Path.Combine(Directory.GetCurrentDirectory(), binaryName);
-        if (File.Exists(candidate)) return candidate;
+        found = CheckCandidates(Directory.GetCurrentDirectory());
+        if (found != null) return found;
 
         return null;
     }
