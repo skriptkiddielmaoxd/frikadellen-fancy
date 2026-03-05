@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace Frikadellen.UI.Services;
 
 /// <summary>
-/// Manages the lifecycle of the Rust backend process (frikadellen_baf).
+/// Manages the lifecycle of the Rust backend process (frikadellen_fancy).
 /// The binary is expected to live next to the UI executable, or in a known
 /// sibling directory.  Stdout/stderr are discarded (the UI reads everything
 /// via the HTTP+WebSocket API).
@@ -110,8 +110,8 @@ public sealed class RustProcessLauncher : IDisposable
     private static string? ResolveBinaryPath()
     {
         var binaryName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? "frikadellen_baf.exe"
-            : "frikadellen_baf";
+            ? "frikadellen_fancy.exe"
+            : "frikadellen_fancy";
 
         // 1. Next to the UI executable
         var baseDir = AppContext.BaseDirectory;
