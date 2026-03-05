@@ -1,7 +1,9 @@
 use anyhow::Result;
 use std::path::{Path, PathBuf};
 use tracing_appender::rolling::{RollingFileAppender, Rotation};
-use tracing_subscriber::{filter::LevelFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Layer};
+use tracing_subscriber::{
+    filter::LevelFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Layer,
+};
 
 pub fn init_logger() -> Result<()> {
     let logs_dir = get_logs_dir();
@@ -9,23 +11,18 @@ pub fn init_logger() -> Result<()> {
     rotate_previous_latest_log(&logs_dir)?;
 
     // Create file appender
-    let file_appender = RollingFileAppender::new(
-        Rotation::NEVER,
-        &logs_dir,
-        "latest.log",
-    );
+    let file_appender = RollingFileAppender::new(Rotation::NEVER, &logs_dir, "latest.log");
 
     // Create filter with specific rules to suppress noise
-    let filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| {
-            EnvFilter::new("info")
-                // Suppress Azalea chunk/entity/client protocol warnings (they're just noise)
-                .add_directive("azalea=error".parse().unwrap())
-                .add_directive("azalea_client=error".parse().unwrap())
-                .add_directive("azalea_protocol=error".parse().unwrap())
-                .add_directive("azalea_world=error".parse().unwrap())
-                .add_directive("azalea_entity=error".parse().unwrap())
-        });
+    let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+        EnvFilter::new("info")
+            // Suppress Azalea chunk/entity/client protocol warnings (they're just noise)
+            .add_directive("azalea=error".parse().unwrap())
+            .add_directive("azalea_client=error".parse().unwrap())
+            .add_directive("azalea_protocol=error".parse().unwrap())
+            .add_directive("azalea_world=error".parse().unwrap())
+            .add_directive("azalea_entity=error".parse().unwrap())
+    });
 
     // Set up subscriber with both console and file output
     tracing_subscriber::registry()
@@ -35,17 +32,20 @@ pub fn init_logger() -> Result<()> {
                 .with_writer(std::io::stdout)
                 .with_ansi(true)
                 .with_target(false)
-                .with_filter(LevelFilter::WARN)
+                .with_filter(LevelFilter::WARN),
         )
         .with(
             fmt::layer()
                 .with_writer(file_appender)
                 .with_ansi(false)
-                .with_target(true)
+                .with_target(true),
         )
         .init();
 
-    tracing::info!("Logger initialized, writing to {:?}", logs_dir.join("latest.log"));
+    tracing::info!(
+        "Logger initialized, writing to {:?}",
+        logs_dir.join("latest.log")
+    );
     Ok(())
 }
 
@@ -62,7 +62,8 @@ fn get_logs_dir() -> PathBuf {
 
     // Fallback: use executable directory so local dev runs behave the same
     match std::env::current_exe() {
-        Ok(exe_path) => exe_path.parent()
+        Ok(exe_path) => exe_path
+            .parent()
             .map(|p| p.join("logs"))
             .unwrap_or_else(|| PathBuf::from("logs")),
         Err(_) => PathBuf::from("logs"),
@@ -149,7 +150,7 @@ mod tests {
     fn test_mc_to_ansi() {
         let text = "§f[§4BAF§f]: §aTest";
         let ansi = mc_to_ansi(text);
-        
+
         // Should contain ANSI escape codes
         assert!(ansi.contains("\x1b["));
         // Should end with reset
@@ -170,9 +171,9 @@ mod tests {
         assert!(mc_to_ansi("§c").contains("\x1b[91m")); // Red
         assert!(mc_to_ansi("§e").contains("\x1b[93m")); // Yellow
         assert!(mc_to_ansi("§f").contains("\x1b[97m")); // White
-        
+
         // Test formatting codes
-        assert!(mc_to_ansi("§l").contains("\x1b[1m"));  // Bold
-        assert!(mc_to_ansi("§r").contains("\x1b[0m"));  // Reset
+        assert!(mc_to_ansi("§l").contains("\x1b[1m")); // Bold
+        assert!(mc_to_ansi("§r").contains("\x1b[0m")); // Reset
     }
 }

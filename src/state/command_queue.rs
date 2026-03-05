@@ -25,7 +25,12 @@ impl CommandQueue {
     }
 
     /// Add a command to the queue
-    pub fn enqueue(&self, command_type: CommandType, priority: CommandPriority, interruptible: bool) -> Uuid {
+    pub fn enqueue(
+        &self,
+        command_type: CommandType,
+        priority: CommandPriority,
+        interruptible: bool,
+    ) -> Uuid {
         let id = Uuid::new_v4();
         let cmd = QueuedCommand {
             id,
@@ -36,16 +41,19 @@ impl CommandQueue {
         };
 
         let mut queue = self.queue.write();
-        
+
         // Find insertion point based on priority
         let pos = queue
             .iter()
             .position(|c| c.priority > priority)
             .unwrap_or(queue.len());
-        
+
         queue.insert(pos, cmd);
-        
-        debug!("Enqueued command {:?} with priority {:?} at position {}", id, priority, pos);
+
+        debug!(
+            "Enqueued command {:?} with priority {:?} at position {}",
+            id, priority, pos
+        );
         id
     }
 
@@ -67,7 +75,10 @@ impl CommandQueue {
         let mut queue = self.queue.write();
         if let Some(cmd) = queue.pop_front() {
             *self.current_command.write() = Some(cmd.clone());
-            info!("Starting command {:?} (priority: {:?})", cmd.id, cmd.priority);
+            info!(
+                "Starting command {:?} (priority: {:?})",
+                cmd.id, cmd.priority
+            );
             Some(cmd)
         } else {
             None
@@ -125,7 +136,7 @@ impl CommandQueue {
         let original_len = queue.len();
         queue.retain(|cmd| {
             let age = now.duration_since(cmd.queued_at);
-            
+
             // Only remove stale bazaar commands
             if matches!(
                 cmd.command_type,

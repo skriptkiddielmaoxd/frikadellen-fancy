@@ -5,16 +5,16 @@ use serde::{Deserialize, Serialize};
 pub struct Flip {
     #[serde(rename = "itemName")]
     pub item_name: String,
-    
+
     #[serde(rename = "startingBid")]
     pub starting_bid: u64,
-    
+
     #[serde(rename = "target")]
     pub target: u64,
-    
+
     #[serde(default)]
     pub finder: Option<String>,
-    
+
     #[serde(rename = "profitPerc", default)]
     pub profit_perc: Option<f64>,
 
@@ -26,17 +26,21 @@ pub struct Flip {
         deserialize_with = "deserialize_optional_timestamp_millis"
     )]
     pub purchase_at_ms: Option<i64>,
-    
-    #[serde(default, alias = "auctionUuid", alias = "auction_uuid", alias = "auctionId", alias = "id")]
+
+    #[serde(
+        default,
+        alias = "auctionUuid",
+        alias = "auction_uuid",
+        alias = "auctionId",
+        alias = "id"
+    )]
     pub uuid: Option<String>,
 
     #[serde(default, alias = "itemTag", alias = "item_tag")]
     pub tag: Option<String>,
 }
 
-fn deserialize_optional_timestamp_millis<'de, D>(
-    deserializer: D,
-) -> Result<Option<i64>, D::Error>
+fn deserialize_optional_timestamp_millis<'de, D>(deserializer: D) -> Result<Option<i64>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
@@ -83,19 +87,24 @@ where
 pub struct BazaarFlipRecommendation {
     #[serde(rename = "itemName", alias = "item", alias = "name")]
     pub item_name: String,
-    
+
     #[serde(rename = "itemTag", default)]
     pub item_tag: Option<String>,
-    
+
     #[serde(default)]
     pub amount: u64,
-    
-    #[serde(rename = "pricePerUnit", alias = "price", alias = "unitPrice", deserialize_with = "deserialize_price")]
+
+    #[serde(
+        rename = "pricePerUnit",
+        alias = "price",
+        alias = "unitPrice",
+        deserialize_with = "deserialize_price"
+    )]
     pub price_per_unit: f64,
-    
+
     #[serde(rename = "totalPrice", default)]
     pub total_price: Option<f64>,
-    
+
     #[serde(rename = "isBuyOrder", alias = "isBuy", default)]
     pub is_buy_order: bool,
 
@@ -111,18 +120,26 @@ fn deserialize_price<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Resul
     use serde::de::Error;
     let value = serde_json::Value::deserialize(deserializer)?;
     match value {
-        serde_json::Value::Number(n) => n.as_f64().ok_or_else(|| D::Error::custom("invalid number")),
+        serde_json::Value::Number(n) => {
+            n.as_f64().ok_or_else(|| D::Error::custom("invalid number"))
+        }
         serde_json::Value::String(s) => {
             let clean: String = s.chars().filter(|&c| c != ',').collect();
-            clean.parse::<f64>().map_err(|e| D::Error::custom(format!("invalid price string: {}", e)))
+            clean
+                .parse::<f64>()
+                .map_err(|e| D::Error::custom(format!("invalid price string: {}", e)))
         }
-        other => Err(D::Error::custom(format!("expected number or string for price, got {:?}", other))),
+        other => Err(D::Error::custom(format!(
+            "expected number or string for price, got {:?}",
+            other
+        ))),
     }
 }
 
 impl BazaarFlipRecommendation {
     pub fn calculate_total_price(&self) -> f64 {
-        self.total_price.unwrap_or(self.price_per_unit * self.amount as f64)
+        self.total_price
+            .unwrap_or(self.price_per_unit * self.amount as f64)
     }
 
     /// Returns the effective buy-order flag, preferring `isSell` (negated) when
@@ -197,7 +214,16 @@ impl BotState {
     /// claiming states block commands (TypeScript: `if (bot.state)` blocks when
     /// state is non-null, which includes 'startup' and 'claiming').
     pub fn allows_commands(&self) -> bool {
-        !matches!(self, BotState::Startup | BotState::ClaimingPurchased | BotState::ClaimingSold | BotState::ManagingOrders | BotState::CheckingCookie | BotState::BuyingCookie | BotState::InstaSelling)
+        !matches!(
+            self,
+            BotState::Startup
+                | BotState::ClaimingPurchased
+                | BotState::ClaimingSold
+                | BotState::ManagingOrders
+                | BotState::CheckingCookie
+                | BotState::BuyingCookie
+                | BotState::InstaSelling
+        )
     }
 }
 
@@ -293,7 +319,8 @@ pub struct ItemStack {
 
 impl ItemStack {
     pub fn skyblock_id(&self) -> Option<String> {
-        self.nbt.as_ref()
+        self.nbt
+            .as_ref()
             .and_then(|nbt| nbt.get("ExtraAttributes"))
             .and_then(|ea| ea.get("id"))
             .and_then(|id| id.as_str())
