@@ -180,7 +180,7 @@ pub async fn save_named_config(
     let cfg_result: Result<crate::config::Config, anyhow::Error> = if let Some(val) = &body.config {
         serde_json::from_value(val.clone()).map_err(|e| anyhow::anyhow!(e.to_string()))
     } else {
-        state.config_loader.load().map_err(|e| e.into())
+        state.config_loader.load()
     };
 
     match cfg_result {

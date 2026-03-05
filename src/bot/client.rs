@@ -20,6 +20,11 @@ use crate::anti_detection::JitterProfile;
 use crate::types::{BotState, QueuedCommand};
 use crate::websocket::CoflWebSocket;
 
+/// objective_name -> (owner -> (display_text, score))
+type ScoreboardScores = Arc<RwLock<HashMap<String, HashMap<String, (String, u32)>>>>;
+/// team_name -> (prefix, suffix, members)
+type ScoreboardTeams = Arc<RwLock<HashMap<String, (String, String, Vec<String>)>>>;
+
 /// Connection wait duration (seconds) - time to wait for bot connection to establish
 const CONNECTION_WAIT_SECONDS: u64 = 2;
 
@@ -78,11 +83,11 @@ pub struct BotClient {
     /// Command receiver channel (for the event handler to receive commands)
     command_rx: Arc<tokio::sync::Mutex<mpsc::UnboundedReceiver<QueuedCommand>>>,
     /// Scoreboard scores shared with BotClientState: objective_name -> (owner -> (display_text, score))
-    scoreboard_scores: Arc<RwLock<HashMap<String, HashMap<String, (String, u32)>>>>,
+    scoreboard_scores: ScoreboardScores,
     /// Which objective is displayed in the sidebar slot (shared with BotClientState)
     sidebar_objective: Arc<RwLock<Option<String>>>,
     /// Team data for scoreboard rendering: team_name -> (prefix, suffix, members)
-    scoreboard_teams: Arc<RwLock<HashMap<String, (String, String, Vec<String>)>>>,
+    scoreboard_teams: ScoreboardTeams,
     /// Whether to use fastbuy (window-skip) when purchasing BIN auctions
     pub fastbuy: bool,
     /// Count of bazaar orders cancelled during startup order management
@@ -696,11 +701,11 @@ pub struct BotClientState {
     /// Which step of the auction creation flow we're in
     pub auction_step: Arc<RwLock<AuctionStep>>,
     /// Scoreboard scores: objective_name -> (owner -> (display_text, score))
-    pub scoreboard_scores: Arc<RwLock<HashMap<String, HashMap<String, (String, u32)>>>>,
+    pub scoreboard_scores: ScoreboardScores,
     /// Which objective is currently displayed in the sidebar slot
     pub sidebar_objective: Arc<RwLock<Option<String>>>,
     /// Team data for scoreboard rendering: team_name -> (prefix, suffix, members)
-    pub scoreboard_teams: Arc<RwLock<HashMap<String, (String, String, Vec<String>)>>>,
+    pub scoreboard_teams: ScoreboardTeams,
     /// Whether to use fastbuy (window-skip) when purchasing BIN auctions
     pub fastbuy: bool,
     /// Count of bazaar orders cancelled during startup order management (shared with run_startup_workflow)
@@ -1395,10 +1400,9 @@ async fn event_handler(bot: Client, event: Event, state: BotClientState) -> Resu
 
                     // Check if message is a SkyBlock join confirmation
                     let skyblock_detected = {
-                        if clean_message.starts_with("Welcome to Hypixel SkyBlock") {
-                            true
-                        } else if clean_message.starts_with("[Profile]")
-                            && clean_message.contains("currently")
+                        if clean_message.starts_with("Welcome to Hypixel SkyBlock")
+                            || (clean_message.starts_with("[Profile]")
+                                && clean_message.contains("currently"))
                         {
                             true
                         } else if clean_message.starts_with("[") {
@@ -2063,7 +2067,7 @@ async fn handle_window_interaction(
                         let remaining_secs = {
                             let menu = bot.menu();
                             let slots = menu.slots();
-                            slots.get(31).and_then(|s| parse_bed_remaining_secs(s))
+                            slots.get(31).and_then(parse_bed_remaining_secs)
                         };
 
                         if let Some(remaining_ms) = remaining_ms_from_purchase_at {
@@ -2857,7 +2861,7 @@ async fn handle_window_interaction(
                         info!("[Auction] Co-op AH: jumped straight to Create BIN Auction, handling as SelectBIN");
                         let player_start = *menu.player_slots_range().start();
                         let target_slot = if let Some(mj_slot) = item_slot_opt {
-                            if mj_slot >= 9 && mj_slot <= 44 {
+                            if (9..=44).contains(&mj_slot) {
                                 let offset = (mj_slot as usize) - 9;
                                 let ws = player_start + offset;
                                 if ws < slots.len() && !slots[ws].is_empty() {
@@ -2903,7 +2907,7 @@ async fn handle_window_interaction(
                         info!("[Auction] ClickCreate: jumped straight to Create BIN Auction, handling as SelectBIN");
                         let player_start = *menu.player_slots_range().start();
                         let target_slot = if let Some(mj_slot) = item_slot_opt {
-                            if mj_slot >= 9 && mj_slot <= 44 {
+                            if (9..=44).contains(&mj_slot) {
                                 let offset = (mj_slot as usize) - 9;
                                 let ws = player_start + offset;
                                 if ws < slots.len() && !slots[ws].is_empty() {
@@ -2946,7 +2950,7 @@ async fn handle_window_interaction(
                         let target_slot = if let Some(mj_slot) = item_slot_opt {
                             // TypeScript: itemSlot = data.slot - bot.inventory.inventoryStart + sellWindow.inventoryStart
                             // mineflayer inventoryStart = 9; slots 9-44 are player inventory (36 slots)
-                            if mj_slot >= 9 && mj_slot <= 44 {
+                            if (9..=44).contains(&mj_slot) {
                                 let offset = (mj_slot as usize) - 9;
                                 let ws = player_start + offset;
                                 if ws < slots.len() && !slots[ws].is_empty() {

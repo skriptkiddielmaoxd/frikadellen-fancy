@@ -457,9 +457,7 @@ impl BazaarFlipHandler {
 
         // Prefer itemTag over itemName for /bz command
         let search_term = recommendation
-            .item_tag
-            .as_ref()
-            .map(|s| s.as_str())
+            .item_tag.as_deref()
             .unwrap_or_else(|| &recommendation.item_name);
 
         let search_term_formatted = if recommendation.item_tag.is_some() {
@@ -615,11 +613,11 @@ impl BazaarFlipHandler {
 
         let mut matrix = vec![vec![0; len_a + 1]; len_b + 1];
 
-        for i in 0..=len_b {
-            matrix[i][0] = i;
+        for (i, row) in matrix.iter_mut().enumerate().take(len_b + 1) {
+            row[0] = i;
         }
-        for j in 0..=len_a {
-            matrix[0][j] = j;
+        for (j, val) in matrix[0].iter_mut().enumerate().take(len_a + 1) {
+            *val = j;
         }
 
         let a_chars: Vec<char> = a.chars().collect();

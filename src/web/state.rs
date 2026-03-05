@@ -35,6 +35,12 @@ pub struct WebEventLog {
     inner: Arc<RwLock<VecDeque<WebEvent>>>,
 }
 
+impl Default for WebEventLog {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl WebEventLog {
     pub fn new() -> Self {
         Self {
@@ -85,6 +91,12 @@ pub struct FlipHistory {
     inner: Arc<RwLock<VecDeque<FlipEntry>>>,
 }
 
+impl Default for FlipHistory {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl FlipHistory {
     pub fn new() -> Self {
         Self {
@@ -114,6 +126,12 @@ pub struct SessionStats {
     pub total_coins_earned: AtomicI64,
     pub total_flips: AtomicU32,
     pub win_count: AtomicU32,
+}
+
+impl Default for SessionStats {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl SessionStats {

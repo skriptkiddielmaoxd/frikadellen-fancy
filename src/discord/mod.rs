@@ -263,6 +263,29 @@ impl EventHandler for Handler {
 // push rich embeds into a Discord channel without touching serenity
 // internals.
 
+/// Parameters for [`DiscordNotifier::notify_item_purchased`].
+pub struct NotifyItemPurchasedParams {
+    pub item_name: String,
+    pub price: u64,
+    pub target: Option<u64>,
+    pub profit: Option<i64>,
+    pub purse: Option<u64>,
+    pub buy_speed_ms: Option<u64>,
+    pub auction_uuid: Option<String>,
+}
+
+/// Parameters for [`DiscordNotifier::notify_item_sold`].
+pub struct NotifyItemSoldParams {
+    pub item_name: String,
+    pub price: u64,
+    pub buyer: String,
+    pub profit: Option<i64>,
+    pub buy_price: Option<u64>,
+    pub time_to_sell_secs: Option<u64>,
+    pub purse: Option<u64>,
+    pub auction_uuid: Option<String>,
+}
+
 /// Cloneable handle for pushing event embeds to Discord.
 #[derive(Clone)]
 pub struct DiscordNotifier {
@@ -353,17 +376,17 @@ impl DiscordNotifier {
         self.send_embed(embed).await;
     }
 
-    pub async fn notify_item_purchased(
-        &self,
-        item_name: &str,
-        price: u64,
-        target: Option<u64>,
-        profit: Option<i64>,
-        purse: Option<u64>,
-        buy_speed_ms: Option<u64>,
-        auction_uuid: Option<&str>,
-    ) {
-        let safe_item = sanitize_item_name(item_name);
+    pub async fn notify_item_purchased(&self, params: NotifyItemPurchasedParams) {
+        let NotifyItemPurchasedParams {
+            item_name,
+            price,
+            target,
+            profit,
+            purse,
+            buy_speed_ms,
+            auction_uuid,
+        } = params;
+        let safe_item = sanitize_item_name(&item_name);
         let mut embed = CreateEmbed::new()
             .title("🛒 Item Purchased Successfully")
             .description(format!("**{}** • <t:{}:R>", item_name, now_unix()))
@@ -424,18 +447,18 @@ impl DiscordNotifier {
         self.send_embed(embed).await;
     }
 
-    pub async fn notify_item_sold(
-        &self,
-        item_name: &str,
-        price: u64,
-        buyer: &str,
-        profit: Option<i64>,
-        buy_price: Option<u64>,
-        time_to_sell_secs: Option<u64>,
-        purse: Option<u64>,
-        auction_uuid: Option<&str>,
-    ) {
-        let safe_item = sanitize_item_name(item_name);
+    pub async fn notify_item_sold(&self, params: NotifyItemSoldParams) {
+        let NotifyItemSoldParams {
+            item_name,
+            price,
+            buyer,
+            profit,
+            buy_price,
+            time_to_sell_secs,
+            purse,
+            auction_uuid,
+        } = params;
+        let safe_item = sanitize_item_name(&item_name);
         let (status_emoji, title) = match profit {
             Some(p) if p >= 0 => ("✅", "Item Sold (Profit)"),
             Some(_) => ("❌", "Item Sold (Loss)"),
