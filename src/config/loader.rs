@@ -80,6 +80,76 @@ impl ConfigLoader {
         Ok(())
     }
 
+    /// List named configs saved under the `configs/` subdirectory next to the main config.
+    pub fn list_named_configs(&self) -> Result<Vec<String>> {
+        let mut configs_dir = self
+            .config_path
+            .parent()
+            .map(|p| p.join("configs"))
+            .unwrap_or_else(|| PathBuf::from("configs"));
+
+        if !configs_dir.exists() {
+            return Ok(Vec::new());
+        }
+
+        let mut names = Vec::new();
+        for entry in fs::read_dir(&configs_dir).context("Failed to read configs dir")? {
+            let entry = entry.context("Failed to read config entry")?;
+            let path = entry.path();
+            if path.is_file() {
+                if let Some(ext) = path.extension() {
+                    if ext == "toml" {
+                        if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
+                            names.push(stem.to_string());
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(names)
+    }
+
+    /// Save the provided config as a named config (configs/<name>.toml).
+    pub fn save_named_config(&self, name: &str, config: &Config) -> Result<()> {
+        let mut configs_dir = self
+            .config_path
+            .parent()
+            .map(|p| p.join("configs"))
+            .unwrap_or_else(|| PathBuf::from("configs"));
+        fs::create_dir_all(&configs_dir).context("Failed to create configs directory")?;
+        configs_dir.push(format!("{}.toml", name));
+        let toml_string = toml::to_string_pretty(config).context("Failed to serialize config")?;
+        fs::write(&configs_dir, toml_string).context("Failed to write named config file")?;
+        Ok(())
+    }
+
+    /// Load a named config from configs/<name>.toml and return it.
+    pub fn load_named_config(&self, name: &str) -> Result<Config> {
+        let mut configs_dir = self
+            .config_path
+            .parent()
+            .map(|p| p.join("configs"))
+            .unwrap_or_else(|| PathBuf::from("configs"));
+        configs_dir.push(format!("{}.toml", name));
+        let contents = fs::read_to_string(&configs_dir).context("Failed to read named config file")?;
+        Self::parse_config(&contents)
+    }
+
+    /// Delete a named config file if it exists.
+    pub fn delete_named_config(&self, name: &str) -> Result<()> {
+        let mut configs_dir = self
+            .config_path
+            .parent()
+            .map(|p| p.join("configs"))
+            .unwrap_or_else(|| PathBuf::from("configs"));
+        configs_dir.push(format!("{}.toml", name));
+        if configs_dir.exists() {
+            fs::remove_file(&configs_dir).context("Failed to delete named config file")?;
+        }
+        Ok(())
+    }
+
     pub fn update_property<F>(&self, mut updater: F) -> Result<()>
     where
         F: FnMut(&mut Config),

@@ -156,6 +156,96 @@ pub async fn get_config(
     }
 }
 
+/// `GET /api/configs` — list saved named configs
+pub async fn list_named_configs(State(state): State<Arc<WebState>>) -> Json<serde_json::Value> {
+    match state.config_loader.list_named_configs() {
+        Ok(list) => Json(serde_json::json!({ "configs": list })),
+        Err(e) => {
+            error!("Failed to list named configs: {}", e);
+            Json(serde_json::json!({ "configs": [], "error": format!("{}", e) }))
+        }
+    }
+}
+
+#[derive(Deserialize)]
+pub struct NamedConfigBody {
+    pub name: String,
+    #[serde(default)]
+    pub config: Option<serde_json::Value>,
+}
+
+/// `POST /api/configs` — save current config under given name
+pub async fn save_named_config(
+    State(state): State<Arc<WebState>>,
+    Json(body): Json<NamedConfigBody>,
+) -> Json<serde_json::Value> {
+    // If the UI provided a config payload, use that to save; otherwise fall back to loading disk.
+    let cfg_result: Result<crate::config::Config, anyhow::Error> = if let Some(val) = &body.config {
+        serde_json::from_value(val.clone()).map_err(|e| anyhow::anyhow!(e.to_string()))
+    } else {
+        state.config_loader.load().map_err(|e| e.into())
+    };
+
+    match cfg_result {
+        Ok(cfg) => match state.config_loader.save_named_config(&body.name, &cfg) {
+            Ok(()) => {
+                info!("Saved named config: {}", body.name);
+                Json(serde_json::json!({ "ok": true }))
+            }
+            Err(e) => {
+                error!("Failed to save named config: {}", e);
+                Json(serde_json::json!({ "ok": false, "error": format!("{}", e) }))
+            }
+        },
+        Err(e) => {
+            error!("Failed to obtain config for saving: {}", e);
+            Json(serde_json::json!({ "ok": false, "error": format!("{}", e) }))
+        }
+    }
+}
+
+/// `POST /api/configs/load` — load a named config and overwrite current config
+pub async fn load_named_config(
+    State(state): State<Arc<WebState>>,
+    Json(body): Json<NamedConfigBody>,
+) -> Json<serde_json::Value> {
+    match state.config_loader.load_named_config(&body.name) {
+        Ok(cfg) => {
+            if let Err(e) = state.config_loader.save(&cfg) {
+                error!("Failed to apply named config {}: {}", body.name, e);
+                return Json(serde_json::json!({ "ok": false, "error": format!("{}", e) }));
+            }
+            info!("Loaded named config: {}", body.name);
+            state.event_log.push("system", format!("Loaded named config: {}", body.name));
+            // Return the applied config to the caller so UI can update immediately.
+            let val = serde_json::to_value(&cfg).unwrap_or(serde_json::Value::Null);
+            Json(serde_json::json!({ "ok": true, "config": val }))
+        }
+        Err(e) => {
+            error!("Failed to load named config {}: {}", body.name, e);
+            Json(serde_json::json!({ "ok": false, "error": format!("{}", e) }))
+        }
+    }
+}
+
+/// `POST /api/configs/delete` — delete a named config file
+pub async fn delete_named_config(
+    State(state): State<Arc<WebState>>,
+    Json(body): Json<NamedConfigBody>,
+) -> Json<serde_json::Value> {
+    match state.config_loader.delete_named_config(&body.name) {
+        Ok(()) => {
+            info!("Deleted named config: {}", body.name);
+            state.event_log.push("system", format!("Deleted named config: {}", body.name));
+            Json(serde_json::json!({ "ok": true }))
+        }
+        Err(e) => {
+            error!("Failed to delete named config {}: {}", body.name, e);
+            Json(serde_json::json!({ "ok": false, "error": format!("{}", e) }))
+        }
+    }
+}
+
 /// Body for `PUT /api/config`.
 #[derive(Deserialize)]
 pub struct ConfigUpdateBody {

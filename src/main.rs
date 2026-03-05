@@ -318,8 +318,13 @@ async fn main() -> Result<()> {
     
     // Connect to Hypixel - Azalea will handle Microsoft OAuth in browser
     match bot_client.connect(ingame_name.clone(), Some(ws_client.clone())).await {
-        Ok(_) => {
-            info!("Bot connection initiated successfully");
+        Ok(auth_name) => {
+            info!("Bot connection initiated successfully (user={})", auth_name);
+            // Persist the authenticated ingame name to config if missing or changed
+            if config.ingame_name.as_deref() != Some(auth_name.as_str()) {
+                config.ingame_name = Some(auth_name.clone());
+                config_loader.save(&config)?;
+            }
         }
         Err(e) => {
             warn!("Failed to connect bot: {}", e);

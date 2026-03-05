@@ -116,6 +116,80 @@ public sealed class BackendClient : IDisposable
         catch { return null; }
     }
 
+    /// <summary>GET /api/configs — list saved named configs.</summary>
+    public async Task<List<string>?> GetNamedConfigsAsync()
+    {
+        try
+        {
+            var resp = await _http.GetAsync("/api/configs");
+            resp.EnsureSuccessStatusCode();
+            var json = await resp.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+            var arr = doc.RootElement.GetProperty("configs");
+            return JsonSerializer.Deserialize<List<string>>(arr.GetRawText(), JsonOpts);
+        }
+        catch { return null; }
+    }
+
+    /// <summary>POST /api/configs — save current config under a name.</summary>
+    public async Task<bool> SaveNamedConfigAsync(string name)
+    {
+        try
+        {
+            var body = JsonSerializer.Serialize(new { name }, JsonOpts);
+            var content = new StringContent(body, Encoding.UTF8, "application/json");
+            var resp = await _http.PostAsync("/api/configs", content);
+            return resp.IsSuccessStatusCode;
+        }
+        catch { return false; }
+    }
+
+    /// <summary>POST /api/configs — save provided config under a name.</summary>
+    public async Task<bool> SaveNamedConfigAsync(string name, ConfigDto config)
+    {
+        try
+        {
+            var body = JsonSerializer.Serialize(new { name, config }, JsonOpts);
+            var content = new StringContent(body, Encoding.UTF8, "application/json");
+            var resp = await _http.PostAsync("/api/configs", content);
+            return resp.IsSuccessStatusCode;
+        }
+        catch { return false; }
+    }
+
+    /// <summary>POST /api/configs/load — load a named config and apply it.</summary>
+    public async Task<ConfigDto?> LoadNamedConfigAsync(string name)
+    {
+        try
+        {
+            var body = JsonSerializer.Serialize(new { name }, JsonOpts);
+            var content = new StringContent(body, Encoding.UTF8, "application/json");
+            var resp = await _http.PostAsync("/api/configs/load", content);
+            resp.EnsureSuccessStatusCode();
+            var json = await resp.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+            if (doc.RootElement.TryGetProperty("config", out var cfg))
+            {
+                return JsonSerializer.Deserialize<ConfigDto>(cfg.GetRawText(), JsonOpts);
+            }
+            return null;
+        }
+        catch { return null; }
+    }
+
+    /// <summary>POST /api/configs/delete — delete a named config on the backend.</summary>
+    public async Task<bool> DeleteNamedConfigAsync(string name)
+    {
+        try
+        {
+            var body = JsonSerializer.Serialize(new { name }, JsonOpts);
+            var content = new StringContent(body, Encoding.UTF8, "application/json");
+            var resp = await _http.PostAsync("/api/configs/delete", content);
+            return resp.IsSuccessStatusCode;
+        }
+        catch { return false; }
+    }
+
     public void Dispose() => _http.Dispose();
 }
 

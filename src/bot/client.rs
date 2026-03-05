@@ -200,7 +200,7 @@ impl BotClient {
     ///     bot.connect("email@example.com".to_string(), None).await.unwrap();
     /// }
     /// ```
-    pub async fn connect(&mut self, username: String, ws_client: Option<CoflWebSocket>) -> Result<()> {
+    pub async fn connect(&mut self, username: String, ws_client: Option<CoflWebSocket>) -> Result<String> {
         info!("Connecting to Hypixel as: {}", username);
         
         // Keep state at GracePeriod (matches TypeScript's initial `bot.state = 'gracePeriod'`).
@@ -215,6 +215,8 @@ impl BotClient {
             .map_err(|e| anyhow!("Failed to authenticate with Microsoft: {}", e))?;
         
         info!("Microsoft authentication successful");
+        // Capture the authenticated profile name (may differ from the provided cache_key)
+        let auth_profile_name = account.username.clone();
         
         // Create the handler state
         let handler_state = BotClientState {
@@ -290,7 +292,8 @@ impl BotClient {
         
         info!("Bot connection initiated");
         
-        Ok(())
+        // Return the authenticated profile name so callers can persist it to config
+        Ok(auth_profile_name)
     }
 
     /// Get current bot state

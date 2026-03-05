@@ -26,7 +26,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     private DashboardViewModel? _dashboard;
     private EventsViewModel? _events;
     private ConfigViewModel? _config;
-    private SettingsViewModel? _settings;
+    private NotifierViewModel? _notifier;
 
     private bool _isSidebarExpanded = true;
     private string _statusText = "Stopped";
@@ -42,7 +42,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         _dashboard = new DashboardViewModel(this, _backend, Events, Flips, ChatLog, InventorySlots);
         _events = new EventsViewModel(Events);
         _config = new ConfigViewModel(_backend);
-        _settings = new SettingsViewModel();
+        _notifier = new NotifierViewModel();
         _currentView = _dashboard;
 
         NavigateCommand = new RelayCommand(o => Navigate(o?.ToString()));
@@ -106,7 +106,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             "Events" => _events ??= new EventsViewModel(Events),
             "Config" => _config ??= new ConfigViewModel(_backend),
-            "Settings" => _settings ??= new SettingsViewModel(),
+            "Notifier" => _notifier ??= new NotifierViewModel(),
             _ => _dashboard ??= new DashboardViewModel(this, _backend, Events, Flips, ChatLog, InventorySlots)
         };
     }

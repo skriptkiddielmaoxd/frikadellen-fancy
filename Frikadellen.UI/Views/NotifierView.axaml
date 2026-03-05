@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Frikadellen.UI.ViewModels"
+             x:Class="Frikadellen.UI.Views.NotifierView"
+             x:DataType="vm:NotifierViewModel">
+
+  <StackPanel Spacing="12">
+    <TextBlock Text="Notifier" FontSize="26" FontWeight="Bold"
+               Foreground="{DynamicResource TextPrimaryDark}" />
+    <TextBlock Text="Manage local notifier credentials. Bot tokens are stored locally and are not included in shareable configs." FontSize="12" Foreground="#636E72" />
+
+    <Border Classes="card" Background="{DynamicResource CardDark}">
+      <StackPanel Spacing="8">
+        <TextBlock Text="Discord Bot Token" FontSize="13" Foreground="{DynamicResource TextPrimaryDark}" />
+        <TextBox Text="{Binding BotToken}" PasswordChar="●" CornerRadius="8" Padding="10,8" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button Classes="pill" Command="{Binding SaveTokenCommand}"><TextBlock Text="Save" /></Button>
+          <Button Classes="pill" Command="{Binding ClearTokenCommand}"><TextBlock Text="Clear" /></Button>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </StackPanel>
+</UserControl>
