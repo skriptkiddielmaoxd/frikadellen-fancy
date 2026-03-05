@@ -22,20 +22,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
-      - name: Install sccache
-        run: |
-          cargo install sccache
-        shell: bash
-
-      - name: Cache sccache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/sccache
-          key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-sccache-
-
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -63,6 +49,20 @@ jobs:
         run: |
           rustup component add rustfmt --toolchain nightly || true
           rustup component add clippy --toolchain nightly || true
+
+      - name: Cache sccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/sccache
+          key: ${{ runner.os }}-sccache-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-sccache-
+
+      - name: Install sccache
+        run: |
+          cargo install sccache || true
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        shell: bash
 
       - name: Check formatting (cargo fmt)
         run: cargo fmt --all -- --check

@@ -17,6 +17,16 @@ jobs:
       RUSTC_WRAPPER: sccache
       RUSTFLAGS: -C codegen-units=16
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust (nightly)
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          components: clippy
+
       - name: Cache sccache
         uses: actions/cache@v4
         with:
@@ -28,17 +38,8 @@ jobs:
       - name: Install sccache
         run: |
           cargo install sccache || true
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
         shell: bash
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Rust (nightly)
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          components: clippy
 
       - name: Show environment
         run: |
