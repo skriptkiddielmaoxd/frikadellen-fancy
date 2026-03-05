@@ -59,7 +59,7 @@ impl ChatMessage {
             self.hover = Some(inject_referral_id(hover));
         }
         self
-        }
+    }
 }
 
 #[cfg(test)]
