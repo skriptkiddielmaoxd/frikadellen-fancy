@@ -41,7 +41,8 @@ jobs:
       - name: Set up Rust (nightly)
         uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
+          # Use the default profile so the toolchain includes the compiler (rustc)
+          profile: default
           toolchain: nightly
           override: true
 
