@@ -19,11 +19,8 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Rust nightly
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          profile: minimal
-          toolchain: nightly
-          override: true
           components: rustfmt
 
       - name: Run rustfmt
