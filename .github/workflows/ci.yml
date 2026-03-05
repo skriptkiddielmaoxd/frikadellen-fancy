@@ -32,7 +32,7 @@ jobs:
 
       - name: Install sccache
         run: |
-          cargo install sccache || true
+          cargo install sccache
         shell: bash
 
       - name: Checkout repository
