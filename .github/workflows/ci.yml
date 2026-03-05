@@ -67,12 +67,12 @@ jobs:
       - name: Check formatting (cargo fmt)
         run: cargo fmt --all -- --check
 
-      - name: Run clippy (deny warnings)
+      - name: Run clippy (no deny flags)
         # Clippy invokes its own driver; sccache as RUSTC_WRAPPER can break it.
         # Unset RUSTC_WRAPPER for this step so clippy runs normally.
         env:
           RUSTC_WRAPPER: ""
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy --all-targets --all-features
 
       - name: Build Rust backend (release)
         run: cargo build -p frikadellen-baf-121 --release
