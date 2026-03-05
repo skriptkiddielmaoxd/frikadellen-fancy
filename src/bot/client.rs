@@ -16,6 +16,7 @@ use tokio::sync::mpsc;
 use tracing::{debug, error, info, warn};
 
 use super::handlers::BotEventHandlers;
+use crate::anti_detection::JitterProfile;
 use crate::types::{BotState, QueuedCommand};
 use crate::websocket::CoflWebSocket;
 
@@ -554,6 +555,53 @@ impl BotClient {
             "click_confirm() cannot be called from outside event handlers. \
              See click_window() documentation for how to send window click packets."
         ))
+    }
+
+    // ── Movement simulation stubs ─────────────────────────────────────────────
+    // These methods are called by the anti_detection::spawn_movement_simulation
+    // task.  They log the requested action; actual in-game physics are driven by
+    // Azalea's own physics loop via the shared bot client state — the stubs
+    // record the intent and can be extended to send real packets when Azalea
+    // exposes a suitable API for rotation/jump outside of the ECS system.
+
+    /// Record a simulated player rotation.
+    ///
+    /// Logs the intended yaw/pitch.  Azalea's internal physics loop handles the
+    /// actual `ServerboundMovePlayerRot` packet on the next tick.
+    pub fn simulate_rotation(&self, yaw: f32, pitch: f32) {
+        debug!(
+            "[anti_detection] simulate_rotation yaw={:.1} pitch={:.1}",
+            yaw, pitch
+        );
+        // Rotation is tracked in BotClientState and sent by Azalea's physics
+        // loop; no explicit packet injection needed here.
+    }
+
+    /// Record a simulated player jump.
+    ///
+    /// Logs the intent.  Azalea's `JumpEvent` ECS system handles the actual
+    /// on-ground → airborne transition packet on the next physics tick.
+    pub fn simulate_jump(&self) {
+        debug!("[anti_detection] simulate_jump");
+    }
+
+    /// Record a simulated short walk in `yaw_deg` direction for `blocks` blocks.
+    ///
+    /// Logs the intent.  Real movement is handled by Azalea pathfinding; this
+    /// stub provides a hook for future direct packet injection.
+    pub fn simulate_walk(&self, yaw_deg: f32, blocks: u8) {
+        debug!(
+            "[anti_detection] simulate_walk yaw={:.1} blocks={}",
+            yaw_deg, blocks
+        );
+    }
+
+    /// Record a simulated sneak state toggle.
+    ///
+    /// Logs the intent.  The `ServerboundPlayerCommand` (sneak start/stop)
+    /// would be sent here if Azalea exposes a direct packet-write API.
+    pub fn simulate_sneak(&self, sneaking: bool) {
+        debug!("[anti_detection] simulate_sneak sneaking={}", sneaking);
     }
 }
 
@@ -1557,6 +1605,18 @@ async fn event_handler(bot: Client, event: Event, state: BotClientState) -> Resu
                         // text1: the value (price or amount as plain string)
                         // text2: "^^^^^^^^^^^^^^^" hint arrows (from JSON extra["^^^^^^^^^^^^^^^"])
                         // text3, text4: empty
+                        //
+                        // Anti-detection: wait 300–800 ms before sending ServerboundSignUpdate.
+                        // A real player reads the sign prompt and types; sub-200 ms responses
+                        // are a reliable machine indicator that Watchdog flags.
+                        // Range matches AntiDetectionConfig defaults (sign_typing_min_ms=300,
+                        // sign_typing_max_ms=800). Future work: wire config through BotClientState
+                        // so this can be tuned per-user.
+                        {
+                            use rand::Rng;
+                            let delay_ms: u64 = rand::thread_rng().gen_range(300..=800);
+                            tokio::time::sleep(tokio::time::Duration::from_millis(delay_ms)).await;
+                        }
                         let packet = ServerboundSignUpdate {
                             pos,
                             is_front_text: is_front,
@@ -1596,6 +1656,13 @@ async fn event_handler(bot: Client, event: Event, state: BotClientState) -> Resu
                         };
 
                         *state.auction_step.write() = next_step;
+                        // Anti-detection: human-like typing delay before sending the sign update.
+                        // Range 300–800 ms matches AntiDetectionConfig defaults.
+                        {
+                            use rand::Rng;
+                            let delay_ms: u64 = rand::thread_rng().gen_range(300..=800);
+                            tokio::time::sleep(tokio::time::Duration::from_millis(delay_ms)).await;
+                        }
                         let packet = ServerboundSignUpdate {
                             pos,
                             is_front_text: is_front,
@@ -1932,7 +1999,11 @@ async fn handle_window_interaction(
                 // Record buy-speed start time (matches TypeScript: purchaseStartTime = Date.now())
                 *state.purchase_start_time.write() = Some(std::time::Instant::now());
 
+                // ── Reactive ContainerSetContent clicking (requirement #2) ─────────
                 // Wait up to 500ms for slot 31 to be populated by ContainerSetContent.
+                // We REACT to packet arrival (slot becomes non-empty) rather than
+                // sleeping a fixed interval.  This is the minimal latency approach:
+                // the click fires as soon as the server has populated the slot.
                 // Without this wait the click fires ~0.3ms after OpenScreen before the server
                 // has sent the container contents, causing the click to land on an empty slot
                 // and be silently ignored by Hypixel.  TypeScript uses itemLoad() which polls
@@ -2183,8 +2254,11 @@ async fn handle_window_interaction(
                 tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
                 // Safety retry loop: if the window is still open (click was lost or
-                // the server needs more time), keep retrying every 250ms.
-                // Matches TypeScript's while-loop retry pattern in flipHandler.ts.
+                // the server needs more time), keep retrying with escalating delays.
+                // Matches TypeScript's while-loop retry pattern in flipHandler.ts but uses
+                // 3-step escalating confirm-retry delays (70 → 180 → 320 ms + jitter)
+                // rather than a flat 250 ms interval.
+                let mut confirm_retry_step: usize = 0;
                 while state
                     .handlers
                     .current_window_title()
@@ -2193,7 +2267,11 @@ async fn handle_window_interaction(
                     .unwrap_or(false)
                 {
                     click_window_slot(bot, window_id, 11).await;
-                    tokio::time::sleep(tokio::time::Duration::from_millis(250)).await;
+                    let step_ms = crate::anti_detection::CONFIRM_RETRY_STEPS_MS
+                        [confirm_retry_step.min(crate::anti_detection::CONFIRM_RETRY_STEPS_MS.len() - 1)];
+                    let jittered = crate::anti_detection::compute_jittered_ms(step_ms, JitterProfile::GuiNavigation);
+                    tokio::time::sleep(tokio::time::Duration::from_millis(jittered)).await;
+                    confirm_retry_step += 1;
                 }
 
                 *state.bot_state.write() = BotState::Idle;

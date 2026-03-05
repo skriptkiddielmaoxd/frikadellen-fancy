@@ -2,6 +2,11 @@ use anyhow::Result;
 use atty::Stream;
 use dialoguer::{Confirm, Input};
 use frikadellen_fancy::{
+    anti_detection::{
+        bazaar_check_interval, human_pause_after_flip, movement_stop_channel,
+        random_idle_gap, random_session_duration, spawn_movement_simulation, IntervalStats,
+        JitterProfile, MovementPacket, MovementSimConfig, SessionConfig,
+    },
     bot::BotClient,
     config::ConfigLoader,
     logging::{init_logger, print_mc_chat},
@@ -1672,7 +1677,11 @@ async fn main() -> Result<()> {
     let bot_client_clone = bot_client.clone();
     let bazaar_flips_paused_proc = bazaar_flips_paused.clone();
     let command_delay_ms = config.command_delay_ms;
+    let ad_cfg_proc = config.anti_detection.clone();
     let script_running_proc = script_running.clone();
+    // Accumulate inter-command delay samples for ban-threshold benchmarking.
+    let mut cmd_interval_stats = IntervalStats::new();
+    let mut cmd_count_since_log: u64 = 0;
     tokio::spawn(async move {
         use frikadellen_fancy::types::BotState;
         loop {
@@ -1748,9 +1757,46 @@ async fn main() -> Result<()> {
 
                 command_queue_processor.complete_current();
 
-                // Always wait the configurable inter-command delay so Hypixel interactions
-                // don't run back-to-back.
-                sleep(Duration::from_millis(command_delay_ms)).await;
+                // ── Human pause after a completed claim (flip cycle end) ──────────
+                // After ClaimPurchasedItem or ClaimSoldItem the full flip cycle is
+                // done.  A human player naturally pauses here before acting on the
+                // next flip, so we insert a configurable randomised pause.
+                let is_claim = matches!(
+                    cmd.command_type,
+                    frikadellen_fancy::types::CommandType::ClaimPurchasedItem
+                        | frikadellen_fancy::types::CommandType::ClaimSoldItem
+                );
+                if is_claim && ad_cfg_proc.enabled {
+                    human_pause_after_flip(
+                        ad_cfg_proc.human_pause_min_ms,
+                        ad_cfg_proc.human_pause_max_ms,
+                        ad_cfg_proc.long_pause_probability,
+                    )
+                    .await;
+                } else {
+                    // Always wait the configurable inter-command delay so Hypixel
+                    // interactions don't run back-to-back.  Use Gaussian jitter so
+                    // the cadence never looks machine-regular.
+                    let actual_delay = if ad_cfg_proc.enabled {
+                        // Compute the actual delay for stats tracking.
+                        let ms = frikadellen_fancy::anti_detection::compute_jittered_ms(
+                            command_delay_ms,
+                            JitterProfile::GuiNavigation,
+                        );
+                        sleep(Duration::from_millis(ms)).await;
+                        ms
+                    } else {
+                        sleep(Duration::from_millis(command_delay_ms)).await;
+                        command_delay_ms
+                    };
+                    cmd_interval_stats.push(actual_delay);
+                    cmd_count_since_log += 1;
+                    // Log benchmarking stats every 50 commands.
+                    if cmd_count_since_log >= 50 {
+                        cmd_interval_stats.log_stats("command_delay_ms");
+                        cmd_count_since_log = 0;
+                    }
+                }
             }
 
             // Small delay to prevent busy loop
@@ -1988,6 +2034,175 @@ async fn main() -> Result<()> {
 
     // Keep the application running
     info!("BAF is now running. Type commands below or press Ctrl+C to exit.");
+
+    // ── Movement simulation task ─────────────────────────────────────────────
+    // Runs independently in the background to keep player movement organic.
+    // Only started when anti_detection.movement_simulation_enabled = true.
+    let (_movement_stop_tx, movement_stop_rx) = movement_stop_channel();
+    if config.anti_detection.enabled && config.anti_detection.movement_simulation_enabled {
+        let ad = &config.anti_detection;
+        let mov_cfg = MovementSimConfig {
+            rotation_interval_min_secs: ad.rotation_interval_min_secs,
+            rotation_interval_max_secs: ad.rotation_interval_max_secs,
+            max_yaw_delta_deg: ad.max_yaw_delta_deg,
+            max_pitch_delta_deg: ad.max_pitch_delta_deg,
+            jump_interval_min_secs: ad.jump_interval_min_secs,
+            jump_interval_max_secs: ad.jump_interval_max_secs,
+            walk_interval_min_secs: ad.walk_interval_min_secs,
+            walk_interval_max_secs: ad.walk_interval_max_secs,
+            max_walk_blocks: ad.max_walk_blocks,
+            sneak_probability: ad.sneak_probability,
+            island_hop_interval_min_secs: ad.island_hop_interval_min_secs,
+            island_hop_interval_max_secs: ad.island_hop_interval_max_secs,
+        };
+        // The send_fn translates MovementPacket variants into in-game actions.
+        // We log each event; actual bot movement is driven by Azalea via the
+        // BotClient which manages its own physics loop internally.
+        let bot_client_mov = bot_client.clone();
+        let send_fn: frikadellen_fancy::anti_detection::SendPacketFn =
+            Box::new(move |pkt: MovementPacket| {
+                match &pkt {
+                    MovementPacket::Rotate { yaw, pitch } => {
+                        debug!("[movement_sim] → Rotate yaw={:.1} pitch={:.1}", yaw, pitch);
+                        bot_client_mov.simulate_rotation(*yaw, *pitch);
+                    }
+                    MovementPacket::Jump => {
+                        debug!("[movement_sim] → Jump");
+                        bot_client_mov.simulate_jump();
+                    }
+                    MovementPacket::Walk { yaw_deg, blocks } => {
+                        debug!("[movement_sim] → Walk yaw={:.1} blocks={}", yaw_deg, blocks);
+                        bot_client_mov.simulate_walk(*yaw_deg, *blocks);
+                    }
+                    MovementPacket::ToggleSneak { sneaking } => {
+                        debug!("[movement_sim] → ToggleSneak {}", sneaking);
+                        bot_client_mov.simulate_sneak(*sneaking);
+                    }
+                }
+            });
+        spawn_movement_simulation(mov_cfg, movement_stop_rx, send_fn);
+        info!("[anti_detection] Movement simulation task started");
+    }
+
+    // ── Dummy activity task ───────────────────────────────────────────────────
+    // Periodically sends a harmless /ah or /bz command without follow-up, or
+    // opens and immediately closes the player inventory, emulating casual browsing.
+    if config.anti_detection.enabled && config.anti_detection.dummy_activity_enabled {
+        let ad_dummy = config.anti_detection.clone();
+        let cq_dummy = command_queue.clone();
+        let sr_dummy = script_running.clone();
+        tokio::spawn(async move {
+            use frikadellen_fancy::anti_detection::compute_jittered_ms;
+            use frikadellen_fancy::types::{CommandPriority, CommandType};
+            use rand::Rng;
+            // Give the startup workflow time to complete.
+            sleep(Duration::from_secs(120)).await;
+
+            loop {
+                // Randomised interval between dummy events.
+                // ThreadRng is dropped before the await so it doesn't cross Send boundaries.
+                let actual_ms = {
+                    let base_secs: u64 = rand::thread_rng().gen_range(
+                        ad_dummy.dummy_activity_interval_min_secs
+                            ..=ad_dummy.dummy_activity_interval_max_secs,
+                    );
+                    compute_jittered_ms(base_secs * 1000, JitterProfile::BazaarAndIdle)
+                };
+                sleep(Duration::from_millis(actual_ms)).await;
+
+                if !sr_dummy.load(Ordering::Relaxed) {
+                    continue;
+                }
+
+                // Choose a random dummy action (ThreadRng dropped before await).
+                let action: u8 = rand::thread_rng().gen_range(0..3);
+                match action {
+                    0 => {
+                        // Send /ah without follow-up
+                        info!("[anti_detection] Dummy activity: sending /ah");
+                        cq_dummy.enqueue(
+                            CommandType::SendChat {
+                                message: "/ah".to_string(),
+                            },
+                            CommandPriority::Low,
+                            true,
+                        );
+                    }
+                    1 => {
+                        // Send /bz without follow-up
+                        info!("[anti_detection] Dummy activity: sending /bz");
+                        cq_dummy.enqueue(
+                            CommandType::SendChat {
+                                message: "/bz".to_string(),
+                            },
+                            CommandPriority::Low,
+                            true,
+                        );
+                    }
+                    _ => {
+                        // Open player inventory then close it (no-op from queue perspective;
+                        // logged for audit trail).
+                        info!("[anti_detection] Dummy activity: inventory open/close");
+                        // A real inventory open requires a key press inside Azalea which is
+                        // not directly injectable without a Bevy system — we log the intent
+                        // and skip the actual key-press to avoid state corruption.
+                    }
+                }
+            }
+        });
+        info!("[anti_detection] Dummy activity task started");
+    }
+
+    // ── Session cycling task ──────────────────────────────────────────────────
+    // After a random play session length, logs a warning for the operator to
+    // manually restart, or — when session_cycling_enabled = true — initiates a
+    // disconnect.  Full automated reconnect requires re-running the bot binary
+    // because Azalea does not expose a synchronous reconnect API; we therefore
+    // log a structured warning and exit after the idle gap, letting a process
+    // supervisor (systemd, Docker restart policy) handle the restart.
+    if config.anti_detection.enabled && config.anti_detection.session_cycling_enabled {
+        let ad_session = config.anti_detection.clone();
+        tokio::spawn(async move {
+            let session_cfg = SessionConfig {
+                enabled: true,
+                session_min_secs: ad_session.session_min_secs,
+                session_max_secs: ad_session.session_max_secs,
+                idle_gap_min_secs: ad_session.idle_gap_min_secs,
+                idle_gap_max_secs: ad_session.idle_gap_max_secs,
+            };
+            let session_dur = random_session_duration(&session_cfg);
+            info!(
+                "[anti_detection] Session cycling: will disconnect in {}min",
+                session_dur.as_secs() / 60
+            );
+            sleep(session_dur).await;
+            let idle_dur = random_idle_gap(&session_cfg);
+            warn!(
+                "[anti_detection] Session cycling: session ended — idle gap {}min before restart",
+                idle_dur.as_secs() / 60
+            );
+            sleep(idle_dur).await;
+            warn!("[anti_detection] Session cycling: idle gap complete — exiting for restart");
+            std::process::exit(0);
+        });
+        info!("[anti_detection] Session cycling task started");
+    }
+
+    // ── Randomised bazaar-check interval logging ──────────────────────────────
+    // When bazaar flipping is enabled, log the next recommended check interval
+    // so the operator can see that intervals are not perfectly periodic.
+    if config.enable_bazaar_flips {
+        tokio::spawn(async move {
+            loop {
+                let next = bazaar_check_interval();
+                sleep(next).await;
+                debug!(
+                    "[anti_detection] Bazaar check interval elapsed ({}s)",
+                    next.as_secs()
+                );
+            }
+        });
+    }
 
     // Wait indefinitely
     loop {

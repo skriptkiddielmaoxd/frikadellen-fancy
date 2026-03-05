@@ -13,9 +13,9 @@ use anyhow::{anyhow, Result};
 use parking_lot::RwLock;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tokio::time::sleep;
 use tracing::{debug, error, info, warn};
 
+use crate::anti_detection::{confirm_retry_delay, jittered_delay, sign_typing_delay, JitterProfile};
 use crate::gui::{WindowHandler, WindowSlot};
 use crate::types::{BazaarFlipRecommendation, BotState};
 use crate::utils::to_title_case;
@@ -373,10 +373,15 @@ impl BazaarFlipHandler {
                     );
 
                     if attempt < MAX_ORDER_PLACEMENT_RETRIES && is_retryable_error {
+                        // Use 3-step escalating confirm-retry delays (70 → 180 → 320 ms + jitter)
+                        // rather than a flat exponential backoff.  This mimics a human who first
+                        // tries quickly, then waits a little longer on each successive failure.
+                        confirm_retry_delay(attempt - 1).await;
+                        // Additionally, wait the base backoff so the server has recovered.
                         let backoff_delay = RETRY_BACKOFF_BASE_MS * 2_u64.pow(attempt as u32 - 1);
-                        info!("Will retry after {}ms delay...", backoff_delay);
+                        info!("Retry after confirm_retry_delay + {}ms backoff", backoff_delay);
                         *bot_state.write() = BotState::Idle;
-                        sleep(Duration::from_millis(backoff_delay)).await;
+                        jittered_delay(backoff_delay, JitterProfile::BazaarAndIdle).await;
                     } else {
                         if !is_retryable_error {
                             error!("Non-retryable error, aborting: {}", error_message);
@@ -405,6 +410,20 @@ impl BazaarFlipHandler {
     /// 3. Amount selection - buy orders only
     /// 4. Price selection
     /// 5. Confirmation
+    ///
+    /// # Sign response timing (anti-detection)
+    ///
+    /// Before sending `ServerboundSignUpdate` (amount/price sign), we call
+    /// [`sign_typing_delay`] to sleep for 300–800 ms, emulating a human who
+    /// reads the sign prompt and types the value.  This is **mandatory** — a
+    /// sign response that arrives < 200 ms after the sign opens is a reliable
+    /// machine indicator.
+    ///
+    /// # Window navigation timing
+    ///
+    /// All `sleep` calls for window navigation use Gaussian jitter
+    /// ([`JitterProfile::BazaarAndIdle`]) so packet timing distributions are
+    /// bell-curved rather than flat.
     async fn place_bazaar_order<F>(
         &self,
         recommendation: &BazaarFlipRecommendation,
@@ -456,12 +475,21 @@ impl BazaarFlipHandler {
         let command = format!("/bz {}", search_term_formatted);
         send_command(&command)?;
 
+        // GUI navigation delay — use Gaussian jitter so packet timing is organic.
+        jittered_delay(300, JitterProfile::BazaarAndIdle).await;
+
+        // ── Sign response timing ────────────────────────────────────────────
+        // When the amount/price sign opens, wait 300–800 ms before sending
+        // ServerboundSignUpdate — mandatory for anti-detection.
+        // (Default config range: sign_typing_min_ms=300, sign_typing_max_ms=800)
+        sign_typing_delay(300, 800).await;
+
         // TODO: Implement actual window handling with open_window event listener
         // This would involve:
         // 1. Listening for open_window packets
         // 2. Parsing window title and slots
         // 3. Clicking through the bazaar interface steps
-        // 4. Handling sign inputs for amount and price
+        // 4. Handling sign inputs for amount and price (with sign_typing_delay before each)
         // 5. Confirming the order
 
         info!("[BazaarFlow] Window handling not yet implemented - this is a skeleton");
