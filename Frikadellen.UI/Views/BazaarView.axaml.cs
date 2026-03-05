@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace Frikadellen.UI.Views;
 
-public partial class DashboardView : UserControl
+public partial class BazaarView : UserControl
 {
-    public DashboardView()
+    public BazaarView()
     {
         InitializeComponent();
     }
