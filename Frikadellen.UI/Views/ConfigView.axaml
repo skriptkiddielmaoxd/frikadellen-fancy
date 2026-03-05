@@ -5,88 +5,51 @@
              x:DataType="vm:ConfigViewModel">
 
   <UserControl.Styles>
-    <!-- Card stagger entrance -->
     <Style Selector="Border.cfg-card-1">
       <Style.Animations>
         <Animation Duration="0:0:0.45" Delay="0:0:0.0" Easing="CubicEaseOut" FillMode="Forward">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="18" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="1" />
-            <Setter Property="TranslateTransform.Y" Value="0" />
-          </KeyFrame>
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="18" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
         </Animation>
       </Style.Animations>
     </Style>
     <Style Selector="Border.cfg-card-2">
       <Style.Animations>
         <Animation Duration="0:0:0.45" Delay="0:0:0.08" Easing="CubicEaseOut" FillMode="Forward">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="18" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="1" />
-            <Setter Property="TranslateTransform.Y" Value="0" />
-          </KeyFrame>
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="18" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
         </Animation>
       </Style.Animations>
     </Style>
     <Style Selector="Border.cfg-card-3">
       <Style.Animations>
         <Animation Duration="0:0:0.45" Delay="0:0:0.16" Easing="CubicEaseOut" FillMode="Forward">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="18" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="1" />
-            <Setter Property="TranslateTransform.Y" Value="0" />
-          </KeyFrame>
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="18" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
         </Animation>
       </Style.Animations>
     </Style>
     <Style Selector="Border.cfg-card-4">
       <Style.Animations>
         <Animation Duration="0:0:0.45" Delay="0:0:0.24" Easing="CubicEaseOut" FillMode="Forward">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="18" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="1" />
-            <Setter Property="TranslateTransform.Y" Value="0" />
-          </KeyFrame>
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="18" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
         </Animation>
       </Style.Animations>
     </Style>
     <Style Selector="Border.cfg-card-5">
       <Style.Animations>
         <Animation Duration="0:0:0.45" Delay="0:0:0.32" Easing="CubicEaseOut" FillMode="Forward">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="18" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="1" />
-            <Setter Property="TranslateTransform.Y" Value="0" />
-          </KeyFrame>
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="18" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
         </Animation>
       </Style.Animations>
     </Style>
     <Style Selector="Border.cfg-card-6">
       <Style.Animations>
         <Animation Duration="0:0:0.45" Delay="0:0:0.40" Easing="CubicEaseOut" FillMode="Forward">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="18" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="1" />
-            <Setter Property="TranslateTransform.Y" Value="0" />
-          </KeyFrame>
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="18" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
         </Animation>
       </Style.Animations>
     </Style>
@@ -95,7 +58,7 @@
   <ScrollViewer HorizontalScrollBarVisibility="Disabled">
     <StackPanel Spacing="0" Margin="0,0,8,0" MaxWidth="900">
 
-      <!-- ── PAGE HEADER ── -->
+      <!-- Page header -->
       <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,20">
         <StackPanel Grid.Column="0" Spacing="4">
           <TextBlock Text="Configuration"
@@ -110,116 +73,88 @@
           <TextBlock Text="{Binding SaveStatus}"
                      FontSize="12"
                      Foreground="{DynamicResource AccentSuccessBrush}"
-                     VerticalAlignment="Center"
-                     Opacity="0.9" />
-          <Button Classes="pill-primary"
-                  Command="{Binding SaveCommand}">
+                     VerticalAlignment="Center" Opacity="0.9" />
+          <Button Classes="pill-primary" Command="{Binding SaveCommand}">
             <StackPanel Orientation="Horizontal" Spacing="7">
-              <TextBlock Text="💾" FontSize="13" VerticalAlignment="Center" />
-              <TextBlock Text="Save" FontSize="13" FontWeight="SemiBold"
-                         VerticalAlignment="Center" />
+              <TextBlock Text="&#x1F4BE;" FontSize="13" VerticalAlignment="Center" />
+              <TextBlock Text="Save" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" />
             </StackPanel>
           </Button>
         </StackPanel>
       </Grid>
 
-      <!-- ════ FLIP TOGGLES — Two-column layout ════ -->
-      <Grid ColumnDefinitions="*,*" Margin="0,0,0,0">
+      <!-- Two-column flip toggles -->
+      <Grid ColumnDefinitions="*,*">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Card: Flip Modes -->
+        <!-- Flip Modes -->
         <Border Grid.Column="0" Grid.Row="0" Classes="card cfg-card-1"
-                Margin="0,0,8,0"
-                RenderTransformOrigin="0.5,1"
-                Opacity="0">
+                Margin="0,0,8,0" RenderTransformOrigin="0.5,1" Opacity="0">
           <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
           <StackPanel Spacing="14">
             <StackPanel Orientation="Horizontal" Spacing="10">
-              <Border Width="30" Height="30" CornerRadius="10"
-                      Background="#18E879F9"
-                      BoxShadow="0 0 8 0 #15E879F9">
-                <TextBlock Text="🎯" FontSize="14"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center" />
+              <Border Width="30" Height="30" CornerRadius="10" Background="#18E879F9">
+                <TextBlock Text="&#x1F3AF;" FontSize="14"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
-              <TextBlock Text="Flip Modes"
-                         FontSize="15" FontWeight="SemiBold"
-                         Foreground="{DynamicResource TextPrimaryBrush}"
-                         VerticalAlignment="Center" />
+              <TextBlock Text="Flip Modes" FontSize="15" FontWeight="SemiBold"
+                         Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
             </StackPanel>
             <Border Classes="divider" />
             <StackPanel Spacing="8">
-              <CheckBox IsChecked="{Binding EnableAhFlips}"
-                        Content="Enable AH Flips"
+              <CheckBox IsChecked="{Binding EnableAhFlips}" Content="Enable AH Flips"
                         Foreground="{DynamicResource TextSecondaryBrush}" />
-              <CheckBox IsChecked="{Binding EnableBazaarFlips}"
-                        Content="Enable Bazaar Flips"
+              <CheckBox IsChecked="{Binding EnableBazaarFlips}" Content="Enable Bazaar Flips"
                         Foreground="{DynamicResource TextSecondaryBrush}" />
             </StackPanel>
           </StackPanel>
         </Border>
 
-        <!-- Card: Behaviour -->
+        <!-- Behaviour -->
         <Border Grid.Column="1" Grid.Row="0" Classes="card cfg-card-2"
-                RenderTransformOrigin="0.5,1"
-                Opacity="0">
+                RenderTransformOrigin="0.5,1" Opacity="0">
           <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
           <StackPanel Spacing="14">
             <StackPanel Orientation="Horizontal" Spacing="10">
-              <Border Width="30" Height="30" CornerRadius="10"
-                      Background="#18FBBF24"
-                      BoxShadow="0 0 8 0 #15FBBF24">
-                <TextBlock Text="⚙" FontSize="14"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center" />
+              <Border Width="30" Height="30" CornerRadius="10" Background="#18FBBF24">
+                <TextBlock Text="&#x2699;" FontSize="14"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
-              <TextBlock Text="Behaviour"
-                         FontSize="15" FontWeight="SemiBold"
-                         Foreground="{DynamicResource TextPrimaryBrush}"
-                         VerticalAlignment="Center" />
+              <TextBlock Text="Behaviour" FontSize="15" FontWeight="SemiBold"
+                         Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
             </StackPanel>
             <Border Classes="divider" />
             <StackPanel Spacing="8">
-              <CheckBox IsChecked="{Binding BedSpam}"
-                        Content="Bed Spam"
+              <CheckBox IsChecked="{Binding BedSpam}" Content="Bed Spam"
                         Foreground="{DynamicResource TextSecondaryBrush}" />
-              <CheckBox IsChecked="{Binding UseCoflChat}"
-                        Content="Cofl Chat"
+              <CheckBox IsChecked="{Binding UseCoflChat}" Content="Cofl Chat"
                         Foreground="{DynamicResource TextSecondaryBrush}" />
-              <CheckBox IsChecked="{Binding Fastbuy}"
-                        Content="Fastbuy (skip confirmation)"
+              <CheckBox IsChecked="{Binding Fastbuy}" Content="Fastbuy (skip confirmation)"
                         Foreground="{DynamicResource TextSecondaryBrush}" />
             </StackPanel>
             <StackPanel Spacing="6" MaxWidth="200" HorizontalAlignment="Left">
               <TextBlock Text="AUTO COOKIE INTERVAL" Classes="section-title" />
-              <TextBox Classes="field" Text="{Binding AutoCookie}"
-                       ToolTip.Tip="0 = disabled" />
+              <TextBox Classes="field" Text="{Binding AutoCookie}" ToolTip.Tip="0 = disabled" />
             </StackPanel>
           </StackPanel>
         </Border>
 
-        <!-- Card: Timing — full width -->
+        <!-- Timing -->
         <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Classes="card cfg-card-3"
-                RenderTransformOrigin="0.5,1"
-                Opacity="0">
+                RenderTransformOrigin="0.5,1" Opacity="0">
           <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
           <StackPanel Spacing="14">
             <StackPanel Orientation="Horizontal" Spacing="10">
-              <Border Width="30" Height="30" CornerRadius="10"
-                      Background="#1822D3EE"
-                      BoxShadow="0 0 8 0 #1522D3EE">
-                <TextBlock Text="⏱" FontSize="14"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center" />
+              <Border Width="30" Height="30" CornerRadius="10" Background="#1822D3EE">
+                <TextBlock Text="&#x23F1;" FontSize="14"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
-              <TextBlock Text="Timing &amp; Delays"
-                         FontSize="15" FontWeight="SemiBold"
-                         Foreground="{DynamicResource TextPrimaryBrush}"
-                         VerticalAlignment="Center" />
+              <TextBlock Text="Timing &amp; Delays" FontSize="15" FontWeight="SemiBold"
+                         Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
             </StackPanel>
             <Border Classes="divider" />
             <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto">
@@ -251,24 +186,18 @@
           </StackPanel>
         </Border>
 
-        <!-- Card: Skip Filter — full width -->
+        <!-- Skip Filter -->
         <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" Classes="card cfg-card-4"
-                RenderTransformOrigin="0.5,1"
-                Opacity="0">
+                RenderTransformOrigin="0.5,1" Opacity="0">
           <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
           <StackPanel Spacing="14">
             <StackPanel Orientation="Horizontal" Spacing="10">
-              <Border Width="30" Height="30" CornerRadius="10"
-                      Background="#18FB7185"
-                      BoxShadow="0 0 8 0 #15FB7185">
-                <TextBlock Text="🚫" FontSize="14"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center" />
+              <Border Width="30" Height="30" CornerRadius="10" Background="#18FB7185">
+                <TextBlock Text="&#x1F6AB;" FontSize="14"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
-              <TextBlock Text="Skip Filter"
-                         FontSize="15" FontWeight="SemiBold"
-                         Foreground="{DynamicResource TextPrimaryBrush}"
-                         VerticalAlignment="Center" />
+              <TextBlock Text="Skip Filter" FontSize="15" FontWeight="SemiBold"
+                         Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
             </StackPanel>
             <Border Classes="divider" />
             <Grid ColumnDefinitions="*,*,*">
@@ -286,167 +215,100 @@
               </StackPanel>
             </Grid>
             <WrapPanel Orientation="Horizontal" Margin="0,4,0,0">
-              <CheckBox IsChecked="{Binding SkipAlways}"
-                        Content="Skip Always (pause)"
-                        Foreground="{DynamicResource TextSecondaryBrush}"
-                        Margin="0,0,28,4" />
-              <CheckBox IsChecked="{Binding SkipUserFinder}"
-                        Content="Skip User Finder"
-                        Foreground="{DynamicResource TextSecondaryBrush}"
-                        Margin="0,0,28,4" />
-              <CheckBox IsChecked="{Binding SkipSkins}"
-                        Content="Skip Skins"
+              <CheckBox IsChecked="{Binding SkipAlways}" Content="Skip Always (pause)"
+                        Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,28,4" />
+              <CheckBox IsChecked="{Binding SkipUserFinder}" Content="Skip User Finder"
+                        Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,28,4" />
+              <CheckBox IsChecked="{Binding SkipSkins}" Content="Skip Skins"
                         Foreground="{DynamicResource TextSecondaryBrush}" />
             </WrapPanel>
           </StackPanel>
         </Border>
       </Grid>
 
-      <!-- Card: Network — standalone bottom -->
+      <!-- Network -->
       <Border Classes="card cfg-card-5"
-              RenderTransformOrigin="0.5,1"
-              Opacity="0">
+              RenderTransformOrigin="0.5,1" Opacity="0">
         <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
         <StackPanel Spacing="14">
           <StackPanel Orientation="Horizontal" Spacing="10">
-            <Border Width="30" Height="30" CornerRadius="10"
-                    Background="#184ADE80"
-                    BoxShadow="0 0 8 0 #154ADE80">
-              <TextBlock Text="🌐" FontSize="14"
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center" />
+            <Border Width="30" Height="30" CornerRadius="10" Background="#184ADE80">
+              <TextBlock Text="&#x1F310;" FontSize="14"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Border>
-            <TextBlock Text="Network"
-                       FontSize="15" FontWeight="SemiBold"
-                       Foreground="{DynamicResource TextPrimaryBrush}"
-                       VerticalAlignment="Center" />
+            <TextBlock Text="Network" FontSize="15" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
           </StackPanel>
           <Border Classes="divider" />
-          <StackPanel Spacing="6">
-            <TextBlock Text="WEBHOOK URL" Classes="section-title" />
-            <TextBox Classes="field" Text="{Binding WebhookUrl}"
-                     Watermark="https://discord.com/api/webhooks/…" />
-          </StackPanel>
-          <Grid ColumnDefinitions="*,*" Margin="0,4,0,0">
+          <Grid ColumnDefinitions="*,*,*">
             <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
               <TextBlock Text="WEB GUI PORT" Classes="section-title" />
               <TextBox Classes="field" Text="{Binding WebGuiPort}" />
             </StackPanel>
-            <StackPanel Grid.Column="1" Spacing="6">
-              <TextBlock Text="PROXY (SOCKS5)" Classes="section-title" />
-              <TextBox Classes="field" Text="{Binding Proxy}"
-                       Watermark="socks5://..."
-                       IsEnabled="{Binding ProxyEnabled}" />
+            <StackPanel Grid.Column="1" Grid.ColumnSpan="2" Spacing="6">
+              <TextBlock Text="WEBHOOK URL" Classes="section-title" />
+              <TextBox Classes="field" Text="{Binding WebhookUrl}"
+                       Watermark="https://discord.com/api/webhooks/..." />
             </StackPanel>
           </Grid>
-          <CheckBox IsChecked="{Binding ProxyEnabled}"
-                    Content="Enable Proxy"
-                    Foreground="{DynamicResource TextSecondaryBrush}" />
+          <StackPanel Spacing="8">
+            <CheckBox IsChecked="{Binding ProxyEnabled}" Content="Enable Proxy"
+                      Foreground="{DynamicResource TextSecondaryBrush}" />
+            <StackPanel Spacing="6" IsVisible="{Binding ProxyEnabled}">
+              <TextBlock Text="PROXY URL" Classes="section-title" />
+              <TextBox Classes="field" Text="{Binding Proxy}"
+                       Watermark="socks5://host:port or http://host:port" />
+            </StackPanel>
+          </StackPanel>
         </StackPanel>
       </Border>
 
-      <!-- ════ ANTI-DETECTION — standalone bottom ════ -->
+      <!-- Anti-Detection -->
       <Border Classes="card cfg-card-6"
-              RenderTransformOrigin="0.5,1"
-              Opacity="0">
+              RenderTransformOrigin="0.5,1" Opacity="0">
         <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
         <StackPanel Spacing="14">
-
-          <!-- Header row with master toggle -->
-          <Grid ColumnDefinitions="Auto,*,Auto">
-            <Border Grid.Column="0" Width="30" Height="30" CornerRadius="10"
-                    Background="#18F472B6"
-                    BoxShadow="0 0 8 0 #15F472B6">
-              <TextBlock Text="🛡" FontSize="14"
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center" />
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Border Width="30" Height="30" CornerRadius="10" Background="#18FB923C">
+              <TextBlock Text="&#x1F6E1;" FontSize="14"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Border>
-            <TextBlock Grid.Column="1"
-                       Text="Anti-Detection"
-                       FontSize="15" FontWeight="SemiBold"
-                       Foreground="{DynamicResource TextPrimaryBrush}"
-                       VerticalAlignment="Center"
-                       Margin="10,0,0,0" />
-            <CheckBox Grid.Column="2"
-                      IsChecked="{Binding AntiDetectionEnabled}"
-                      Content="Enable"
-                      Foreground="{DynamicResource TextSecondaryBrush}"
-                      VerticalAlignment="Center" />
-          </Grid>
-
-          <Border Classes="divider" />
-
-          <!-- All sub-controls disabled when master toggle is off -->
-          <StackPanel Spacing="14"
-                      IsEnabled="{Binding AntiDetectionEnabled}">
-
-            <!-- Row 1: Jitter -->
-            <StackPanel Spacing="8">
-              <CheckBox IsChecked="{Binding EnableJitter}"
-                        Content="Enable Click Jitter  (randomise timing between actions)"
-                        Foreground="{DynamicResource TextSecondaryBrush}" />
-              <Grid ColumnDefinitions="*,*" IsEnabled="{Binding EnableJitter}">
-                <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
-                  <TextBlock Text="JITTER MIN (ms)" Classes="section-title" />
-                  <TextBox Classes="field" Text="{Binding JitterMinMs}" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Spacing="6">
-                  <TextBlock Text="JITTER MAX (ms)" Classes="section-title" />
-                  <TextBox Classes="field" Text="{Binding JitterMaxMs}" />
-                </StackPanel>
-              </Grid>
-            </StackPanel>
-
-            <!-- Row 2: Dummy activity -->
-            <StackPanel Spacing="8">
-              <CheckBox IsChecked="{Binding EnableDummyActivity}"
-                        Content="Enable Dummy Activity  (simulate idle player actions)"
-                        Foreground="{DynamicResource TextSecondaryBrush}" />
-              <StackPanel Spacing="6" MaxWidth="220" HorizontalAlignment="Left"
-                          IsEnabled="{Binding EnableDummyActivity}">
-                <TextBlock Text="DUMMY INTERVAL (s)" Classes="section-title" />
-                <TextBox Classes="field" Text="{Binding DummyActivityIntervalSeconds}" />
-              </StackPanel>
-            </StackPanel>
-
-            <!-- Row 3: Humanisation -->
-            <StackPanel Spacing="8">
-              <CheckBox IsChecked="{Binding EnableHumanization}"
-                        Content="Enable Humanisation  (vary timings to mimic real player)"
-                        Foreground="{DynamicResource TextSecondaryBrush}" />
-              <StackPanel Spacing="6" IsEnabled="{Binding EnableHumanization}">
-                <Grid ColumnDefinitions="*,Auto">
-                  <TextBlock Grid.Column="0" Text="HUMANISATION STRENGTH" Classes="section-title" />
-                  <TextBlock Grid.Column="1"
-                             Text="{Binding HumanizationStrengthPercent, StringFormat='{}{0}%'}"
-                             Classes="section-title"
-                             Foreground="{DynamicResource AccentPrimaryBrush}"
-                             Margin="0" />
-                </Grid>
-                <Slider Minimum="0" Maximum="1" TickFrequency="0.01"
-                        IsSnapToTickEnabled="True"
-                        Value="{Binding HumanizationStrength}" />
-              </StackPanel>
-            </StackPanel>
-
-            <!-- Row 4: Misc toggles + rate limit -->
-            <WrapPanel Orientation="Horizontal" Margin="0,4,0,0">
-              <CheckBox IsChecked="{Binding RandomizeClickPosition}"
-                        Content="Randomise Click Position"
-                        Foreground="{DynamicResource TextSecondaryBrush}"
-                        Margin="0,0,28,4" />
-              <CheckBox IsChecked="{Binding EnableFakeMovement}"
-                        Content="Fake Player Movement"
-                        Foreground="{DynamicResource TextSecondaryBrush}"
-                        Margin="0,0,28,4" />
-            </WrapPanel>
-            <StackPanel Spacing="6" MaxWidth="220" HorizontalAlignment="Left">
-              <TextBlock Text="MAX ACTIONS / MINUTE" Classes="section-title" />
-              <TextBox Classes="field" Text="{Binding MaxActionsPerMinute}"
-                       ToolTip.Tip="Rate-cap sent to the Rust backend (0 = unlimited)" />
-            </StackPanel>
-
+            <TextBlock Text="Anti-Detection" FontSize="15" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
           </StackPanel>
+          <Border Classes="divider" />
+          <WrapPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <CheckBox IsChecked="{Binding AntiDetectionEnabled}" Content="Enable Anti-Detection"
+                      Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,24,4" />
+            <CheckBox IsChecked="{Binding EnableJitter}" Content="Timing Jitter"
+                      Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,24,4" />
+            <CheckBox IsChecked="{Binding EnableHumanization}" Content="Humanization"
+                      Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,24,4" />
+            <CheckBox IsChecked="{Binding RandomizeClickPosition}" Content="Randomize Clicks"
+                      Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,24,4" />
+            <CheckBox IsChecked="{Binding EnableFakeMovement}" Content="Fake Movement"
+                      Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,24,4" />
+            <CheckBox IsChecked="{Binding EnableDummyActivity}" Content="Dummy Activity"
+                      Foreground="{DynamicResource TextSecondaryBrush}" />
+          </WrapPanel>
+          <Grid ColumnDefinitions="*,*,*,*">
+            <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
+              <TextBlock Text="JITTER MIN (ms)" Classes="section-title" />
+              <TextBox Classes="field" Text="{Binding JitterMinMs}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="6" Margin="0,0,12,0">
+              <TextBlock Text="JITTER MAX (ms)" Classes="section-title" />
+              <TextBox Classes="field" Text="{Binding JitterMaxMs}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Spacing="6" Margin="0,0,12,0">
+              <TextBlock Text="MAX ACTIONS/MIN" Classes="section-title" />
+              <TextBox Classes="field" Text="{Binding MaxActionsPerMinute}" />
+            </StackPanel>
+            <StackPanel Grid.Column="3" Spacing="6">
+              <TextBlock Text="DUMMY INTERVAL (s)" Classes="section-title" />
+              <TextBox Classes="field" Text="{Binding DummyActivityIntervalSeconds}" />
+            </StackPanel>
+          </Grid>
         </StackPanel>
       </Border>
 

@@ -12,9 +12,9 @@ public sealed class ConsoleViewModel : ViewModelBase
     public ConsoleViewModel(RustProcessLauncher launcher)
     {
         _launcher = launcher;
-        StartCommand  = new RelayCommand(Start,  () => !_launcher.IsRunning);
-        StopCommand   = new RelayCommand(Stop,   () =>  _launcher.IsRunning);
-        ClearCommand  = new RelayCommand(Clear);
+        StartCommand = new RelayCommand(Start,  () => !_launcher.IsRunning);
+        StopCommand  = new RelayCommand(Stop,   () =>  _launcher.IsRunning);
+        ClearCommand = new RelayCommand(Clear);
 
         _launcher.RunningChanged += _ =>
         {
@@ -23,8 +23,6 @@ public sealed class ConsoleViewModel : ViewModelBase
             OnPropertyChanged(nameof(IsRunning));
         };
     }
-
-    // ── Bindings ──
 
     /// <summary>Live console output (stdout + stderr).</summary>
     public ObservableCollection<ConsoleLineItem> Lines => _launcher.Output;
@@ -40,8 +38,6 @@ public sealed class ConsoleViewModel : ViewModelBase
     public ICommand StartCommand { get; }
     public ICommand StopCommand  { get; }
     public ICommand ClearCommand { get; }
-
-    // ── Commands ──
 
     private void Start()  => _launcher.Start(ExePath);
     private void Stop()   => _launcher.Stop();

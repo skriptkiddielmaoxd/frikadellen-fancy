@@ -19,7 +19,7 @@
 
   <Window.Styles>
 
-    <!-- ═══ ANIMATED BACKGROUND ORBS ═══ -->
+    <!-- Animated background orbs -->
     <Style Selector="Ellipse.orb-fuchsia">
       <Style.Animations>
         <Animation Duration="0:0:16" IterationCount="INFINITE" PlaybackDirection="Alternate" Easing="SineEaseInOut">
@@ -134,24 +134,16 @@
 
   </Window.Styles>
 
-  <Window.Resources>
-    <cvt:StringToBrushConverter x:Key="StrBrush" />
-  </Window.Resources>
-
   <!-- Root: rounded window with drop shadow -->
   <Border CornerRadius="18"
           ClipToBounds="True"
           BoxShadow="0 12 60 0 #90000000, 0 0 1 0 #20E879F9"
           Background="{DynamicResource BgBaseBrush}">
 
-    <!-- Full-screen grid: animated BG + splash/login overlay + shell -->
     <Grid>
 
-      <!-- ═══════════════════════════════════════
-           ANIMATED BACKGROUND — Floating gradient orbs
-      ═══════════════════════════════════════ -->
+      <!-- Animated background orbs -->
       <Canvas IsHitTestVisible="False" ClipToBounds="True">
-        <!-- Fuchsia orb — top left -->
         <Ellipse Width="600" Height="600" Classes="orb-fuchsia"
                  Canvas.Left="-150" Canvas.Top="-200">
           <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
@@ -162,8 +154,6 @@
             </RadialGradientBrush>
           </Ellipse.Fill>
         </Ellipse>
-
-        <!-- Cyan orb — bottom right -->
         <Ellipse Width="500" Height="500" Classes="orb-cyan"
                  Canvas.Left="700" Canvas.Top="300">
           <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
@@ -174,8 +164,6 @@
             </RadialGradientBrush>
           </Ellipse.Fill>
         </Ellipse>
-
-        <!-- Orange orb — center-right -->
         <Ellipse Width="350" Height="350" Classes="orb-orange"
                  Canvas.Left="900" Canvas.Top="-50">
           <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
@@ -188,9 +176,7 @@
         </Ellipse>
       </Canvas>
 
-      <!-- ═══════════════════════════════════════
-           SPLASH / LOGIN (overlay phases)
-      ═══════════════════════════════════════ -->
+      <!-- Splash / Login (overlay phases) -->
       <ContentControl Content="{Binding CurrentView}"
                       IsVisible="{Binding !IsShell}"
                       Classes="view-host">
@@ -213,13 +199,11 @@
         </ContentControl.ContentTemplate>
       </ContentControl>
 
-      <!-- ═══════════════════════════════════════
-           MAIN SHELL — Horizontal nav + content (no sidebar)
-      ═══════════════════════════════════════ -->
+      <!-- Main Shell: Title bar + nav bar + content -->
       <Grid RowDefinitions="42,Auto,*"
             IsVisible="{Binding IsShell}">
 
-        <!-- ── TITLE BAR ── -->
+        <!-- Title bar -->
         <Border Grid.Row="0"
                 Background="#0D0A16"
                 BorderBrush="{DynamicResource BorderSubtleBrush}"
@@ -232,25 +216,21 @@
                         Orientation="Horizontal"
                         Spacing="12" Margin="16,0,0,0"
                         VerticalAlignment="Center">
-              <!-- Logo — hexagonal feel -->
               <Border Width="26" Height="26"
                       CornerRadius="8"
                       Background="#20E879F9"
                       BorderBrush="#40E879F9"
                       BorderThickness="1"
                       BoxShadow="0 0 12 0 #30E879F9">
-                <TextBlock Text="◆" FontSize="12"
+                <TextBlock Text="&#x25C6;" FontSize="12"
                            Foreground="{DynamicResource AccentPrimaryBrush}"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center" />
               </Border>
-
               <TextBlock Text="Frikadellen"
                          FontSize="14" FontWeight="Bold"
                          Foreground="{DynamicResource TextPrimaryBrush}"
                          VerticalAlignment="Center" />
-
-              <!-- Status chip -->
               <Border Classes="status-chip chip"
                       Background="#4ADE8020"
                       VerticalAlignment="Center">
@@ -273,26 +253,26 @@
                         Spacing="2" Margin="0,0,8,0"
                         VerticalAlignment="Center">
               <Button Classes="chrome-btn"
-                      Content="◐"
+                      Content="&#x25D0;"
                       ToolTip.Tip="Toggle theme"
                       Command="{Binding ToggleThemeCommand}" />
               <Button Classes="chrome-btn"
-                      Content="—"
+                      Content="&#x2014;"
                       ToolTip.Tip="Minimise"
                       Name="MinimizeButton" />
               <Button Classes="chrome-btn"
-                      Content="⬜"
+                      Content="&#x2B1C;"
                       ToolTip.Tip="Maximise / Restore"
                       Name="MaximizeButton" />
               <Button Classes="chrome-btn chrome-close"
-                      Content="✕"
+                      Content="&#x2715;"
                       ToolTip.Tip="Close"
                       Name="CloseButton" />
             </StackPanel>
           </Grid>
         </Border>
 
-        <!-- ── HORIZONTAL NAVIGATION BAR ── -->
+        <!-- Horizontal navigation bar -->
         <Border Grid.Row="1"
                 Classes="nav-strip"
                 Background="#0A0714"
@@ -311,7 +291,7 @@
                     CommandParameter="Dashboard"
                     ToolTip.Tip="Dashboard">
               <StackPanel Orientation="Horizontal" Spacing="8">
-                <TextBlock Text="◈" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock Text="&#x25C8;" FontSize="14" VerticalAlignment="Center" />
                 <TextBlock Text="Dashboard" FontSize="13" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
@@ -321,7 +301,7 @@
                     CommandParameter="Events"
                     ToolTip.Tip="Live Events">
               <StackPanel Orientation="Horizontal" Spacing="8">
-                <TextBlock Text="⚡" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock Text="&#x26A1;" FontSize="14" VerticalAlignment="Center" />
                 <TextBlock Text="Events" FontSize="13" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
@@ -331,7 +311,7 @@
                     CommandParameter="Config"
                     ToolTip.Tip="Configuration">
               <StackPanel Orientation="Horizontal" Spacing="8">
-                <TextBlock Text="⚙" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock Text="&#x2699;" FontSize="14" VerticalAlignment="Center" />
                 <TextBlock Text="Config" FontSize="13" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
@@ -341,7 +321,7 @@
                     CommandParameter="Notifier"
                     ToolTip.Tip="Notifier">
               <StackPanel Orientation="Horizontal" Spacing="8">
-                <TextBlock Text="🔔" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock Text="&#x1F514;" FontSize="14" VerticalAlignment="Center" />
                 <TextBlock Text="Notifier" FontSize="13" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
@@ -351,35 +331,15 @@
                     CommandParameter="Console"
                     ToolTip.Tip="Console">
               <StackPanel Orientation="Horizontal" Spacing="8">
-                <TextBlock Text="⬛" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock Text="&#x2B1B;" FontSize="14" VerticalAlignment="Center" />
                 <TextBlock Text="Console" FontSize="13" VerticalAlignment="Center" />
-              </StackPanel>
-            </Button>
-
-            <Button Classes="nav-item"
-                    Command="{Binding NavigateCommand}"
-                    CommandParameter="Analytics"
-                    ToolTip.Tip="Analytics">
-              <StackPanel Orientation="Horizontal" Spacing="8">
-                <TextBlock Text="📈" FontSize="14" VerticalAlignment="Center" />
-                <TextBlock Text="Analytics" FontSize="13" VerticalAlignment="Center" />
-              </StackPanel>
-            </Button>
-
-            <Button Classes="nav-item"
-                    Command="{Binding NavigateCommand}"
-                    CommandParameter="Bazaar"
-                    ToolTip.Tip="Bazaar">
-              <StackPanel Orientation="Horizontal" Spacing="8">
-                <TextBlock Text="📦" FontSize="14" VerticalAlignment="Center" />
-                <TextBlock Text="Bazaar" FontSize="13" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
 
           </StackPanel>
         </Border>
 
-        <!-- ── MAIN CONTENT AREA ── -->
+        <!-- Main content area -->
         <Border Grid.Row="2"
                 Background="Transparent"
                 CornerRadius="0,0,18,18"
@@ -410,12 +370,6 @@
                     <DataTemplate DataType="vm:ConsoleViewModel">
                       <views:ConsoleView />
                     </DataTemplate>
-                    <DataTemplate DataType="vm:AnalyticsViewModel">
-                      <views:AnalyticsView />
-                    </DataTemplate>
-                    <DataTemplate DataType="vm:BazaarViewModel">
-                      <views:BazaarView />
-                    </DataTemplate>
                   </ContentControl.DataTemplates>
                 </ContentControl>
               </DataTemplate>
@@ -424,30 +378,6 @@
         </Border>
 
       </Grid>
-
-      <!-- ═══════════════════════════════════════
-           TOAST OVERLAY
-      ═══════════════════════════════════════ -->
-      <Panel IsHitTestVisible="False" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,24,24">
-        <ItemsControl ItemsSource="{Binding ToastService.Toasts}" IsHitTestVisible="False">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate DataType="m:ToastItem">
-              <Border Background="#1E1B2E" CornerRadius="10" Padding="14,10" Margin="0,0,0,8"
-                      BorderThickness="1"
-                      BorderBrush="{Binding TypeColor, Converter={StaticResource StrBrush}}"
-                      MinWidth="260" MaxWidth="380">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                  <TextBlock Text="{Binding TypeIcon}" FontSize="16" VerticalAlignment="Center"
-                             Foreground="{Binding TypeColor, Converter={StaticResource StrBrush}}" />
-                  <TextBlock Text="{Binding Message}" FontSize="12" Foreground="#E0E7FF"
-                             VerticalAlignment="Center" TextWrapping="Wrap" />
-                </StackPanel>
-              </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </Panel>
-
     </Grid>
   </Border>
 </Window>

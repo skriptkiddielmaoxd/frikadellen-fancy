@@ -131,8 +131,11 @@ impl EventHandler for Handler {
         match content.as_str() {
             "!start" => {
                 let data = ctx.data.read().await;
-                let running = data.get::<ScriptRunning>().unwrap().clone();
-                let name = data.get::<IngameNameKey>().unwrap().clone();
+                let Some(running) = data.get::<ScriptRunning>() else {
+                    return;
+                };
+                let running = running.clone();
+                let name = data.get::<IngameNameKey>().cloned().unwrap_or_default();
                 let was = running.load(Ordering::Relaxed);
                 let embed = if was {
                     CreateEmbed::new()
@@ -166,8 +169,11 @@ impl EventHandler for Handler {
             }
             "!stop" => {
                 let data = ctx.data.read().await;
-                let running = data.get::<ScriptRunning>().unwrap().clone();
-                let name = data.get::<IngameNameKey>().unwrap().clone();
+                let Some(running) = data.get::<ScriptRunning>() else {
+                    return;
+                };
+                let running = running.clone();
+                let name = data.get::<IngameNameKey>().cloned().unwrap_or_default();
                 let was = running.load(Ordering::Relaxed);
                 let embed = if !was {
                     CreateEmbed::new()
@@ -201,10 +207,17 @@ impl EventHandler for Handler {
             }
             "!status" => {
                 let data = ctx.data.read().await;
-                let running = data.get::<ScriptRunning>().unwrap().load(Ordering::Relaxed);
-                let bot = data.get::<BotClientKey>().unwrap();
-                let queue = data.get::<CommandQueueKey>().unwrap();
-                let name = data.get::<IngameNameKey>().unwrap().clone();
+                let Some(running_arc) = data.get::<ScriptRunning>() else {
+                    return;
+                };
+                let running = running_arc.load(Ordering::Relaxed);
+                let Some(bot) = data.get::<BotClientKey>() else {
+                    return;
+                };
+                let Some(queue) = data.get::<CommandQueueKey>() else {
+                    return;
+                };
+                let name = data.get::<IngameNameKey>().cloned().unwrap_or_default();
                 let bot_state = format!("{:?}", bot.state());
                 let purse = bot.get_purse();
                 let queue_depth = queue.len();

@@ -20,6 +20,8 @@ pub async fn start_web_server(state: Arc<WebState>, port: u16) {
         .route("/api/status", get(routes::status))
         .route("/api/inventory", get(routes::inventory))
         .route("/api/events", get(routes::events))
+        .route("/api/flips", get(routes::flips))
+        .route("/api/stats", get(routes::stats))
         .route("/api/command", post(routes::send_command))
         .route("/api/toggle", post(routes::toggle_running))
         .route("/api/config", get(routes::get_config))
@@ -33,10 +35,16 @@ pub async fn start_web_server(state: Arc<WebState>, port: u16) {
         .with_state(state);
 
     let addr = format!("0.0.0.0:{}", port);
-    let listener = tokio::net::TcpListener::bind(&addr)
-        .await
-        .expect("Failed to bind web GUI port");
+    let listener = match tokio::net::TcpListener::bind(&addr).await {
+        Ok(l) => l,
+        Err(e) => {
+            tracing::error!("Failed to bind web GUI port {}: {}", port, e);
+            return;
+        }
+    };
 
     info!("Web GUI running at http://localhost:{}", port);
-    axum::serve(listener, app).await.unwrap();
+    if let Err(e) = axum::serve(listener, app).await {
+        tracing::error!("Web server error: {}", e);
+    }
 }

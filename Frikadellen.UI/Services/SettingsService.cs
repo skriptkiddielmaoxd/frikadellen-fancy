@@ -30,7 +30,7 @@ public class SettingsService
                 return JsonSerializer.Deserialize<UiSettings>(json, JsonOpts) ?? new UiSettings();
             }
         }
-        catch { /* fall through */ }
+        catch { /* fall through to defaults */ }
         return new UiSettings();
     }
 
@@ -42,6 +42,6 @@ public class SettingsService
             var json = JsonSerializer.Serialize(settings, JsonOpts);
             File.WriteAllText(SettingsPath, json);
         }
-        catch { /* swallow write errors in prototype */ }
+        catch { /* swallow write errors */ }
     }
 }

@@ -352,3 +352,32 @@ async fn handle_ws_client(socket: WebSocket, state: Arc<WebState>) {
         _ = recv_task => {},
     }
 }
+
+/// `GET /api/flips?limit=N` — recent flip history (newest first).
+pub async fn flips(
+    State(state): State<Arc<WebState>>,
+    axum::extract::Query(params): axum::extract::Query<std::collections::HashMap<String, String>>,
+) -> Json<serde_json::Value> {
+    let limit = params
+        .get("limit")
+        .and_then(|v| v.parse::<usize>().ok())
+        .unwrap_or(50)
+        .min(500);
+    let entries = state.flip_history.recent(limit);
+    Json(serde_json::json!({ "flips": entries }))
+}
+
+/// `GET /api/stats` — session totals (profit, flips, win rate, etc.).
+pub async fn stats(State(state): State<Arc<WebState>>) -> Json<serde_json::Value> {
+    use std::sync::atomic::Ordering;
+    let s = &state.session_stats;
+    let uptime = state.start_time.elapsed().as_secs();
+    Json(serde_json::json!({
+        "session_profit":      s.session_profit.load(Ordering::Relaxed),
+        "total_coins_spent":   s.total_coins_spent.load(Ordering::Relaxed),
+        "total_coins_earned":  s.total_coins_earned.load(Ordering::Relaxed),
+        "total_flips":         s.total_flips.load(Ordering::Relaxed),
+        "win_count":           s.win_count.load(Ordering::Relaxed),
+        "session_duration_secs": uptime,
+    }))
+}

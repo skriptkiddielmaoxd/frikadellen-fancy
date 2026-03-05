@@ -1,13 +1,12 @@
 using System;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Avalonia.Threading;
 
 namespace Frikadellen.UI.ViewModels;
 
 /// <summary>
-/// Shown on startup for ~2.5 s, then signals the shell to transition away.
-/// Plug in real init work (config load, network ping) before calling Complete().
+/// Shown on startup for ~2 s, then signals the shell to transition away.
+/// Real init work (config load, network ping) can be added before calling Complete().
 /// </summary>
 public sealed class SplashViewModel : ViewModelBase
 {
@@ -27,7 +26,7 @@ public sealed class SplashViewModel : ViewModelBase
         set => SetField(ref _statusMessage, value);
     }
 
-    /// <summary>App version displayed on the splash screen — update when bumping the release tag.</summary>
+    /// <summary>App version string shown on the splash screen.</summary>
     public string AppVersion => "v3.0.0";
 
     public bool IsDone
@@ -46,14 +45,12 @@ public sealed class SplashViewModel : ViewModelBase
 
     private async Task RunAsync()
     {
-        // Simulate init steps with smooth progress
-        await StepAsync("Loading configuration…", 0.20, 300);
-        await StepAsync("Checking for updates…",  0.45, 350);
-        await StepAsync("Connecting to backend…", 0.70, 400);
-        await StepAsync("Ready.",                 1.00, 300);
+        await StepAsync("Loading configuration…", 0.20, 280);
+        await StepAsync("Checking for updates…",  0.45, 320);
+        await StepAsync("Connecting to backend…", 0.70, 360);
+        await StepAsync("Ready.",                 1.00, 280);
 
-        // Small pause so "Ready." is visible
-        await Task.Delay(350);
+        await Task.Delay(300);
 
         await Dispatcher.UIThread.InvokeAsync(() =>
         {

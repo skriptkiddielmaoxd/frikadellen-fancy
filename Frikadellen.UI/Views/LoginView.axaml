@@ -5,32 +5,12 @@
              x:DataType="vm:LoginViewModel">
 
   <UserControl.Styles>
-
-    <!-- Card entrance — scale up + fade -->
     <Style Selector="Border.login-card">
       <Style.Animations>
-        <Animation Duration="0:0:0.6" Easing="CubicEaseOut" FillMode="Forward">
+        <Animation Duration="0:0:0.5" Easing="CubicEaseOut" FillMode="Forward">
           <KeyFrame Cue="0%">
             <Setter Property="Opacity" Value="0" />
-            <Setter Property="ScaleTransform.ScaleX" Value="0.92" />
-            <Setter Property="ScaleTransform.ScaleY" Value="0.92" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="1" />
-            <Setter Property="ScaleTransform.ScaleX" Value="1" />
-            <Setter Property="ScaleTransform.ScaleY" Value="1" />
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-
-    <!-- Header fade -->
-    <Style Selector="StackPanel.login-header">
-      <Style.Animations>
-        <Animation Duration="0:0:0.5" Delay="0:0:0.2" Easing="CubicEaseOut" FillMode="Forward">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="18" />
+            <Setter Property="TranslateTransform.Y" Value="24" />
           </KeyFrame>
           <KeyFrame Cue="100%">
             <Setter Property="Opacity" Value="1" />
@@ -39,230 +19,105 @@
         </Animation>
       </Style.Animations>
     </Style>
-
-    <!-- Field stagger -->
-    <Style Selector="StackPanel.field-1">
-      <Style.Animations>
-        <Animation Duration="0:0:0.4" Delay="0:0:0.3" Easing="CubicEaseOut" FillMode="Forward">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="14" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="1" />
-            <Setter Property="TranslateTransform.Y" Value="0" />
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-
-    <Style Selector="StackPanel.field-2">
-      <Style.Animations>
-        <Animation Duration="0:0:0.4" Delay="0:0:0.4" Easing="CubicEaseOut" FillMode="Forward">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="14" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="1" />
-            <Setter Property="TranslateTransform.Y" Value="0" />
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-
-    <Style Selector="StackPanel.actions">
-      <Style.Animations>
-        <Animation Duration="0:0:0.4" Delay="0:0:0.5" Easing="CubicEaseOut" FillMode="Forward">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="12" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="1" />
-            <Setter Property="TranslateTransform.Y" Value="0" />
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-
   </UserControl.Styles>
 
   <Grid Background="{DynamicResource BgBaseBrush}">
 
-    <!-- Ambient glow -->
-    <Ellipse Width="600" Height="400"
+    <!-- Soft background glow -->
+    <Ellipse Width="600" Height="600"
              HorizontalAlignment="Center"
-             VerticalAlignment="Center"
-             Margin="0,100,0,0"
-             IsHitTestVisible="False">
+             VerticalAlignment="Center">
       <Ellipse.Fill>
         <RadialGradientBrush>
-          <GradientStop Color="#10E879F9" Offset="0" />
+          <GradientStop Color="#08E879F9" Offset="0" />
           <GradientStop Color="#00E879F9" Offset="1" />
         </RadialGradientBrush>
       </Ellipse.Fill>
     </Ellipse>
 
-    <!-- Login card — with gradient top accent -->
+    <!-- Login card -->
     <Border Classes="login-card"
-            Width="440"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
+            Width="400"
             Background="{DynamicResource BgCardBrush}"
             CornerRadius="20"
-            Padding="0"
-            ClipToBounds="True"
+            Padding="36,32"
+            BoxShadow="0 8 40 0 #40000000, 0 0 1 0 #20E879F9"
             BorderBrush="{DynamicResource BorderSubtleBrush}"
             BorderThickness="1"
-            BoxShadow="0 20 80 0 #50000000, 0 0 1 0 #20E879F9"
-            RenderTransformOrigin="0.5,0.5">
-      <Border.RenderTransform>
-        <ScaleTransform />
-      </Border.RenderTransform>
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Opacity="0">
+      <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
 
-      <StackPanel>
-        <!-- Gradient top accent bar -->
-        <Border Height="3">
-          <Border.Background>
-            <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">
-              <GradientStop Color="#E879F9" Offset="0" />
-              <GradientStop Color="#22D3EE" Offset="0.5" />
-              <GradientStop Color="#FB923C" Offset="1" />
-            </LinearGradientBrush>
-          </Border.Background>
-        </Border>
+      <StackPanel Spacing="0">
 
-        <!-- Inner content -->
-        <StackPanel Spacing="24" Margin="36,28,36,32">
-
-          <!-- Header -->
-          <StackPanel Classes="login-header" Spacing="6" HorizontalAlignment="Center"
-                      RenderTransformOrigin="0.5,0.5">
-            <StackPanel.RenderTransform>
-              <TranslateTransform />
-            </StackPanel.RenderTransform>
-
-            <!-- Logo mark -->
-            <Border Width="52" Height="52"
-                    CornerRadius="16"
-                    Background="#18E879F9"
-                    BorderBrush="#35E879F9"
-                    BorderThickness="1"
-                    HorizontalAlignment="Center"
-                    BoxShadow="0 0 28 0 #35E879F9">
-              <TextBlock Text="◆" FontSize="24"
-                         Foreground="{DynamicResource AccentPrimaryBrush}"
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center"
-                         FontWeight="Bold" />
-            </Border>
-
-            <Border Height="8" />
-
-            <TextBlock Text="Account Setup"
-                       FontSize="22" FontWeight="Bold"
+        <!-- Icon + Title -->
+        <StackPanel Spacing="16" Margin="0,0,0,32">
+          <Border Width="60" Height="60"
+                  CornerRadius="16"
+                  Background="#20E879F9"
+                  BorderBrush="#30E879F9"
+                  BorderThickness="1"
+                  BoxShadow="0 0 24 0 #20E879F9"
+                  HorizontalAlignment="Center">
+            <TextBlock Text="&#x25C6;" FontSize="26"
+                       Foreground="{DynamicResource AccentPrimaryBrush}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+          </Border>
+          <StackPanel Spacing="6">
+            <TextBlock Text="Welcome to Frikadellen"
+                       FontSize="22" FontWeight="ExtraBold"
                        Foreground="{DynamicResource TextPrimaryBrush}"
                        HorizontalAlignment="Center" />
-            <TextBlock Text="Connect your Minecraft account to get started."
-                       FontSize="12"
+            <TextBlock Text="Enter your Minecraft username to get started"
+                       FontSize="13"
                        Foreground="{DynamicResource TextMutedBrush}"
                        HorizontalAlignment="Center"
-                       TextAlignment="Center"
-                       TextWrapping="Wrap" />
+                       TextWrapping="Wrap"
+                       TextAlignment="Center" />
           </StackPanel>
-
-          <!-- Divider -->
-          <Border Classes="divider" />
-
-          <!-- Username field -->
-          <StackPanel Classes="field-1" Spacing="8" RenderTransformOrigin="0.5,0.5">
-            <StackPanel.RenderTransform>
-              <TranslateTransform />
-            </StackPanel.RenderTransform>
-
-            <TextBlock Text="MINECRAFT USERNAME"
-                       Classes="section-title" />
-            <TextBox Classes="field"
-                     Text="{Binding Username}"
-                     Watermark="YourIGN"
-                     FontSize="14" />
-          </StackPanel>
-
-          <!-- Microsoft Auth info -->
-          <StackPanel Classes="field-2" Spacing="6" RenderTransformOrigin="0.5,0.5">
-            <StackPanel.RenderTransform>
-              <TranslateTransform />
-            </StackPanel.RenderTransform>
-
-            <Border CornerRadius="12" Padding="14,12"
-                    Background="#12E879F9"
-                    BorderBrush="#20E879F9"
-                    BorderThickness="1">
-              <Grid ColumnDefinitions="Auto,*">
-                <Border Grid.Column="0"
-                        Width="20" Height="20"
-                        CornerRadius="10"
-                        Background="{DynamicResource AccentPrimaryBrush}"
-                        VerticalAlignment="Top"
-                        Margin="0,1,10,0">
-                  <TextBlock Text="i" FontSize="11" FontWeight="Bold"
-                             Foreground="White"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Center" />
-                </Border>
-                <TextBlock Grid.Column="1"
-                           TextWrapping="Wrap"
-                           FontSize="12"
-                           Foreground="{DynamicResource TextSecondaryBrush}">
-                  <Run Text="Clicking " />
-                  <Run Text="Connect Account" FontWeight="SemiBold"
-                       Foreground="{DynamicResource AccentPrimaryBrush}" />
-                  <Run Text=" will open Microsoft login in your browser. Complete the device-code flow to authenticate." />
-                </TextBlock>
-              </Grid>
-            </Border>
-          </StackPanel>
-
-          <!-- Status message -->
-          <TextBlock Text="{Binding StatusMessage}"
-                     FontSize="12"
-                     HorizontalAlignment="Center"
-                     Foreground="{DynamicResource AccentSuccessBrush}"
-                     IsVisible="{Binding IsAuthenticating}"
-                     Opacity="0.9" />
-
-          <!-- Actions -->
-          <StackPanel Classes="actions" Spacing="10" RenderTransformOrigin="0.5,0.5">
-            <StackPanel.RenderTransform>
-              <TranslateTransform />
-            </StackPanel.RenderTransform>
-
-            <!-- Primary CTA -->
-            <Button Classes="pill-primary"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
-                    Height="46"
-                    Command="{Binding ProceedCommand}"
-                    IsEnabled="{Binding CanProceed}">
-              <StackPanel Orientation="Horizontal" Spacing="8">
-                <TextBlock Text="🔐" FontSize="14" VerticalAlignment="Center" />
-                <TextBlock Text="Connect Account" FontSize="14"
-                           FontWeight="SemiBold" VerticalAlignment="Center" />
-              </StackPanel>
-            </Button>
-
-            <!-- Skip -->
-            <Button Classes="pill-ghost"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
-                    Height="40"
-                    Command="{Binding SkipCommand}">
-              <TextBlock Text="Skip for now" FontSize="13" />
-            </Button>
-          </StackPanel>
-
         </StackPanel>
+
+        <!-- Username input -->
+        <StackPanel Spacing="8" Margin="0,0,0,16">
+          <TextBlock Text="MINECRAFT USERNAME" Classes="section-title" />
+          <TextBox Classes="field"
+                   Text="{Binding Username}"
+                   Watermark="YourUsername"
+                   IsEnabled="{Binding !IsAuthenticating}" />
+        </StackPanel>
+
+        <!-- Status -->
+        <TextBlock Text="{Binding StatusMessage}"
+                   FontSize="12"
+                   Foreground="{DynamicResource AccentSuccessBrush}"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,16"
+                   IsVisible="{Binding StatusMessage, Converter={x:Static vm:NullToBoolConverter.Instance}}" />
+
+        <!-- Actions -->
+        <StackPanel Spacing="10">
+          <Button Classes="pill-primary"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  Command="{Binding ProceedCommand}"
+                  IsEnabled="{Binding CanProceed}">
+            <TextBlock Text="{Binding IsAuthenticating, Converter={x:Static vm:ShowHideConverter.Instance}, ConverterParameter='invert'}"
+                       IsVisible="False" />
+            <Button.Content>
+              <TextBlock Text="Continue" FontSize="14" FontWeight="SemiBold" />
+            </Button.Content>
+          </Button>
+
+          <Button Classes="pill-ghost"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  Command="{Binding SkipCommand}">
+            <TextBlock Text="Skip for now" FontSize="13" />
+          </Button>
+        </StackPanel>
+
       </StackPanel>
     </Border>
 

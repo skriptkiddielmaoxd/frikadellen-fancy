@@ -1,3 +1,4 @@
+use once_cell::sync::Lazy;
 use parking_lot::RwLock;
 use regex::Regex;
 use serde_json::Value as JsonValue;
@@ -5,6 +6,20 @@ use std::sync::Arc;
 use tracing::{debug, info};
 
 use crate::types::WindowType;
+
+// ── Static regexes (compiled once, reused on every call) ──────────────
+
+static RE_COLOR_CODES: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"§[0-9a-fk-or]").expect("RE_COLOR_CODES regex is valid"));
+
+static RE_LORE_PRICE: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"(?:Price|Cost):\s*([0-9,\.]+)\s*([KMB])?\s*coins?")
+        .expect("RE_LORE_PRICE regex is valid")
+});
+
+static RE_BAZAAR_SIGN_PRICE: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"Instant-(?:Buy|Sell):\s*([0-9,\.]+)").expect("RE_BAZAAR_SIGN_PRICE regex is valid")
+});
 
 /// Event handlers for bot events
 pub struct BotEventHandlers {
@@ -154,9 +169,7 @@ impl BotEventHandlers {
 
     /// Remove Minecraft color codes from text
     pub fn remove_color_codes(text: &str) -> String {
-        // Minecraft color codes: §[0-9a-fk-or]
-        let re = Regex::new(r"§[0-9a-fk-or]").unwrap();
-        re.replace_all(text, "").to_string()
+        RE_COLOR_CODES.replace_all(text, "").to_string()
     }
 
     /// Get current window title
@@ -264,12 +277,10 @@ impl BotEventHandlers {
     /// "Price: 1,234,567 coins"
     /// "Cost: 1.2M coins"
     pub fn parse_price_from_lore(lore: &[String]) -> Option<f64> {
-        let price_regex = Regex::new(r"(?:Price|Cost):\s*([0-9,\.]+)\s*([KMB])?\s*coins?").unwrap();
-
         for line in lore {
             let clean = Self::remove_color_codes(line);
 
-            if let Some(captures) = price_regex.captures(&clean) {
+            if let Some(captures) = RE_LORE_PRICE.captures(&clean) {
                 if let Some(number_str) = captures.get(1) {
                     // Remove commas
                     let number_clean = number_str.as_str().replace(",", "");
@@ -300,12 +311,10 @@ impl BotEventHandlers {
     /// "Instant-Buy: 1,234.5"
     /// "Instant-Sell: 5,678.9"
     pub fn parse_bazaar_sign_price(sign_lines: &[String]) -> Option<f64> {
-        let price_regex = Regex::new(r"Instant-(?:Buy|Sell):\s*([0-9,\.]+)").unwrap();
-
         for line in sign_lines {
             let clean = Self::remove_color_codes(line);
 
-            if let Some(captures) = price_regex.captures(&clean) {
+            if let Some(captures) = RE_BAZAAR_SIGN_PRICE.captures(&clean) {
                 if let Some(number_str) = captures.get(1) {
                     let number_clean = number_str.as_str().replace(",", "");
 

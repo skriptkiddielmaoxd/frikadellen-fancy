@@ -8,7 +8,6 @@ namespace Frikadellen.UI.ViewModels;
 /// <summary>
 /// First-run / account-setup screen.
 /// Collects the Minecraft username and starts the Microsoft auth flow.
-/// In the real integration, replace the mock launch with the actual device-code flow.
 /// </summary>
 public sealed class LoginViewModel : ViewModelBase
 {
@@ -70,11 +69,8 @@ public sealed class LoginViewModel : ViewModelBase
         IsAuthenticating = true;
         StatusMessage = "Opening Microsoft login…";
 
-        // ──────────────────────────────────────────────────
-        // INTEGRATION POINT: Launch the real device-code auth
-        // flow here (e.g. open browser with device-code URL).
-        // For the prototype we just simulate a 1.5 s delay.
-        // ──────────────────────────────────────────────────
+        // INTEGRATION POINT: Launch the real device-code auth flow here.
+        // For now, simulate a short delay.
         await System.Threading.Tasks.Task.Delay(1500);
 
         StatusMessage = "Authenticated ✓";
@@ -90,7 +86,6 @@ public sealed class LoginViewModel : ViewModelBase
 
     private void Skip()
     {
-        // Allow skipping auth; username can be set later in Config
         Completed?.Invoke();
     }
 }

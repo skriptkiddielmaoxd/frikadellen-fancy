@@ -20,8 +20,8 @@ public sealed class BoolToStringConverter : IValueConverter
 /// <summary>Converts bool → accent colour string for running/stopped state.</summary>
 public sealed class BoolToColorConverter : IValueConverter
 {
-    public string TrueColor { get; set; } = "#34D399";
-    public string FalseColor { get; set; } = "#F87171";
+    public string TrueColor { get; set; } = "#4ADE80";
+    public string FalseColor { get; set; } = "#FB7185";
 
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         => value is true ? TrueColor : FalseColor;

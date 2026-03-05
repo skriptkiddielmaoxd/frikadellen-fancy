@@ -1,9 +1,13 @@
 use anyhow::Result;
+use once_cell::sync::Lazy;
 use std::path::{Path, PathBuf};
 use tracing_appender::rolling::{RollingFileAppender, Rotation};
 use tracing_subscriber::{
     filter::LevelFilter, fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Layer,
 };
+
+static RE_MC_COLORS: Lazy<regex::Regex> =
+    Lazy::new(|| regex::Regex::new(r"§[0-9a-fk-or]").expect("RE_MC_COLORS regex is valid"));
 
 pub fn init_logger() -> Result<()> {
     let logs_dir = get_logs_dir();
@@ -99,8 +103,7 @@ fn rotate_previous_latest_log(logs_dir: &Path) -> Result<()> {
 
 /// Remove Minecraft color codes from a string
 pub fn remove_color_codes(text: &str) -> String {
-    let re = regex::Regex::new(r"§[0-9a-fk-or]").unwrap();
-    re.replace_all(text, "").to_string()
+    RE_MC_COLORS.replace_all(text, "").to_string()
 }
 
 /// Convert Minecraft color codes to ANSI color codes for terminal display

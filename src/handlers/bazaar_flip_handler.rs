@@ -22,6 +22,14 @@ use crate::gui::{WindowHandler, WindowSlot};
 use crate::types::{BazaarFlipRecommendation, BotState};
 use crate::utils::to_title_case;
 
+use once_cell::sync::Lazy;
+
+static RE_ORDER: Lazy<regex::Regex> = Lazy::new(|| {
+    regex::Regex::new(r"(\d+)x\s+([^\s]+(?:\s+[^\s]+)*?)\s+for").expect("RE_ORDER regex is valid")
+});
+static RE_PRICE: Lazy<regex::Regex> =
+    Lazy::new(|| regex::Regex::new(r"for\s+([\d.]+[KkMm]?)\(").expect("RE_PRICE regex is valid"));
+
 /// Configuration constants
 #[allow(dead_code)]
 const RETRY_DELAY_MS: u64 = 1100;
@@ -241,8 +249,7 @@ impl BazaarFlipHandler {
         }
 
         // Extract amount and item name: "4x Cindershade"
-        let re_order = regex::Regex::new(r"(\d+)x\s+([^\s]+(?:\s+[^\s]+)*?)\s+for").unwrap();
-        let order_match = re_order
+        let order_match = RE_ORDER
             .captures(&clean_message)
             .ok_or_else(|| anyhow!("Failed to parse order from message"))?;
 
@@ -250,8 +257,7 @@ impl BazaarFlipHandler {
         let item_name = order_match[2].trim().to_string();
 
         // Extract price: "1.06M"
-        let re_price = regex::Regex::new(r"for\s+([\d.]+[KkMm]?)\(").unwrap();
-        let price_match = re_price
+        let price_match = RE_PRICE
             .captures(&clean_message)
             .ok_or_else(|| anyhow!("Failed to parse price from message"))?;
 

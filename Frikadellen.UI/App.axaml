@@ -36,20 +36,20 @@
         <Color x:Key="TextMuted">#6B5F8A</Color>
 
         <!-- Brushes -->
-        <SolidColorBrush x:Key="BgBaseBrush" Color="#08060D" />
-        <SolidColorBrush x:Key="BgSurfaceBrush" Color="#110E18" />
-        <SolidColorBrush x:Key="BgCardBrush" Color="#1A1625" />
-        <SolidColorBrush x:Key="BgSidebarBrush" Color="#0D0A16" />
-        <SolidColorBrush x:Key="BgElevatedBrush" Color="#251F32" />
+        <SolidColorBrush x:Key="BgBaseBrush"       Color="#08060D" />
+        <SolidColorBrush x:Key="BgSurfaceBrush"    Color="#110E18" />
+        <SolidColorBrush x:Key="BgCardBrush"       Color="#1A1625" />
+        <SolidColorBrush x:Key="BgSidebarBrush"    Color="#0D0A16" />
+        <SolidColorBrush x:Key="BgElevatedBrush"   Color="#251F32" />
         <SolidColorBrush x:Key="BorderSubtleBrush" Color="#2D2640" />
-        <SolidColorBrush x:Key="AccentPrimaryBrush" Color="#E879F9" />
+        <SolidColorBrush x:Key="AccentPrimaryBrush"   Color="#E879F9" />
         <SolidColorBrush x:Key="AccentSecondaryBrush" Color="#22D3EE" />
-        <SolidColorBrush x:Key="AccentSuccessBrush" Color="#4ADE80" />
-        <SolidColorBrush x:Key="AccentDangerBrush" Color="#FB7185" />
-        <SolidColorBrush x:Key="AccentWarningBrush" Color="#FBBF24" />
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F5F3FF" />
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#A78BFA" />
-        <SolidColorBrush x:Key="TextMutedBrush" Color="#6B5F8A" />
+        <SolidColorBrush x:Key="AccentSuccessBrush"   Color="#4ADE80" />
+        <SolidColorBrush x:Key="AccentDangerBrush"    Color="#FB7185" />
+        <SolidColorBrush x:Key="AccentWarningBrush"   Color="#FBBF24" />
+        <SolidColorBrush x:Key="TextPrimaryBrush"     Color="#F5F3FF" />
+        <SolidColorBrush x:Key="TextSecondaryBrush"   Color="#A78BFA" />
+        <SolidColorBrush x:Key="TextMutedBrush"       Color="#6B5F8A" />
 
         <!-- Gradient brushes -->
         <LinearGradientBrush x:Key="AccentGradientBrush" StartPoint="0%,0%" EndPoint="100%,100%">
@@ -79,41 +79,47 @@
          CARD STYLE — Glass-like with glow border
     ══════════════════════════════════════════ -->
     <Style Selector="Border.card">
-      <Setter Property="Background" Value="{DynamicResource BgCardBrush}" />
-      <Setter Property="CornerRadius" Value="16" />
-      <Setter Property="Padding" Value="22" />
-      <Setter Property="Margin" Value="0,0,0,14" />
-      <Setter Property="BoxShadow" Value="0 4 24 0 #30000000, 0 0 1 0 #18E879F9" />
-      <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+      <Setter Property="Background"    Value="{DynamicResource BgCardBrush}" />
+      <Setter Property="CornerRadius"  Value="16" />
+      <Setter Property="Padding"       Value="22" />
+      <Setter Property="Margin"        Value="0,0,0,14" />
+      <Setter Property="BoxShadow"     Value="0 4 24 0 #30000000, 0 0 1 0 #18E879F9" />
+      <Setter Property="BorderBrush"   Value="{DynamicResource BorderSubtleBrush}" />
       <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Button.pill-primary:pointerover">
+      <Setter Property="Background" Value="#F0ABFC" />
+    </Style>
+    <Style Selector="Button.pill-primary:pressed">
+      <Setter Property="Background" Value="#C026D3" />
     </Style>
 
     <Style Selector="Border.card-hover">
-      <Setter Property="Background" Value="{DynamicResource BgCardBrush}" />
-      <Setter Property="CornerRadius" Value="16" />
-      <Setter Property="Padding" Value="22" />
-      <Setter Property="Margin" Value="0,0,0,14" />
-      <Setter Property="BoxShadow" Value="0 4 24 0 #30000000, 0 0 1 0 #18E879F9" />
-      <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+      <Setter Property="Background"    Value="{DynamicResource BgCardBrush}" />
+      <Setter Property="CornerRadius"  Value="16" />
+      <Setter Property="Padding"       Value="22" />
+      <Setter Property="Margin"        Value="0,0,0,14" />
+      <Setter Property="BoxShadow"     Value="0 4 24 0 #30000000, 0 0 1 0 #18E879F9" />
+      <Setter Property="BorderBrush"   Value="{DynamicResource BorderSubtleBrush}" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Cursor"        Value="Hand" />
     </Style>
     <Style Selector="Border.card-hover:pointerover">
-      <Setter Property="BoxShadow" Value="0 8 32 0 #40000000, 0 0 16 0 #25E879F9" />
+      <Setter Property="BoxShadow"   Value="0 8 32 0 #40000000, 0 0 16 0 #25E879F9" />
       <Setter Property="BorderBrush" Value="#40E879F9" />
     </Style>
 
     <!-- ══════════════════════════════════════════
-         PILL BUTTON (primary CTA) — Fuchsia gradient
+         PILL BUTTON (primary CTA) — Fuchsia
     ══════════════════════════════════════════ -->
     <Style Selector="Button.pill-primary">
-      <Setter Property="Background" Value="{DynamicResource AccentPrimaryBrush}" />
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Background"  Value="{DynamicResource AccentPrimaryBrush}" />
+      <Setter Property="Foreground"  Value="White" />
       <Setter Property="CornerRadius" Value="24" />
-      <Setter Property="Padding" Value="28,12" />
-      <Setter Property="FontWeight" Value="SemiBold" />
-      <Setter Property="FontSize" Value="14" />
-      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Padding"     Value="28,12" />
+      <Setter Property="FontWeight"  Value="SemiBold" />
+      <Setter Property="FontSize"    Value="14" />
+      <Setter Property="Cursor"      Value="Hand" />
     </Style>
     <Style Selector="Button.pill-primary:pointerover">
       <Setter Property="Background" Value="#F0ABFC" />
@@ -124,13 +130,13 @@
 
     <!-- Pill button — danger -->
     <Style Selector="Button.pill-danger">
-      <Setter Property="Background" Value="{DynamicResource AccentDangerBrush}" />
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Background"  Value="{DynamicResource AccentDangerBrush}" />
+      <Setter Property="Foreground"  Value="White" />
       <Setter Property="CornerRadius" Value="24" />
-      <Setter Property="Padding" Value="28,12" />
-      <Setter Property="FontWeight" Value="SemiBold" />
-      <Setter Property="FontSize" Value="14" />
-      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Padding"     Value="28,12" />
+      <Setter Property="FontWeight"  Value="SemiBold" />
+      <Setter Property="FontSize"    Value="14" />
+      <Setter Property="Cursor"      Value="Hand" />
     </Style>
     <Style Selector="Button.pill-danger:pointerover">
       <Setter Property="Background" Value="#FDA4AF" />
@@ -138,18 +144,18 @@
 
     <!-- Pill button — ghost -->
     <Style Selector="Button.pill-ghost">
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="Background"  Value="Transparent" />
+      <Setter Property="Foreground"  Value="{DynamicResource TextSecondaryBrush}" />
       <Setter Property="CornerRadius" Value="24" />
-      <Setter Property="Padding" Value="20,10" />
-      <Setter Property="FontSize" Value="13" />
-      <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+      <Setter Property="Padding"     Value="20,10" />
+      <Setter Property="FontSize"    Value="13" />
+      <Setter Property="Cursor"      Value="Hand" />
+      <Setter Property="BorderBrush"    Value="{DynamicResource BorderSubtleBrush}" />
       <Setter Property="BorderThickness" Value="1" />
     </Style>
     <Style Selector="Button.pill-ghost:pointerover">
-      <Setter Property="Background" Value="#12E879F9" />
-      <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+      <Setter Property="Background"  Value="#12E879F9" />
+      <Setter Property="Foreground"  Value="{DynamicResource AccentPrimaryBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
     </Style>
 
@@ -158,8 +164,8 @@
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
       <Setter Property="CornerRadius" Value="10" />
-      <Setter Property="Padding" Value="8" />
-      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Padding"    Value="8" />
+      <Setter Property="Cursor"     Value="Hand" />
     </Style>
     <Style Selector="Button.icon-btn:pointerover">
       <Setter Property="Background" Value="#18FFFFFF" />
@@ -176,36 +182,36 @@
          HORIZONTAL NAV ITEM — Pill style tabs
     ══════════════════════════════════════════ -->
     <Style Selector="Button.nav-item">
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+      <Setter Property="Background"  Value="Transparent" />
+      <Setter Property="Foreground"  Value="{DynamicResource TextMutedBrush}" />
       <Setter Property="CornerRadius" Value="20" />
-      <Setter Property="Padding" Value="16,7" />
-      <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="FontSize" Value="13" />
-      <Setter Property="Margin" Value="0,0,4,0" />
+      <Setter Property="Padding"     Value="16,7" />
+      <Setter Property="Cursor"      Value="Hand" />
+      <Setter Property="FontSize"    Value="13" />
+      <Setter Property="Margin"      Value="0,0,4,0" />
     </Style>
     <Style Selector="Button.nav-item:pointerover">
       <Setter Property="Background" Value="#12E879F9" />
       <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
     </Style>
     <Style Selector="Button.nav-item.active">
-      <Setter Property="Background" Value="#20E879F9" />
-      <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
-      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Background"  Value="#20E879F9" />
+      <Setter Property="Foreground"  Value="{DynamicResource AccentPrimaryBrush}" />
+      <Setter Property="FontWeight"  Value="SemiBold" />
     </Style>
 
     <!-- ══════════════════════════════════════════
          TEXT INPUT — Purple-tinted
     ══════════════════════════════════════════ -->
     <Style Selector="TextBox.field">
-      <Setter Property="Background" Value="#110E18" />
-      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource BorderSubtleBrush}" />
+      <Setter Property="Background"     Value="#110E18" />
+      <Setter Property="Foreground"     Value="{DynamicResource TextPrimaryBrush}" />
+      <Setter Property="BorderBrush"    Value="{DynamicResource BorderSubtleBrush}" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="CornerRadius" Value="12" />
-      <Setter Property="Padding" Value="14,10" />
-      <Setter Property="FontSize" Value="13" />
-      <Setter Property="CaretBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+      <Setter Property="CornerRadius"   Value="12" />
+      <Setter Property="Padding"        Value="14,10" />
+      <Setter Property="FontSize"       Value="13" />
+      <Setter Property="CaretBrush"     Value="{DynamicResource AccentPrimaryBrush}" />
     </Style>
     <Style Selector="TextBox.field:focus">
       <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
@@ -216,7 +222,7 @@
     ══════════════════════════════════════════ -->
     <Style Selector="Border.chip">
       <Setter Property="CornerRadius" Value="20" />
-      <Setter Property="Padding" Value="10,4" />
+      <Setter Property="Padding"      Value="10,4" />
     </Style>
 
     <!-- ══════════════════════════════════════════
@@ -237,11 +243,11 @@
          SECTION LABEL
     ══════════════════════════════════════════ -->
     <Style Selector="TextBlock.section-title">
-      <Setter Property="FontSize" Value="10" />
-      <Setter Property="FontWeight" Value="SemiBold" />
-      <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+      <Setter Property="FontSize"    Value="10" />
+      <Setter Property="FontWeight"  Value="SemiBold" />
+      <Setter Property="Foreground"  Value="{DynamicResource TextMutedBrush}" />
       <Setter Property="LetterSpacing" Value="1" />
-      <Setter Property="Margin" Value="0,0,0,8" />
+      <Setter Property="Margin"      Value="0,0,0,8" />
     </Style>
 
     <!-- ══════════════════════════════════════════
@@ -249,9 +255,10 @@
     ══════════════════════════════════════════ -->
     <Style Selector="Border.divider">
       <Setter Property="Background" Value="{DynamicResource BorderSubtleBrush}" />
-      <Setter Property="Height" Value="1" />
-      <Setter Property="Margin" Value="0,12" />
+      <Setter Property="Height"     Value="1" />
+      <Setter Property="Margin"     Value="0,12" />
     </Style>
 
   </Application.Styles>
 </Application>
+

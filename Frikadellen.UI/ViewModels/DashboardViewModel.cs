@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Avalonia.Threading;
@@ -81,27 +80,14 @@ public sealed class DashboardViewModel : ViewModelBase
     }
 
     public string ToggleButtonLabel => IsRunning ? "⏹  Stop Script" : "▶  Start Script";
-
-    public string ToggleButtonColor =>
-        IsRunning ? "#FB7185" : "#E879F9";
-
-    public string ToggleButtonShadow =>
-        IsRunning ? "0 4 20 0 #60FB7185" : "0 4 20 0 #60E879F9";
+    public string ToggleButtonColor => IsRunning ? "#FB7185" : "#E879F9";
+    public string ToggleButtonShadow => IsRunning ? "0 4 20 0 #60FB7185" : "0 4 20 0 #60E879F9";
 
     public ObservableCollection<FlipRecord> RecentFlips { get; } = new();
 
-    public List<double> ProfitTimeline { get; } = MockDataService.GetProfitTimeline();
-    public List<double> HourlyEarnings { get; } = MockDataService.GetHourlyEarnings();
-    public double DonutSuccessRate => _sessionFlips > 0 ? (double)_sessionWins / _sessionFlips : 0.87;
-    public double DonutFailRate    => _sessionFlips > 0 ? 1.0 - DonutSuccessRate - DonutPendingRate : 0.10;
-    public double DonutPendingRate => 0.03;
-
     public ICommand ToggleCommand { get; }
 
-    /// <summary>
-    /// Fired when the user wants to start / stop the script.
-    /// The MainWindowViewModel wires this up to the real backend.
-    /// </summary>
+    /// <summary>Fired when the user toggles the script. The parent VM wires this to the real backend.</summary>
     public event Action<bool>? ToggleRequested;
 
     public DashboardViewModel()
@@ -129,32 +115,33 @@ public sealed class DashboardViewModel : ViewModelBase
             _mockTimer.Stop();
         }
 
-        // INTEGRATION POINT: notify parent to start/stop the real backend
         ToggleRequested?.Invoke(IsRunning);
     }
 
     private void OnMockTick(object? sender, EventArgs e)
     {
-        // Simulate live data while running
         Purse = MockDataService.RandomPurse();
         QueueDepth = MockDataService.RandomQueue();
-
         var flip = MockDataService.RandomFlip();
         TrackFlip(flip);
+    }
+
+    public void UpdateRunningState(bool running)
+    {
+        IsRunning = running;
+        ScriptState = running ? "Running" : "Stopped";
+        BotStatus = running ? "Online" : "Offline";
+        if (!running) _mockTimer.Stop();
     }
 
     public void UpdateFromStatus(string state, string purse, int queue, string botStatus)
     {
         ScriptState = state;
-        Purse       = purse;
-        QueueDepth  = queue;
-        BotStatus   = botStatus;
+        Purse = purse;
+        QueueDepth = queue;
+        BotStatus = botStatus;
     }
 
-    /// <summary>
-    /// Called by the WebSocket handler or mock timer whenever a flip completes.
-    /// A flip is counted as a "win" when profit is positive.
-    /// </summary>
     public void TrackFlip(FlipRecord flip)
     {
         RecentFlips.Insert(0, flip);
@@ -174,8 +161,7 @@ public sealed class DashboardViewModel : ViewModelBase
         OnPropertyChanged(nameof(WinRate));
     }
 
-    /// <summary>INTEGRATION POINT: push live stats from GET /api/stats.</summary>
-    public void ApplyStats(Services.StatsDto stats)
+    public void ApplyStats(StatsDto stats)
     {
         _sessionProfit    = stats.SessionProfit;
         _totalCoinsSpent  = stats.TotalCoinsSpent;

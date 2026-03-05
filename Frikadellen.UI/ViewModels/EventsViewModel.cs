@@ -47,7 +47,6 @@ public sealed class EventsViewModel : ViewModelBase
 
     public void SetRunning(bool running)
     {
-        _isRunning = running;
         if (running) _mockTimer.Start();
         else          _mockTimer.Stop();
     }
@@ -55,8 +54,7 @@ public sealed class EventsViewModel : ViewModelBase
     private void AddMockEvent()
     {
         var evt = MockDataService.RandomEvent();
-        Events.Insert(0, evt);
-        if (Events.Count > 200) Events.RemoveAt(Events.Count - 1);
+        AddEvent(evt);
     }
 
     public void AddEvent(EventItem item)

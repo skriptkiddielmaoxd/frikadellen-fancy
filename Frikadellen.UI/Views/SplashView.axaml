@@ -5,51 +5,14 @@
              x:DataType="vm:SplashViewModel">
 
   <UserControl.Styles>
-
-    <!-- ═══ PULSING OUTER RING ═══ -->
-    <Style Selector="Ellipse.pulse-ring">
+    <!-- Logo bounce-in -->
+    <Style Selector="Border.splash-logo">
       <Style.Animations>
-        <Animation Duration="0:0:2.5" IterationCount="INFINITE" PlaybackDirection="Alternate" Easing="SineEaseInOut">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0.15" />
-            <Setter Property="ScaleTransform.ScaleX" Value="1.0" />
-            <Setter Property="ScaleTransform.ScaleY" Value="1.0" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="0.35" />
-            <Setter Property="ScaleTransform.ScaleX" Value="1.15" />
-            <Setter Property="ScaleTransform.ScaleY" Value="1.15" />
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-
-    <!-- ═══ PULSING INNER RING ═══ -->
-    <Style Selector="Ellipse.pulse-ring-inner">
-      <Style.Animations>
-        <Animation Duration="0:0:2.0" IterationCount="INFINITE" PlaybackDirection="Alternate" Easing="SineEaseInOut">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0.25" />
-            <Setter Property="ScaleTransform.ScaleX" Value="1.0" />
-            <Setter Property="ScaleTransform.ScaleY" Value="1.0" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="0.45" />
-            <Setter Property="ScaleTransform.ScaleX" Value="1.08" />
-            <Setter Property="ScaleTransform.ScaleY" Value="1.08" />
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-
-    <!-- Logo bounce-in (scale + fade) -->
-    <Style Selector="Border.logo-mark">
-      <Style.Animations>
-        <Animation Duration="0:0:0.8" Easing="BackEaseOut" FillMode="Forward">
+        <Animation Duration="0:0:0.8" Easing="BounceEaseOut" FillMode="Forward">
           <KeyFrame Cue="0%">
             <Setter Property="Opacity" Value="0" />
-            <Setter Property="ScaleTransform.ScaleX" Value="0.2" />
-            <Setter Property="ScaleTransform.ScaleY" Value="0.2" />
+            <Setter Property="ScaleTransform.ScaleX" Value="0.3" />
+            <Setter Property="ScaleTransform.ScaleY" Value="0.3" />
           </KeyFrame>
           <KeyFrame Cue="100%">
             <Setter Property="Opacity" Value="1" />
@@ -60,13 +23,13 @@
       </Style.Animations>
     </Style>
 
-    <!-- Title reveal with slide -->
-    <Style Selector="TextBlock.splash-title">
+    <!-- Text fade-in -->
+    <Style Selector="StackPanel.splash-text">
       <Style.Animations>
-        <Animation Duration="0:0:0.7" Delay="0:0:0.45" Easing="CubicEaseOut" FillMode="Forward">
+        <Animation Duration="0:0:0.5" Delay="0:0:0.4" Easing="CubicEaseOut" FillMode="Forward">
           <KeyFrame Cue="0%">
             <Setter Property="Opacity" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="24" />
+            <Setter Property="TranslateTransform.Y" Value="12" />
           </KeyFrame>
           <KeyFrame Cue="100%">
             <Setter Property="Opacity" Value="1" />
@@ -76,42 +39,10 @@
       </Style.Animations>
     </Style>
 
-    <!-- Tagline reveal -->
-    <Style Selector="TextBlock.splash-tagline">
+    <!-- Progress bar container fade-in -->
+    <Style Selector="Border.progress-container">
       <Style.Animations>
-        <Animation Duration="0:0:0.5" Delay="0:0:0.75" Easing="CubicEaseOut" FillMode="Forward">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="14" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="1" />
-            <Setter Property="TranslateTransform.Y" Value="0" />
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-
-    <!-- Progress bar container reveal -->
-    <Style Selector="Border.progress-wrap">
-      <Style.Animations>
-        <Animation Duration="0:0:0.5" Delay="0:0:1.0" Easing="CubicEaseOut" FillMode="Forward">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="ScaleTransform.ScaleX" Value="0.8" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="1" />
-            <Setter Property="ScaleTransform.ScaleX" Value="1" />
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-
-    <!-- Status text reveal -->
-    <Style Selector="TextBlock.status-text">
-      <Style.Animations>
-        <Animation Duration="0:0:0.4" Delay="0:0:1.15" Easing="CubicEaseOut" FillMode="Forward">
+        <Animation Duration="0:0:0.5" Delay="0:0:0.6" Easing="CubicEaseOut" FillMode="Forward">
           <KeyFrame Cue="0%">
             <Setter Property="Opacity" Value="0" />
           </KeyFrame>
@@ -121,275 +52,91 @@
         </Animation>
       </Style.Animations>
     </Style>
-
-    <!-- Version tag reveal -->
-    <Style Selector="TextBlock.version-tag">
-      <Style.Animations>
-        <Animation Duration="0:0:0.4" Delay="0:0:0.9" Easing="CubicEaseOut" FillMode="Forward">
-          <KeyFrame Cue="0%">
-            <Setter Property="Opacity" Value="0" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="Opacity" Value="1" />
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-
-    <!-- Floating particle dots -->
-    <Style Selector="Ellipse.particle-1">
-      <Style.Animations>
-        <Animation Duration="0:0:8" IterationCount="INFINITE" PlaybackDirection="Alternate" Easing="SineEaseInOut">
-          <KeyFrame Cue="0%">
-            <Setter Property="TranslateTransform.X" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="0" />
-            <Setter Property="Opacity" Value="0.3" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="TranslateTransform.X" Value="30" />
-            <Setter Property="TranslateTransform.Y" Value="-20" />
-            <Setter Property="Opacity" Value="0.7" />
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-
-    <Style Selector="Ellipse.particle-2">
-      <Style.Animations>
-        <Animation Duration="0:0:10" IterationCount="INFINITE" PlaybackDirection="Alternate" Easing="SineEaseInOut">
-          <KeyFrame Cue="0%">
-            <Setter Property="TranslateTransform.X" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="0" />
-            <Setter Property="Opacity" Value="0.2" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="TranslateTransform.X" Value="-25" />
-            <Setter Property="TranslateTransform.Y" Value="15" />
-            <Setter Property="Opacity" Value="0.6" />
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-
-    <Style Selector="Ellipse.particle-3">
-      <Style.Animations>
-        <Animation Duration="0:0:7" IterationCount="INFINITE" PlaybackDirection="Alternate" Easing="SineEaseInOut">
-          <KeyFrame Cue="0%">
-            <Setter Property="TranslateTransform.X" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="0" />
-            <Setter Property="Opacity" Value="0.15" />
-          </KeyFrame>
-          <KeyFrame Cue="100%">
-            <Setter Property="TranslateTransform.X" Value="20" />
-            <Setter Property="TranslateTransform.Y" Value="25" />
-            <Setter Property="Opacity" Value="0.5" />
-          </KeyFrame>
-        </Animation>
-      </Style.Animations>
-    </Style>
-
   </UserControl.Styles>
 
-  <!-- Full-screen splash background -->
   <Grid Background="{DynamicResource BgBaseBrush}">
 
-    <!-- ═══ AMBIENT GLOW LAYER ═══ -->
-    <!-- Large fuchsia radial glow -->
-    <Ellipse Width="500" Height="500"
+    <!-- Soft radial glow in the background -->
+    <Ellipse Width="700" Height="700"
              HorizontalAlignment="Center"
-             VerticalAlignment="Center"
-             Margin="0,-60,0,0"
-             IsHitTestVisible="False">
+             VerticalAlignment="Center">
       <Ellipse.Fill>
         <RadialGradientBrush>
-          <GradientStop Color="#25E879F9" Offset="0" />
+          <GradientStop Color="#08E879F9" Offset="0" />
           <GradientStop Color="#00E879F9" Offset="1" />
         </RadialGradientBrush>
       </Ellipse.Fill>
     </Ellipse>
 
-    <!-- Cyan secondary glow -->
-    <Ellipse Width="300" Height="300"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center"
-             Margin="200,-120,0,0"
-             IsHitTestVisible="False">
-      <Ellipse.Fill>
-        <RadialGradientBrush>
-          <GradientStop Color="#1522D3EE" Offset="0" />
-          <GradientStop Color="#0022D3EE" Offset="1" />
-        </RadialGradientBrush>
-      </Ellipse.Fill>
-    </Ellipse>
-
-    <!-- ═══ FLOATING PARTICLE DOTS ═══ -->
-    <Canvas IsHitTestVisible="False">
-      <Ellipse Width="4" Height="4" Fill="#60E879F9" Classes="particle-1"
-               Canvas.Left="200" Canvas.Top="150">
-        <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
-      </Ellipse>
-      <Ellipse Width="3" Height="3" Fill="#5022D3EE" Classes="particle-2"
-               Canvas.Left="900" Canvas.Top="200">
-        <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
-      </Ellipse>
-      <Ellipse Width="5" Height="5" Fill="#40FB923C" Classes="particle-3"
-               Canvas.Left="350" Canvas.Top="500">
-        <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
-      </Ellipse>
-      <Ellipse Width="3" Height="3" Fill="#50E879F9" Classes="particle-2"
-               Canvas.Left="700" Canvas.Top="450">
-        <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
-      </Ellipse>
-      <Ellipse Width="4" Height="4" Fill="#4022D3EE" Classes="particle-1"
-               Canvas.Left="1050" Canvas.Top="350">
-        <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
-      </Ellipse>
-      <Ellipse Width="3" Height="3" Fill="#35A78BFA" Classes="particle-3"
-               Canvas.Left="150" Canvas.Top="380">
-        <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
-      </Ellipse>
-      <Ellipse Width="4" Height="4" Fill="#30E879F9" Classes="particle-1"
-               Canvas.Left="550" Canvas.Top="120">
-        <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
-      </Ellipse>
-    </Canvas>
-
-    <!-- ═══ PULSING RING EFFECTS ═══ -->
-    <!-- Outer ring -->
-    <Ellipse Width="160" Height="160" Classes="pulse-ring"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center"
-             Margin="0,-60,0,0"
-             Stroke="#E879F9" StrokeThickness="1"
-             Fill="Transparent"
-             RenderTransformOrigin="0.5,0.5"
-             IsHitTestVisible="False">
-      <Ellipse.RenderTransform><ScaleTransform /></Ellipse.RenderTransform>
-    </Ellipse>
-
-    <!-- Inner ring -->
-    <Ellipse Width="110" Height="110" Classes="pulse-ring-inner"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center"
-             Margin="0,-60,0,0"
-             Stroke="#22D3EE" StrokeThickness="0.8"
-             Fill="Transparent"
-             RenderTransformOrigin="0.5,0.5"
-             IsHitTestVisible="False">
-      <Ellipse.RenderTransform><ScaleTransform /></Ellipse.RenderTransform>
-    </Ellipse>
-
-    <!-- ═══ CENTRED SPLASH CONTENT ═══ -->
     <StackPanel HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Spacing="0">
 
-      <!-- Logo mark — diamond with glow -->
-      <Border Classes="logo-mark"
-              Width="80" Height="80"
-              CornerRadius="20"
-              Background="#18E879F9"
-              BorderBrush="#50E879F9"
+      <!-- Logo -->
+      <Border Classes="splash-logo"
+              Width="100" Height="100"
+              CornerRadius="28"
+              Background="#15E879F9"
+              BorderBrush="#30E879F9"
               BorderThickness="1.5"
+              BoxShadow="0 0 60 0 #30E879F9"
               HorizontalAlignment="Center"
-              BoxShadow="0 0 50 0 #50E879F9, 0 0 100 0 #2022D3EE"
-              RenderTransformOrigin="0.5,0.5">
-        <Border.RenderTransform>
-          <ScaleTransform />
-        </Border.RenderTransform>
-        <Grid>
-          <TextBlock Text="◆"
-                     FontSize="36"
-                     Foreground="{DynamicResource AccentPrimaryBrush}"
-                     HorizontalAlignment="Center"
-                     VerticalAlignment="Center"
-                     FontWeight="Bold" />
-        </Grid>
+              Margin="0,0,0,28"
+              RenderTransformOrigin="0.5,0.5"
+              Opacity="0">
+        <Border.RenderTransform><ScaleTransform /></Border.RenderTransform>
+        <TextBlock Text="&#x25C6;" FontSize="42"
+                   Foreground="{DynamicResource AccentPrimaryBrush}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center" />
       </Border>
 
-      <Border Height="28" />
+      <!-- App name + version -->
+      <StackPanel Classes="splash-text"
+                  HorizontalAlignment="Center"
+                  Spacing="6"
+                  Margin="0,0,0,36"
+                  Opacity="0">
+        <StackPanel.RenderTransform><TranslateTransform /></StackPanel.RenderTransform>
+        <TextBlock Text="Frikadellen"
+                   FontSize="36" FontWeight="ExtraBold"
+                   Foreground="{DynamicResource TextPrimaryBrush}"
+                   HorizontalAlignment="Center" />
+        <TextBlock Text="{Binding AppVersion}"
+                   FontSize="14"
+                   Foreground="{DynamicResource TextMutedBrush}"
+                   HorizontalAlignment="Center" />
+      </StackPanel>
 
-      <!-- App title -->
-      <TextBlock Classes="splash-title"
-                 Text="FRIKADELLEN"
-                 FontSize="38"
-                 FontWeight="ExtraBold"
-                 LetterSpacing="8"
-                 Foreground="{DynamicResource TextPrimaryBrush}"
-                 HorizontalAlignment="Center"
-                 Opacity="0">
-        <TextBlock.RenderTransform>
-          <TranslateTransform />
-        </TextBlock.RenderTransform>
-      </TextBlock>
-
-      <Border Height="10" />
-
-      <!-- Tagline -->
-      <TextBlock Classes="splash-tagline"
-                 Text="Hypixel Skyblock Automation"
-                 FontSize="13"
-                 Foreground="{DynamicResource TextMutedBrush}"
-                 HorizontalAlignment="Center"
-                 LetterSpacing="3"
-                 Opacity="0">
-        <TextBlock.RenderTransform>
-          <TranslateTransform />
-        </TextBlock.RenderTransform>
-      </TextBlock>
-
-      <Border Height="52" />
-
-      <!-- Progress bar -->
-      <Border Classes="progress-wrap" Width="300" Opacity="0"
-              RenderTransformOrigin="0.5,0.5">
-        <Border.RenderTransform><ScaleTransform /></Border.RenderTransform>
+      <!-- Progress bar + status -->
+      <Border Classes="progress-container"
+              Width="300"
+              Opacity="0">
         <StackPanel Spacing="12">
-          <!-- Track with gradient fill -->
-          <Border Height="3" CornerRadius="2" Background="#1F1A2E">
-            <Border CornerRadius="2"
+          <!-- Track -->
+          <Border Height="4" CornerRadius="2"
+                  Background="#20E879F9">
+            <!-- Fill bar — shimmer effect via gradient -->
+            <Border Height="4" CornerRadius="2"
                     HorizontalAlignment="Left"
-                    Width="{Binding Progress, Converter={x:Static vm:ProgressToWidthConverter.Instance}}"
-                    BoxShadow="0 0 8 0 #40E879F9">
+                    Width="{Binding Progress, Converter={x:Static vm:ProgressToWidthConverter.Instance}}">
               <Border.Background>
                 <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">
                   <GradientStop Color="#E879F9" Offset="0" />
-                  <GradientStop Color="#22D3EE" Offset="1" />
+                  <GradientStop Color="#22D3EE" Offset="0.5" />
+                  <GradientStop Color="#E879F9" Offset="1" />
                 </LinearGradientBrush>
               </Border.Background>
             </Border>
           </Border>
 
-          <!-- Status text -->
-          <TextBlock Classes="status-text"
-                     Text="{Binding StatusMessage}"
-                     FontSize="11"
+          <TextBlock Text="{Binding StatusMessage}"
+                     FontSize="12"
                      Foreground="{DynamicResource TextMutedBrush}"
-                     HorizontalAlignment="Center"
-                     Opacity="0" />
+                     HorizontalAlignment="Center" />
         </StackPanel>
       </Border>
 
     </StackPanel>
-
-    <!-- Version tag bottom-right -->
-    <TextBlock Classes="version-tag"
-               Text="{Binding AppVersion}"
-               FontSize="11"
-               Foreground="{DynamicResource TextMutedBrush}"
-               HorizontalAlignment="Right"
-               VerticalAlignment="Bottom"
-               Margin="0,0,20,16"
-               Opacity="0" />
-
-    <!-- Bottom left: copyright -->
-    <TextBlock Text="frikadellen-fancy"
-               FontSize="11"
-               Foreground="{DynamicResource TextMutedBrush}"
-               HorizontalAlignment="Left"
-               VerticalAlignment="Bottom"
-               Margin="20,0,0,16"
-               Opacity="0.4" />
-
   </Grid>
 </UserControl>
