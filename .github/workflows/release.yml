@@ -1,66 +1,73 @@
-name: Manual Release (dispatch only)
+name: Release on tag (automatic)
 
-# This workflow is intentionally manual to avoid automatic releases
-# being created by upstream workflow copies. Use `Run workflow` and
-# provide the `tag_name` when creating a release.
+# Builds release artifacts for Linux, Windows and macOS when a tag like
+# `v*` is pushed, then creates a GitHub Release and uploads the artifacts.
 
 permissions:
   contents: write
 
 on:
-  workflow_dispatch:
-    inputs:
-      tag_name:
-        description: 'Tag to create or use for the release (e.g. v3.0.1)'
-        required: true
-      release_name:
-        description: 'Release title (optional)'
-        required: false
-      body:
-        description: 'Release notes/body (optional)'
-        required: false
-      prerelease:
-        description: 'Mark as prerelease'
-        required: false
-        default: 'false'
+  push:
+    tags:
+      - 'v*'
 
 jobs:
-  release:
-    name: Build and create release
-    runs-on: ubuntu-latest
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
 
-      - name: Build
-        run: cargo build --release || true
+      - name: Build release
+        run: cargo build --release
 
       - name: Prepare artifact
         run: |
           mkdir -p out || true
-          if [ -f target/release/frikadellen_baf ] ; then cp target/release/frikadellen_baf out/ || true ; fi
+          if [ -f target/release/frikadellen_baf ]; then cp target/release/frikadellen_baf out/frikadellen_baf-${{ matrix.os }} || true; fi
+          if [ -f target/release/frikadellen_baf.exe ]; then cp target/release/frikadellen_baf.exe out/frikadellen_baf-${{ matrix.os }}.exe || true; fi
+        shell: bash
 
-      - name: Create or update GitHub Release
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frikadellen-${{ matrix.os }}
+          path: out/**
+
+  publish:
+    name: Create Release and upload artifacts
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.repository == 'skriptkiddielmaoxd/frikadellen-fancy'
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: out
+
+      - name: Create GitHub Release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ github.event.inputs.tag_name }}
-          release_name: ${{ github.event.inputs.release_name }}
-          body: ${{ github.event.inputs.body }}
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
+          body: |
+            Release ${{ github.ref_name }}
+            Artifacts built for linux/windows/macos.
           draft: false
-          prerelease: ${{ github.event.inputs.prerelease }}
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload release artifacts
-        if: always()
         uses: softprops/action-gh-release@v1
         with:
           files: out/**
