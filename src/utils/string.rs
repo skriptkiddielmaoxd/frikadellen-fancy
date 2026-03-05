@@ -1,5 +1,4 @@
 /// String utility functions
-
 /// Format a number with thousands separators
 pub fn format_number_with_separators(n: u64) -> String {
     let s = n.to_string();

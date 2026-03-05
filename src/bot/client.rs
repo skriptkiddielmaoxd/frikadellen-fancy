@@ -617,6 +617,7 @@ pub struct BotClientState {
     /// Time when we joined SkyBlock (for timeout detection)
     pub skyblock_join_time: Arc<RwLock<Option<tokio::time::Instant>>>,
     /// WebSocket client for sending messages (e.g., inventory uploads)
+    #[allow(dead_code)]
     pub ws_client: Option<CoflWebSocket>,
     /// true = claiming purchased item, false = claiming sold item
     pub claiming_purchased: Arc<RwLock<bool>>,
