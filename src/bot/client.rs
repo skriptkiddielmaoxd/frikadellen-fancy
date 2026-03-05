@@ -198,7 +198,7 @@ impl BotClient {
     /// # Example
     ///
     /// ```no_run
-    /// use frikadellen_baf::bot::BotClient;
+    /// use frikadellen_fancy::bot::BotClient;
     ///
     /// #[tokio::main]
     /// async fn main() {

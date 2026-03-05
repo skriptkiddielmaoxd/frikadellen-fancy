@@ -103,7 +103,7 @@ Each window click must increment this counter to avoid detection.
 ### Usage Example
 
 ```rust
-use frikadellen_baf::bot::client::BotClient;
+use frikadellen_fancy::bot::client::BotClient;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

@@ -1,7 +1,7 @@
 use anyhow::Result;
 use atty::Stream;
 use dialoguer::{Confirm, Input};
-use frikadellen_baf::{
+use frikadellen_fancy::{
     bot::BotClient,
     config::ConfigLoader,
     logging::{init_logger, print_mc_chat},
@@ -28,9 +28,9 @@ const VERSION: &str = "af-3.0";
 /// - ≥100M → 2.5%
 fn calculate_ah_fee(price: u64) -> u64 {
     if price < 10_000_000 {
-        price / 100
-    } else if price < 100_000_000 {
-        price * 2 / 100
+                    item_name,
+                    price,
+                    buyer,
     } else {
         price * 25 / 1000
     }
@@ -290,7 +290,7 @@ async fn main() -> Result<()> {
                 ingame_name
             );
             let new_id = uuid::Uuid::new_v4().to_string();
-            let new_session = frikadellen_baf::config::types::CoflSession {
+            let new_session = frikadellen_fancy::config::types::CoflSession {
                 id: new_id.clone(),
                 expires: chrono::Utc::now() + chrono::Duration::days(180), // 180 days like TypeScript
             };
@@ -309,7 +309,7 @@ async fn main() -> Result<()> {
             ingame_name
         );
         let new_id = uuid::Uuid::new_v4().to_string();
-        let new_session = frikadellen_baf::config::types::CoflSession {
+        let new_session = frikadellen_fancy::config::types::CoflSession {
             id: new_id.clone(),
             expires: chrono::Utc::now() + chrono::Duration::days(180), // 180 days like TypeScript
         };
@@ -351,7 +351,7 @@ async fn main() -> Result<()> {
             tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
             let conn_id = conn_id_init.lock().ok().and_then(|g| g.clone());
             let premium = premium_init.lock().ok().and_then(|g| g.clone());
-            frikadellen_baf::webhook::send_webhook_initialized(
+            frikadellen_fancy::webhook::send_webhook_initialized(
                 &name,
                 ah,
                 bz,
@@ -407,7 +407,7 @@ async fn main() -> Result<()> {
             script_running: script_running.clone(),
             ui_broadcast: ui_broadcast_tx.clone(),
         });
-        tokio::spawn(frikadellen_baf::web::start_web_server(
+        tokio::spawn(frikadellen_fancy::web::start_web_server(
             web_state,
             config.web_gui_port,
         ));
@@ -441,7 +441,7 @@ async fn main() -> Result<()> {
     }
 
     // ── Spawn the Discord bot (if configured) ─────────────────────────
-    let discord_notifier: Option<frikadellen_baf::discord::DiscordNotifier> =
+    let discord_notifier: Option<frikadellen_fancy::discord::DiscordNotifier> =
         if let Some(discord_token) = config.discord_bot_token.clone().filter(|t| !t.is_empty()) {
             let sr = script_running.clone();
             let bc = bot_client.clone();
@@ -449,7 +449,7 @@ async fn main() -> Result<()> {
             let wl = web_event_log.clone();
             let name = ingame_name.clone();
             let ch = config.discord_channel_id;
-            let n = frikadellen_baf::discord::start_discord_bot(
+            let n = frikadellen_fancy::discord::start_discord_bot(
                 discord_token,
                 sr,
                 bc,
@@ -490,17 +490,17 @@ async fn main() -> Result<()> {
     tokio::spawn(async move {
         while let Some(event) = bot_client_clone.next_event().await {
             match event {
-                frikadellen_baf::bot::BotEvent::Login => {
+                frikadellen_fancy::bot::BotEvent::Login => {
                     info!("✓ Bot logged into Minecraft successfully");
                     web_log_events.push("system", "Bot logged into Minecraft".to_string());
                     let _ = ui_tx_events.send(serde_json::json!({"type": "event", "kind": "system", "message": "Bot logged into Minecraft"}).to_string());
                 }
-                frikadellen_baf::bot::BotEvent::Spawn => {
+                frikadellen_fancy::bot::BotEvent::Spawn => {
                     info!("✓ Bot spawned in world and ready");
                     web_log_events.push("system", "Bot spawned in world".to_string());
                     let _ = ui_tx_events.send(serde_json::json!({"type": "event", "kind": "system", "message": "Bot spawned in world"}).to_string());
                 }
-                frikadellen_baf::bot::BotEvent::ChatMessage(msg) => {
+                frikadellen_fancy::bot::BotEvent::ChatMessage(msg) => {
                     print_mc_chat(&msg);
                     web_log_events.push("chat", msg.clone());
                     let _ = ui_tx_events.send(
@@ -508,16 +508,16 @@ async fn main() -> Result<()> {
                             .to_string(),
                     );
                 }
-                frikadellen_baf::bot::BotEvent::WindowOpen(id, window_type, title) => {
+                frikadellen_fancy::bot::BotEvent::WindowOpen(id, window_type, title) => {
                     debug!(
                         "Window opened: {} (ID: {}, Type: {})",
                         title, id, window_type
                     );
                 }
-                frikadellen_baf::bot::BotEvent::WindowClose => {
+                frikadellen_fancy::bot::BotEvent::WindowClose => {
                     debug!("Window closed");
                 }
-                frikadellen_baf::bot::BotEvent::Disconnected(reason) => {
+                frikadellen_fancy::bot::BotEvent::Disconnected(reason) => {
                     warn!("Bot disconnected: {}", reason);
                     web_log_events.push("error", format!("Disconnected: {}", reason));
                     let _ = ui_tx_events.send(serde_json::json!({"type": "event", "kind": "error", "message": format!("Disconnected: {}", reason)}).to_string());
@@ -527,7 +527,7 @@ async fn main() -> Result<()> {
                             let name = ingame_name_for_events.clone();
                             let ban_reason = reason.clone();
                             tokio::spawn(async move {
-                                frikadellen_baf::webhook::send_webhook_banned(
+                                frikadellen_fancy::webhook::send_webhook_banned(
                                     &name,
                                     &ban_reason,
                                     &url,
@@ -537,12 +537,12 @@ async fn main() -> Result<()> {
                         }
                     }
                 }
-                frikadellen_baf::bot::BotEvent::Kicked(reason) => {
+                frikadellen_fancy::bot::BotEvent::Kicked(reason) => {
                     warn!("Bot kicked: {}", reason);
                     web_log_events.push("error", format!("Kicked: {}", reason));
                     let _ = ui_tx_events.send(serde_json::json!({"type": "event", "kind": "error", "message": format!("Kicked: {}", reason)}).to_string());
                 }
-                frikadellen_baf::bot::BotEvent::StartupComplete { orders_cancelled } => {
+                frikadellen_fancy::bot::BotEvent::StartupComplete { orders_cancelled } => {
                     info!("[Startup] Startup complete - bot is ready to flip! ({} order(s) cancelled)", orders_cancelled);
                     web_log_events.push(
                         "system",
@@ -599,7 +599,7 @@ async fn main() -> Result<()> {
                             .and_then(|g| g.clone());
                         let premium = cofl_premium_events.lock().ok().and_then(|g| g.clone());
                         tokio::spawn(async move {
-                            frikadellen_baf::webhook::send_webhook_startup_complete(
+                            frikadellen_fancy::webhook::send_webhook_startup_complete(
                                 &name,
                                 orders_cancelled,
                                 ah,
@@ -636,7 +636,7 @@ async fn main() -> Result<()> {
                         warn!("[Discord] No notifier — startup-complete notification skipped");
                     }
                 }
-                frikadellen_baf::bot::BotEvent::ItemPurchased {
+                frikadellen_fancy::bot::BotEvent::ItemPurchased {
                     item_name,
                     price,
                     buy_speed_ms: event_buy_speed_ms,
@@ -663,8 +663,8 @@ async fn main() -> Result<()> {
                     // Queue claim at Normal priority so any pending High-priority flip
                     // purchases run before we open the AH windows to collect.
                     command_queue_clone.enqueue(
-                        frikadellen_baf::types::CommandType::ClaimPurchasedItem,
-                        frikadellen_baf::types::CommandPriority::Normal,
+                        frikadellen_fancy::types::CommandType::ClaimPurchasedItem,
+                        frikadellen_fancy::types::CommandPriority::Normal,
                         false,
                     );
                     // Look up stored flip data and update with real buy price + purchase time.
@@ -672,7 +672,7 @@ async fn main() -> Result<()> {
                     // Buy speed comes from the event (BIN Auction View open → escrow message),
                     // which is more accurate than the flip-receive-to-purchase tracker timing.
                     let (opt_target, opt_profit, colored_name, opt_auction_uuid) = {
-                        let key = frikadellen_baf::utils::remove_minecraft_colors(&item_name)
+                        let key = frikadellen_fancy::utils::remove_minecraft_colors(&item_name)
                             .to_lowercase();
                         match flip_tracker_events.lock() {
                             Ok(mut tracker) => {
@@ -715,7 +715,7 @@ async fn main() -> Result<()> {
                     {
                         let tag = {
                             let key =
-                                frikadellen_baf::utils::remove_minecraft_colors(&colored_name)
+                                frikadellen_fancy::utils::remove_minecraft_colors(&colored_name)
                                     .to_lowercase();
                             flip_tracker_events
                                 .lock()
@@ -758,7 +758,7 @@ async fn main() -> Result<()> {
                         "type": "event",
                         "kind": "purchase",
                         "message": format!("✦ PURCHASED {} for {} coins{}{}",
-                            frikadellen_baf::utils::remove_minecraft_colors(&colored_name),
+                            frikadellen_fancy::utils::remove_minecraft_colors(&colored_name),
                             format_coins(price as i64),
                             opt_profit.map(|p| format!(" | Expected profit: {}", format_coins(p))).unwrap_or_default(),
                             event_buy_speed_ms.map(|ms| format!(" | Buy speed: {}ms", ms)).unwrap_or_default())
@@ -771,7 +771,7 @@ async fn main() -> Result<()> {
                         let purse = bot_client_clone.get_purse();
                         let uuid_str = opt_auction_uuid.clone();
                         tokio::spawn(async move {
-                            frikadellen_baf::webhook::send_webhook_item_purchased(
+                            frikadellen_fancy::webhook::send_webhook_item_purchased(
                                 &name,
                                 &item,
                                 price,
@@ -805,19 +805,19 @@ async fn main() -> Result<()> {
                         });
                     }
                 }
-                frikadellen_baf::bot::BotEvent::ItemSold {
+                frikadellen_fancy::bot::BotEvent::ItemSold {
                     item_name,
                     price,
                     buyer,
                 } => {
                     command_queue_clone.enqueue(
-                        frikadellen_baf::types::CommandType::ClaimSoldItem,
-                        frikadellen_baf::types::CommandPriority::High,
+                        frikadellen_fancy::types::CommandType::ClaimSoldItem,
+                        frikadellen_fancy::types::CommandPriority::High,
                         true,
                     );
                     // Look up flip data to calculate actual profit + time to sell
                     let (opt_profit, opt_buy_price, opt_time_secs, opt_auction_uuid) = {
-                        let key = frikadellen_baf::utils::remove_minecraft_colors(&item_name)
+                        let key = frikadellen_fancy::utils::remove_minecraft_colors(&item_name)
                             .to_lowercase();
                         match flip_tracker_events.lock() {
                             Ok(mut tracker) => {
@@ -870,7 +870,7 @@ async fn main() -> Result<()> {
                         "type": "event",
                         "kind": "sold",
                         "message": format!("⚡ SOLD {} to {} for {} coins{}",
-                            frikadellen_baf::utils::remove_minecraft_colors(&item_name),
+                            frikadellen_fancy::utils::remove_minecraft_colors(&item_name),
                             buyer, format_coins(price as i64),
                             opt_profit.map(|p| format!(" | Profit: {}", format_coins(p))).unwrap_or_default())
                     }).to_string());
@@ -882,7 +882,7 @@ async fn main() -> Result<()> {
                         let purse = bot_client_clone.get_purse();
                         let uuid_str = opt_auction_uuid.clone();
                         tokio::spawn(async move {
-                            frikadellen_baf::webhook::send_webhook_item_sold(
+                            frikadellen_fancy::webhook::send_webhook_item_sold(
                                 &name,
                                 &item,
                                 price,
@@ -919,7 +919,7 @@ async fn main() -> Result<()> {
                         });
                     }
                 }
-                frikadellen_baf::bot::BotEvent::BazaarOrderPlaced {
+                frikadellen_fancy::bot::BotEvent::BazaarOrderPlaced {
                     item_name,
                     amount,
                     price_per_unit,
@@ -965,7 +965,7 @@ async fn main() -> Result<()> {
                         let total = price_per_unit * amount as f64;
                         let purse = bot_client_clone.get_purse();
                         tokio::spawn(async move {
-                            frikadellen_baf::webhook::send_webhook_bazaar_order_placed(
+                            frikadellen_fancy::webhook::send_webhook_bazaar_order_placed(
                                 &name,
                                 &item,
                                 amount,
@@ -979,7 +979,7 @@ async fn main() -> Result<()> {
                         });
                     }
                 }
-                frikadellen_baf::bot::BotEvent::AuctionListed {
+                frikadellen_fancy::bot::BotEvent::AuctionListed {
                     item_name,
                     starting_bid,
                     duration_hours,
@@ -1004,7 +1004,7 @@ async fn main() -> Result<()> {
                             "type": "event",
                             "kind": "listing",
                             "message": format!("🏷️ BIN listed: {} @ {} coins for {}h",
-                                frikadellen_baf::utils::remove_minecraft_colors(&item_name),
+                                frikadellen_fancy::utils::remove_minecraft_colors(&item_name),
                                 format_coins(starting_bid as i64), duration_hours)
                         })
                         .to_string(),
@@ -1015,7 +1015,7 @@ async fn main() -> Result<()> {
                         let item = item_name.clone();
                         let purse = bot_client_clone.get_purse();
                         tokio::spawn(async move {
-                            frikadellen_baf::webhook::send_webhook_auction_listed(
+                            frikadellen_fancy::webhook::send_webhook_auction_listed(
                                 &name,
                                 &item,
                                 starting_bid,
@@ -1037,7 +1037,7 @@ async fn main() -> Result<()> {
                         });
                     }
                 }
-                frikadellen_baf::bot::BotEvent::BazaarOrderFilled => {
+                frikadellen_fancy::bot::BotEvent::BazaarOrderFilled => {
                     // UNPLUGGED: bazaar flipping fully disabled for now
                     debug!("Ignoring BazaarOrderFilled (bazaar unplugged)");
                 }
@@ -1059,8 +1059,8 @@ async fn main() -> Result<()> {
     let ui_tx_ws = ui_broadcast_tx.clone();
 
     tokio::spawn(async move {
-        use frikadellen_baf::types::{CommandPriority, CommandType};
-        use frikadellen_baf::websocket::CoflEvent;
+        use frikadellen_fancy::types::{CommandPriority, CommandType};
+        use frikadellen_fancy::websocket::CoflEvent;
 
         while let Some(event) = ws_rx.recv().await {
             match event {
@@ -1105,7 +1105,7 @@ async fn main() -> Result<()> {
 
                     // Store flip in tracker so ItemPurchased / ItemSold webhooks can include profit
                     {
-                        let key = frikadellen_baf::utils::remove_minecraft_colors(&flip.item_name)
+                        let key = frikadellen_fancy::utils::remove_minecraft_colors(&flip.item_name)
                             .to_lowercase();
                         if let Ok(mut tracker) = flip_tracker_ws.lock() {
                             let now = Instant::now();
@@ -1149,8 +1149,8 @@ async fn main() -> Result<()> {
                     let bot_state = bot_client_for_ws.state();
                     if matches!(
                         bot_state,
-                        frikadellen_baf::types::BotState::Startup
-                            | frikadellen_baf::types::BotState::ManagingOrders
+                        frikadellen_fancy::types::BotState::Startup
+                            | frikadellen_fancy::types::BotState::ManagingOrders
                     ) {
                         debug!(
                             "Skipping bazaar flip during startup ({:?}): {}",
@@ -1409,7 +1409,7 @@ async fn main() -> Result<()> {
                                 (Some(item_raw), Some(price), Some(duration)) => {
                                     // Strip Minecraft color codes (§X) from item name
                                     let item_name =
-                                        frikadellen_baf::utils::remove_minecraft_colors(item_raw);
+                                        frikadellen_fancy::utils::remove_minecraft_colors(item_raw);
 
                                     // Look up original purchase price from flip tracker for profit display
                                     let buy_cost = {
@@ -1564,7 +1564,7 @@ async fn main() -> Result<()> {
     let command_delay_ms = config.command_delay_ms;
     let script_running_proc = script_running.clone();
     tokio::spawn(async move {
-        use frikadellen_baf::types::BotState;
+        use frikadellen_fancy::types::BotState;
         loop {
             // Pause command processing when script is stopped
             if !script_running_proc.load(Ordering::Relaxed) {
@@ -1581,9 +1581,9 @@ async fn main() -> Result<()> {
                 // BazaarSellOrder, and ManageOrders.
                 let is_bazaar_related = matches!(
                     cmd.command_type,
-                    frikadellen_baf::types::CommandType::BazaarBuyOrder { .. }
-                        | frikadellen_baf::types::CommandType::BazaarSellOrder { .. }
-                        | frikadellen_baf::types::CommandType::ManageOrders
+                    frikadellen_fancy::types::CommandType::BazaarBuyOrder { .. }
+                        | frikadellen_fancy::types::CommandType::BazaarSellOrder { .. }
+                        | frikadellen_fancy::types::CommandType::ManageOrders
                 );
                 if is_bazaar_related && bazaar_flips_paused_proc.load(Ordering::Relaxed) {
                     debug!(
@@ -1603,13 +1603,13 @@ async fn main() -> Result<()> {
                 // Per-command-type timeout: how long to wait for the bot to leave the
                 // busy state before declaring it stuck and forcing a reset.
                 let timeout_secs: u64 = match cmd.command_type {
-                    frikadellen_baf::types::CommandType::ClaimPurchasedItem
-                    | frikadellen_baf::types::CommandType::ClaimSoldItem
-                    | frikadellen_baf::types::CommandType::CheckCookie
-                    | frikadellen_baf::types::CommandType::ManageOrders => 60,
-                    frikadellen_baf::types::CommandType::BazaarBuyOrder { .. }
-                    | frikadellen_baf::types::CommandType::BazaarSellOrder { .. } => 20,
-                    frikadellen_baf::types::CommandType::SellToAuction { .. } => 15,
+                    frikadellen_fancy::types::CommandType::ClaimPurchasedItem
+                    | frikadellen_fancy::types::CommandType::ClaimSoldItem
+                    | frikadellen_fancy::types::CommandType::CheckCookie
+                    | frikadellen_fancy::types::CommandType::ManageOrders => 60,
+                    frikadellen_fancy::types::CommandType::BazaarBuyOrder { .. }
+                    | frikadellen_fancy::types::CommandType::BazaarSellOrder { .. } => 20,
+                    frikadellen_fancy::types::CommandType::SellToAuction { .. } => 15,
                     _ => 10,
                 };
 
@@ -1744,10 +1744,10 @@ async fn main() -> Result<()> {
             // Handle other slash commands - send to Minecraft
             else if input.starts_with('/') {
                 command_queue_for_console.enqueue(
-                    frikadellen_baf::types::CommandType::SendChat {
+                    frikadellen_fancy::types::CommandType::SendChat {
                         message: input.to_string(),
                     },
-                    frikadellen_baf::types::CommandPriority::High,
+                    frikadellen_fancy::types::CommandPriority::High,
                     false,
                 );
                 info!("Queued Minecraft command: {}", input);
@@ -1823,7 +1823,7 @@ async fn main() -> Result<()> {
         let command_queue_island = command_queue.clone();
         let script_running_island = script_running.clone();
         tokio::spawn(async move {
-            use frikadellen_baf::types::{BotState, CommandPriority, CommandType};
+            use frikadellen_fancy::types::{BotState, CommandPriority, CommandType};
 
             // Give the startup workflow time to complete before we start checking.
             sleep(Duration::from_secs(60)).await;
