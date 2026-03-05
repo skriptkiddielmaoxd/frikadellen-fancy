@@ -8,6 +8,45 @@ static HTTP_CLIENT: Lazy<reqwest::Client> = Lazy::new(|| {
         .expect("Failed to build reqwest client")
 });
 
+/// Parameters for [`send_webhook_item_purchased`].
+pub struct ItemPurchasedParams<'a> {
+    pub ingame_name: &'a str,
+    pub item_name: &'a str,
+    pub price: u64,
+    pub target: Option<u64>,
+    pub profit: Option<i64>,
+    pub purse: Option<u64>,
+    pub buy_speed_ms: Option<u64>,
+    pub auction_uuid: Option<&'a str>,
+    pub webhook_url: &'a str,
+}
+
+/// Parameters for [`send_webhook_item_sold`].
+pub struct ItemSoldParams<'a> {
+    pub ingame_name: &'a str,
+    pub item_name: &'a str,
+    pub price: u64,
+    pub buyer: &'a str,
+    pub profit: Option<i64>,
+    pub buy_price: Option<u64>,
+    pub time_to_sell_secs: Option<u64>,
+    pub purse: Option<u64>,
+    pub auction_uuid: Option<&'a str>,
+    pub webhook_url: &'a str,
+}
+
+/// Parameters for [`send_webhook_bazaar_order_placed`].
+pub struct BazaarOrderParams<'a> {
+    pub ingame_name: &'a str,
+    pub item_name: &'a str,
+    pub amount: u64,
+    pub price_per_unit: f64,
+    pub total_price: f64,
+    pub is_buy_order: bool,
+    pub purse: Option<u64>,
+    pub webhook_url: &'a str,
+}
+
 async fn post_embed(webhook_url: &str, payload: serde_json::Value) {
     if let Err(e) = HTTP_CLIENT.post(webhook_url).json(&payload).send().await {
         warn!("[Webhook] Failed to send webhook: {}", e);
@@ -182,17 +221,18 @@ pub async fn send_webhook_startup_complete(
     post_embed(webhook_url, payload).await;
 }
 
-pub async fn send_webhook_item_purchased(
-    ingame_name: &str,
-    item_name: &str,
-    price: u64,
-    target: Option<u64>,
-    profit: Option<i64>,
-    purse: Option<u64>,
-    buy_speed_ms: Option<u64>,
-    auction_uuid: Option<&str>,
-    webhook_url: &str,
-) {
+pub async fn send_webhook_item_purchased(p: ItemPurchasedParams<'_>) {
+    let ItemPurchasedParams {
+        ingame_name,
+        item_name,
+        price,
+        target,
+        profit,
+        purse,
+        buy_speed_ms,
+        auction_uuid,
+        webhook_url,
+    } = p;
     let mut fields = vec![serde_json::json!({
         "name": "💰 Purchase Price",
         "value": format!("```fix\n{} coins\n```", format_number(price as f64)),
@@ -256,18 +296,19 @@ pub async fn send_webhook_item_purchased(
     post_embed(webhook_url, payload).await;
 }
 
-pub async fn send_webhook_item_sold(
-    ingame_name: &str,
-    item_name: &str,
-    price: u64,
-    buyer: &str,
-    profit: Option<i64>,
-    buy_price: Option<u64>,
-    time_to_sell_secs: Option<u64>,
-    purse: Option<u64>,
-    auction_uuid: Option<&str>,
-    webhook_url: &str,
-) {
+pub async fn send_webhook_item_sold(p: ItemSoldParams<'_>) {
+    let ItemSoldParams {
+        ingame_name,
+        item_name,
+        price,
+        buyer,
+        profit,
+        buy_price,
+        time_to_sell_secs,
+        purse,
+        auction_uuid,
+        webhook_url,
+    } = p;
     let safe_item = sanitize_item_name(item_name);
     let status_emoji = match profit {
         Some(p) if p >= 0 => "✅",
@@ -344,16 +385,17 @@ pub async fn send_webhook_item_sold(
     post_embed(webhook_url, payload).await;
 }
 
-pub async fn send_webhook_bazaar_order_placed(
-    ingame_name: &str,
-    item_name: &str,
-    amount: u64,
-    price_per_unit: f64,
-    total_price: f64,
-    is_buy_order: bool,
-    purse: Option<u64>,
-    webhook_url: &str,
-) {
+pub async fn send_webhook_bazaar_order_placed(p: BazaarOrderParams<'_>) {
+    let BazaarOrderParams {
+        ingame_name,
+        item_name,
+        amount,
+        price_per_unit,
+        total_price,
+        is_buy_order,
+        purse,
+        webhook_url,
+    } = p;
     let order_type = if is_buy_order {
         "Buy Order"
     } else {

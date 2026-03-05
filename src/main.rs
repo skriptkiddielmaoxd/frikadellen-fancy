@@ -851,15 +851,17 @@ async fn main() -> Result<()> {
                         let uuid_str = opt_auction_uuid.clone();
                         tokio::spawn(async move {
                             frikadellen_fancy::webhook::send_webhook_item_purchased(
-                                &name,
-                                &item,
-                                price,
-                                opt_target,
-                                opt_profit,
-                                purse,
-                                event_buy_speed_ms,
-                                uuid_str.as_deref(),
-                                &url,
+                                frikadellen_fancy::webhook::ItemPurchasedParams {
+                                    ingame_name: &name,
+                                    item_name: &item,
+                                    price,
+                                    target: opt_target,
+                                    profit: opt_profit,
+                                    purse,
+                                    buy_speed_ms: event_buy_speed_ms,
+                                    auction_uuid: uuid_str.as_deref(),
+                                    webhook_url: &url,
+                                },
                             )
                             .await;
                         });
@@ -872,13 +874,15 @@ async fn main() -> Result<()> {
                         let uuid_str = opt_auction_uuid.clone();
                         tokio::spawn(async move {
                             n.notify_item_purchased(
-                                &item,
-                                price,
-                                opt_target,
-                                opt_profit,
-                                purse,
-                                event_buy_speed_ms,
-                                uuid_str.as_deref(),
+                                frikadellen_fancy::discord::NotifyItemPurchasedParams {
+                                    item_name: item,
+                                    price,
+                                    target: opt_target,
+                                    profit: opt_profit,
+                                    purse,
+                                    buy_speed_ms: event_buy_speed_ms,
+                                    auction_uuid: uuid_str,
+                                },
                             )
                             .await;
                         });
@@ -979,16 +983,18 @@ async fn main() -> Result<()> {
                         let uuid_str = opt_auction_uuid.clone();
                         tokio::spawn(async move {
                             frikadellen_fancy::webhook::send_webhook_item_sold(
-                                &name,
-                                &item,
-                                price,
-                                &b,
-                                opt_profit,
-                                opt_buy_price,
-                                opt_time_secs,
-                                purse,
-                                uuid_str.as_deref(),
-                                &url,
+                                frikadellen_fancy::webhook::ItemSoldParams {
+                                    ingame_name: &name,
+                                    item_name: &item,
+                                    price,
+                                    buyer: &b,
+                                    profit: opt_profit,
+                                    buy_price: opt_buy_price,
+                                    time_to_sell_secs: opt_time_secs,
+                                    purse,
+                                    auction_uuid: uuid_str.as_deref(),
+                                    webhook_url: &url,
+                                },
                             )
                             .await;
                         });
@@ -1002,14 +1008,16 @@ async fn main() -> Result<()> {
                         let uuid_str = opt_auction_uuid.clone();
                         tokio::spawn(async move {
                             n.notify_item_sold(
-                                &item,
-                                price,
-                                &b,
-                                opt_profit,
-                                opt_buy_price,
-                                opt_time_secs,
-                                purse,
-                                uuid_str.as_deref(),
+                                frikadellen_fancy::discord::NotifyItemSoldParams {
+                                    item_name: item,
+                                    price,
+                                    buyer: b,
+                                    profit: opt_profit,
+                                    buy_price: opt_buy_price,
+                                    time_to_sell_secs: opt_time_secs,
+                                    purse,
+                                    auction_uuid: uuid_str,
+                                },
                             )
                             .await;
                         });
@@ -1062,14 +1070,16 @@ async fn main() -> Result<()> {
                         let purse = bot_client_clone.get_purse();
                         tokio::spawn(async move {
                             frikadellen_fancy::webhook::send_webhook_bazaar_order_placed(
-                                &name,
-                                &item,
-                                amount,
-                                price_per_unit,
-                                total,
-                                is_buy_order,
-                                purse,
-                                &url,
+                                frikadellen_fancy::webhook::BazaarOrderParams {
+                                    ingame_name: &name,
+                                    item_name: &item,
+                                    amount,
+                                    price_per_unit,
+                                    total_price: total,
+                                    is_buy_order,
+                                    purse,
+                                    webhook_url: &url,
+                                },
                             )
                             .await;
                         });
