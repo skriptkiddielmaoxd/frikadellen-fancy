@@ -4,215 +4,313 @@
              x:Class="Frikadellen.UI.Views.ConfigView"
              x:DataType="vm:ConfigViewModel">
 
+  <UserControl.Styles>
+    <Style Selector="Border.cfg-card-1">
+      <Style.Animations>
+        <Animation Duration="0:0:0.45" Delay="0:0:0.0" Easing="CubicEaseOut" FillMode="Forward">
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="18" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="Border.cfg-card-2">
+      <Style.Animations>
+        <Animation Duration="0:0:0.45" Delay="0:0:0.08" Easing="CubicEaseOut" FillMode="Forward">
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="18" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="Border.cfg-card-3">
+      <Style.Animations>
+        <Animation Duration="0:0:0.45" Delay="0:0:0.16" Easing="CubicEaseOut" FillMode="Forward">
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="18" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="Border.cfg-card-4">
+      <Style.Animations>
+        <Animation Duration="0:0:0.45" Delay="0:0:0.24" Easing="CubicEaseOut" FillMode="Forward">
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="18" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="Border.cfg-card-5">
+      <Style.Animations>
+        <Animation Duration="0:0:0.45" Delay="0:0:0.32" Easing="CubicEaseOut" FillMode="Forward">
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="18" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="Border.cfg-card-6">
+      <Style.Animations>
+        <Animation Duration="0:0:0.45" Delay="0:0:0.40" Easing="CubicEaseOut" FillMode="Forward">
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="18" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+  </UserControl.Styles>
+
   <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Spacing="20" Margin="4" MaxWidth="700">
+    <StackPanel Spacing="0" Margin="0,0,8,0" MaxWidth="900">
 
-      <TextBlock Text="Config" FontSize="26" FontWeight="Bold"
-                 Foreground="{DynamicResource TextPrimaryDark}" Margin="0,0,0,4" />
-      <TextBlock Text="Runtime configuration — changes take effect immediately."
-                 FontSize="12" Foreground="#636E72" Margin="0,-12,0,0" />
+      <!-- Page header -->
+      <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,20">
+        <StackPanel Grid.Column="0" Spacing="4">
+          <TextBlock Text="Configuration"
+                     FontSize="26" FontWeight="ExtraBold"
+                     Foreground="{DynamicResource TextPrimaryBrush}" />
+          <TextBlock Text="All settings are saved to config/ui-settings.json"
+                     FontSize="13"
+                     Foreground="{DynamicResource TextMutedBrush}" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10"
+                    VerticalAlignment="Center">
+          <TextBlock Text="{Binding SaveStatus}"
+                     FontSize="12"
+                     Foreground="{DynamicResource AccentSuccessBrush}"
+                     VerticalAlignment="Center" Opacity="0.9" />
+          <Button Classes="pill-primary" Command="{Binding SaveCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <TextBlock Text="&#x1F4BE;" FontSize="13" VerticalAlignment="Center" />
+              <TextBlock Text="Save" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </Grid>
 
-      <!-- ════════ FLIP TOGGLES ════════ -->
-      <Border Classes="card" Background="{DynamicResource CardDark}">
-        <StackPanel Spacing="10">
-          <TextBlock Text="Flip Toggles" FontSize="15" FontWeight="SemiBold"
-                     Foreground="{DynamicResource TextPrimaryDark}" />
-          <StackPanel Orientation="Horizontal" Spacing="20">
-            <CheckBox IsChecked="{Binding EnableAhFlips}" Content="Enable AH Flips"
-                      Foreground="{DynamicResource TextPrimaryDark}" />
-            <CheckBox IsChecked="{Binding EnableBazaarFlips}" Content="Enable Bazaar Flips"
-                      Foreground="{DynamicResource TextPrimaryDark}" />
+      <!-- Two-column flip toggles -->
+      <Grid ColumnDefinitions="*,*">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Flip Modes -->
+        <Border Grid.Column="0" Grid.Row="0" Classes="card cfg-card-1"
+                Margin="0,0,8,0" RenderTransformOrigin="0.5,1" Opacity="0">
+          <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
+          <StackPanel Spacing="14">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Border Width="30" Height="30" CornerRadius="10" Background="#18E879F9">
+                <TextBlock Text="&#x1F3AF;" FontSize="14"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+              <TextBlock Text="Flip Modes" FontSize="15" FontWeight="SemiBold"
+                         Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+            </StackPanel>
+            <Border Classes="divider" />
+            <StackPanel Spacing="8">
+              <CheckBox IsChecked="{Binding EnableAhFlips}" Content="Enable AH Flips"
+                        Foreground="{DynamicResource TextSecondaryBrush}" />
+              <CheckBox IsChecked="{Binding EnableBazaarFlips}" Content="Enable Bazaar Flips"
+                        Foreground="{DynamicResource TextSecondaryBrush}" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- Behaviour -->
+        <Border Grid.Column="1" Grid.Row="0" Classes="card cfg-card-2"
+                RenderTransformOrigin="0.5,1" Opacity="0">
+          <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
+          <StackPanel Spacing="14">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Border Width="30" Height="30" CornerRadius="10" Background="#18FBBF24">
+                <TextBlock Text="&#x2699;" FontSize="14"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+              <TextBlock Text="Behaviour" FontSize="15" FontWeight="SemiBold"
+                         Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+            </StackPanel>
+            <Border Classes="divider" />
+            <StackPanel Spacing="8">
+              <CheckBox IsChecked="{Binding BedSpam}" Content="Bed Spam"
+                        Foreground="{DynamicResource TextSecondaryBrush}" />
+              <CheckBox IsChecked="{Binding UseCoflChat}" Content="Cofl Chat"
+                        Foreground="{DynamicResource TextSecondaryBrush}" />
+              <CheckBox IsChecked="{Binding Fastbuy}" Content="Fastbuy (skip confirmation)"
+                        Foreground="{DynamicResource TextSecondaryBrush}" />
+            </StackPanel>
+            <StackPanel Spacing="6" MaxWidth="200" HorizontalAlignment="Left">
+              <TextBlock Text="AUTO COOKIE INTERVAL" Classes="section-title" />
+              <TextBox Classes="field" Text="{Binding AutoCookie}" ToolTip.Tip="0 = disabled" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- Timing -->
+        <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="1" Classes="card cfg-card-3"
+                RenderTransformOrigin="0.5,1" Opacity="0">
+          <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
+          <StackPanel Spacing="14">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Border Width="30" Height="30" CornerRadius="10" Background="#1822D3EE">
+                <TextBlock Text="&#x23F1;" FontSize="14"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+              <TextBlock Text="Timing &amp; Delays" FontSize="15" FontWeight="SemiBold"
+                         Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+            </StackPanel>
+            <Border Classes="divider" />
+            <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto">
+              <StackPanel Grid.Column="0" Grid.Row="0" Spacing="6" Margin="0,0,12,12">
+                <TextBlock Text="FLIP ACTION DELAY (ms)" Classes="section-title" />
+                <TextBox Classes="field" Text="{Binding FlipActionDelay}" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Grid.Row="0" Spacing="6" Margin="0,0,12,12">
+                <TextBlock Text="COMMAND DELAY (ms)" Classes="section-title" />
+                <TextBox Classes="field" Text="{Binding CommandDelayMs}" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Grid.Row="0" Spacing="6" Margin="0,0,0,12">
+                <TextBlock Text="BED SPAM DELAY (ms)" Classes="section-title" />
+                <TextBox Classes="field" Text="{Binding BedSpamClickDelay}" />
+              </StackPanel>
+              <StackPanel Grid.Column="0" Grid.Row="1" Spacing="6" Margin="0,0,12,0">
+                <TextBlock Text="BAZAAR CHECK (s)" Classes="section-title" />
+                <TextBox Classes="field" Text="{Binding BazaarOrderCheckIntervalSeconds}" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Grid.Row="1" Spacing="6" Margin="0,0,12,0">
+                <TextBlock Text="BAZAAR CANCEL (min)" Classes="section-title" />
+                <TextBox Classes="field" Text="{Binding BazaarOrderCancelMinutes}" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Grid.Row="1" Spacing="6">
+                <TextBlock Text="AUCTION DURATION (hrs)" Classes="section-title" />
+                <TextBox Classes="field" Text="{Binding AuctionDurationHours}" />
+              </StackPanel>
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <!-- Skip Filter -->
+        <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" Classes="card cfg-card-4"
+                RenderTransformOrigin="0.5,1" Opacity="0">
+          <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
+          <StackPanel Spacing="14">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Border Width="30" Height="30" CornerRadius="10" Background="#18FB7185">
+                <TextBlock Text="&#x1F6AB;" FontSize="14"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+              <TextBlock Text="Skip Filter" FontSize="15" FontWeight="SemiBold"
+                         Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+            </StackPanel>
+            <Border Classes="divider" />
+            <Grid ColumnDefinitions="*,*,*">
+              <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
+                <TextBlock Text="MIN PROFIT" Classes="section-title" />
+                <TextBox Classes="field" Text="{Binding SkipMinProfit}" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="6" Margin="0,0,12,0">
+                <TextBlock Text="PROFIT % THRESHOLD" Classes="section-title" />
+                <TextBox Classes="field" Text="{Binding SkipProfitPercentage}" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="6">
+                <TextBlock Text="MIN PRICE" Classes="section-title" />
+                <TextBox Classes="field" Text="{Binding SkipMinPrice}" />
+              </StackPanel>
+            </Grid>
+            <WrapPanel Orientation="Horizontal" Margin="0,4,0,0">
+              <CheckBox IsChecked="{Binding SkipAlways}" Content="Skip Always (pause)"
+                        Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,28,4" />
+              <CheckBox IsChecked="{Binding SkipUserFinder}" Content="Skip User Finder"
+                        Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,28,4" />
+              <CheckBox IsChecked="{Binding SkipSkins}" Content="Skip Skins"
+                        Foreground="{DynamicResource TextSecondaryBrush}" />
+            </WrapPanel>
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <!-- Network -->
+      <Border Classes="card cfg-card-5"
+              RenderTransformOrigin="0.5,1" Opacity="0">
+        <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
+        <StackPanel Spacing="14">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Border Width="30" Height="30" CornerRadius="10" Background="#184ADE80">
+              <TextBlock Text="&#x1F310;" FontSize="14"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Text="Network" FontSize="15" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+          </StackPanel>
+          <Border Classes="divider" />
+          <Grid ColumnDefinitions="*,*,*">
+            <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
+              <TextBlock Text="WEB GUI PORT" Classes="section-title" />
+              <TextBox Classes="field" Text="{Binding WebGuiPort}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Grid.ColumnSpan="2" Spacing="6">
+              <TextBlock Text="WEBHOOK URL" Classes="section-title" />
+              <TextBox Classes="field" Text="{Binding WebhookUrl}"
+                       Watermark="https://discord.com/api/webhooks/..." />
+            </StackPanel>
+          </Grid>
+          <StackPanel Spacing="8">
+            <CheckBox IsChecked="{Binding ProxyEnabled}" Content="Enable Proxy"
+                      Foreground="{DynamicResource TextSecondaryBrush}" />
+            <StackPanel Spacing="6" IsVisible="{Binding ProxyEnabled}">
+              <TextBlock Text="PROXY URL" Classes="section-title" />
+              <TextBox Classes="field" Text="{Binding Proxy}"
+                       Watermark="socks5://host:port or http://host:port" />
+            </StackPanel>
           </StackPanel>
         </StackPanel>
       </Border>
 
-      <!-- ════════ TIMING / DELAYS ════════ -->
-      <Border Classes="card" Background="{DynamicResource CardDark}">
-        <StackPanel Spacing="10">
-          <TextBlock Text="Timing &amp; Delays" FontSize="15" FontWeight="SemiBold"
-                     Foreground="{DynamicResource TextPrimaryDark}" />
-
-          <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto" Margin="0,4,0,0">
-            <!-- Row 0 -->
-            <StackPanel Grid.Column="0" Grid.Row="0" Spacing="4" Margin="0,0,10,10">
-              <TextBlock Text="Flip Action Delay (ms)" FontSize="11" Foreground="#B2BEC3" />
-              <TextBox Text="{Binding FlipActionDelay}" CornerRadius="8" Padding="10,8"
-                       ToolTip.Tip="Delay after opening flip GUI (default 150)" />
-            </StackPanel>
-            <StackPanel Grid.Column="1" Grid.Row="0" Spacing="4" Margin="0,0,10,10">
-              <TextBlock Text="Command Delay (ms)" FontSize="11" Foreground="#B2BEC3" />
-              <TextBox Text="{Binding CommandDelayMs}" CornerRadius="8" Padding="10,8"
-                       ToolTip.Tip="Min delay between queued commands (default 500)" />
-            </StackPanel>
-            <StackPanel Grid.Column="2" Grid.Row="0" Spacing="4" Margin="0,0,0,10">
-              <TextBlock Text="Bed Spam Delay (ms)" FontSize="11" Foreground="#B2BEC3" />
-              <TextBox Text="{Binding BedSpamClickDelay}" CornerRadius="8" Padding="10,8"
-                       ToolTip.Tip="Delay between bed spam clicks (default 100)" />
-            </StackPanel>
-
-            <!-- Row 1 -->
-            <StackPanel Grid.Column="0" Grid.Row="1" Spacing="4" Margin="0,0,10,0">
-              <TextBlock Text="Bazaar Check Interval (s)" FontSize="11" Foreground="#B2BEC3" />
-              <TextBox Text="{Binding BazaarOrderCheckIntervalSeconds}" CornerRadius="8" Padding="10,8"
-                       ToolTip.Tip="How often to check bazaar orders (default 30s)" />
-            </StackPanel>
-            <StackPanel Grid.Column="1" Grid.Row="1" Spacing="4" Margin="0,0,10,0">
-              <TextBlock Text="Bazaar Cancel After (min)" FontSize="11" Foreground="#B2BEC3" />
-              <TextBox Text="{Binding BazaarOrderCancelMinutes}" CornerRadius="8" Padding="10,8"
-                       ToolTip.Tip="Cancel bazaar orders older than this (default 5)" />
-            </StackPanel>
-            <StackPanel Grid.Column="2" Grid.Row="1" Spacing="4">
-              <TextBlock Text="Auction Duration (hrs)" FontSize="11" Foreground="#B2BEC3" />
-              <TextBox Text="{Binding AuctionDurationHours}" CornerRadius="8" Padding="10,8"
-                       ToolTip.Tip="Duration of listed auctions (default 24)" />
-            </StackPanel>
-          </Grid>
-        </StackPanel>
-      </Border>
-
-      <!-- ════════ BEHAVIOUR ════════ -->
-      <Border Classes="card" Background="{DynamicResource CardDark}">
-        <StackPanel Spacing="10">
-          <TextBlock Text="Behaviour" FontSize="15" FontWeight="SemiBold"
-                     Foreground="{DynamicResource TextPrimaryDark}" />
-          <WrapPanel Orientation="Horizontal">
-            <CheckBox IsChecked="{Binding BedSpam}" Content="Bed Spam"
-                      Foreground="{DynamicResource TextPrimaryDark}" Margin="0,0,18,6" />
-            <CheckBox IsChecked="{Binding UseCoflChat}" Content="Cofl Chat"
-                      Foreground="{DynamicResource TextPrimaryDark}" Margin="0,0,18,6" />
-            <CheckBox IsChecked="{Binding Fastbuy}" Content="Fastbuy (window-skip)"
-                      Foreground="{DynamicResource TextPrimaryDark}" Margin="0,0,18,6" />
+      <!-- Anti-Detection -->
+      <Border Classes="card cfg-card-6"
+              RenderTransformOrigin="0.5,1" Opacity="0">
+        <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
+        <StackPanel Spacing="14">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Border Width="30" Height="30" CornerRadius="10" Background="#18FB923C">
+              <TextBlock Text="&#x1F6E1;" FontSize="14"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Text="Anti-Detection" FontSize="15" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+          </StackPanel>
+          <Border Classes="divider" />
+          <WrapPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <CheckBox IsChecked="{Binding AntiDetectionEnabled}" Content="Enable Anti-Detection"
+                      Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,24,4" />
+            <CheckBox IsChecked="{Binding EnableJitter}" Content="Timing Jitter"
+                      Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,24,4" />
+            <CheckBox IsChecked="{Binding EnableHumanization}" Content="Humanization"
+                      Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,24,4" />
+            <CheckBox IsChecked="{Binding RandomizeClickPosition}" Content="Randomize Clicks"
+                      Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,24,4" />
+            <CheckBox IsChecked="{Binding EnableFakeMovement}" Content="Fake Movement"
+                      Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,24,4" />
+            <CheckBox IsChecked="{Binding EnableDummyActivity}" Content="Dummy Activity"
+                      Foreground="{DynamicResource TextSecondaryBrush}" />
           </WrapPanel>
-          <StackPanel Spacing="4" MaxWidth="220" HorizontalAlignment="Left">
-            <TextBlock Text="Auto Cookie (interval)" FontSize="11" Foreground="#B2BEC3" />
-            <TextBox Text="{Binding AutoCookie}" CornerRadius="8" Padding="10,8"
-                     ToolTip.Tip="0 = disabled" />
-          </StackPanel>
-        </StackPanel>
-      </Border>
-
-      <!-- ════════ SKIP FILTER ════════ -->
-      <Border Classes="card" Background="{DynamicResource CardDark}">
-        <StackPanel Spacing="10">
-          <TextBlock Text="Skip Filter" FontSize="15" FontWeight="SemiBold"
-                     Foreground="{DynamicResource TextPrimaryDark}" />
-
-          <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto" Margin="0,4,0,0">
-            <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,10,0">
-              <TextBlock Text="Min Profit" FontSize="11" Foreground="#B2BEC3" />
-              <TextBox Text="{Binding SkipMinProfit}" CornerRadius="8" Padding="10,8"
-                       ToolTip.Tip="Skip flips below this profit (default 1,000,000)" />
+          <Grid ColumnDefinitions="*,*,*,*">
+            <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,12,0">
+              <TextBlock Text="JITTER MIN (ms)" Classes="section-title" />
+              <TextBox Classes="field" Text="{Binding JitterMinMs}" />
             </StackPanel>
-            <StackPanel Grid.Column="1" Spacing="4" Margin="0,0,10,0">
-              <TextBlock Text="Profit % Threshold" FontSize="11" Foreground="#B2BEC3" />
-              <TextBox Text="{Binding SkipProfitPercentage}" CornerRadius="8" Padding="10,8"
-                       ToolTip.Tip="Skip flips below this profit % (default 50)" />
+            <StackPanel Grid.Column="1" Spacing="6" Margin="0,0,12,0">
+              <TextBlock Text="JITTER MAX (ms)" Classes="section-title" />
+              <TextBox Classes="field" Text="{Binding JitterMaxMs}" />
             </StackPanel>
-            <StackPanel Grid.Column="2" Spacing="4">
-              <TextBlock Text="Min Price" FontSize="11" Foreground="#B2BEC3" />
-              <TextBox Text="{Binding SkipMinPrice}" CornerRadius="8" Padding="10,8"
-                       ToolTip.Tip="Skip items below this price (default 10,000,000)" />
+            <StackPanel Grid.Column="2" Spacing="6" Margin="0,0,12,0">
+              <TextBlock Text="MAX ACTIONS/MIN" Classes="section-title" />
+              <TextBox Classes="field" Text="{Binding MaxActionsPerMinute}" />
+            </StackPanel>
+            <StackPanel Grid.Column="3" Spacing="6">
+              <TextBlock Text="DUMMY INTERVAL (s)" Classes="section-title" />
+              <TextBox Classes="field" Text="{Binding DummyActivityIntervalSeconds}" />
             </StackPanel>
           </Grid>
-
-          <WrapPanel Orientation="Horizontal" Margin="0,4,0,0">
-            <CheckBox IsChecked="{Binding SkipAlways}" Content="Skip Always"
-                      Foreground="{DynamicResource TextPrimaryDark}" Margin="0,0,18,6" />
-            <CheckBox IsChecked="{Binding SkipUserFinder}" Content="Skip USER Finder"
-                      Foreground="{DynamicResource TextPrimaryDark}" Margin="0,0,18,6" />
-            <CheckBox IsChecked="{Binding SkipSkins}" Content="Skip Skins"
-                      Foreground="{DynamicResource TextPrimaryDark}" Margin="0,0,18,6" />
-          </WrapPanel>
         </StackPanel>
       </Border>
-
-      <!-- ════════ NETWORK ════════ -->
-      <Border Classes="card" Background="{DynamicResource CardDark}">
-        <StackPanel Spacing="10">
-          <TextBlock Text="Network" FontSize="15" FontWeight="SemiBold"
-                     Foreground="{DynamicResource TextPrimaryDark}" />
-
-          <StackPanel Spacing="4">
-            <TextBlock Text="Webhook URL" FontSize="11" Foreground="#B2BEC3" />
-            <TextBox Text="{Binding WebhookUrl}" Watermark="https://discord.com/api/webhooks/..."
-                     CornerRadius="8" Padding="10,8"
-                     ToolTip.Tip="Discord webhook for notifications (empty = disabled)" />
-          </StackPanel>
-
-          <Grid ColumnDefinitions="*,*" Margin="0,4,0,0">
-            <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,10,0">
-              <TextBlock Text="Web GUI Port" FontSize="11" Foreground="#B2BEC3" />
-              <TextBox Text="{Binding WebGuiPort}" CornerRadius="8" Padding="10,8"
-                       ToolTip.Tip="Port for the built-in web dashboard (default 8080)" />
-            </StackPanel>
-            <StackPanel Grid.Column="1" Spacing="4">
-              <TextBlock Text="Proxy" FontSize="11" Foreground="#B2BEC3" />
-              <TextBox Text="{Binding Proxy}" Watermark="socks5://..."
-                       CornerRadius="8" Padding="10,8"
-                       IsEnabled="{Binding ProxyEnabled}"
-                       ToolTip.Tip="SOCKS5 proxy address" />
-            </StackPanel>
-          </Grid>
-
-          <CheckBox IsChecked="{Binding ProxyEnabled}" Content="Enable Proxy"
-                    Foreground="{DynamicResource TextPrimaryDark}" />
-        </StackPanel>
-      </Border>
-
-      <!-- ════════ DISCORD ════════ -->
-      <Border Classes="card" Background="{DynamicResource CardDark}">
-        <StackPanel Spacing="10">
-          <TextBlock Text="Discord" FontSize="15" FontWeight="SemiBold"
-                     Foreground="{DynamicResource TextPrimaryDark}" />
-
-          <StackPanel Spacing="4" MaxWidth="320" HorizontalAlignment="Left">
-            <TextBlock Text="Allowed Channel ID" FontSize="11" Foreground="#B2BEC3" />
-            <TextBox Text="{Binding DiscordChannelId}" Watermark="e.g. 123456789012345678"
-                     CornerRadius="8" Padding="10,8"
-                     ToolTip.Tip="Restrict bot commands to this Discord channel (empty = any channel)" />
-          </StackPanel>
-        </StackPanel>
-      </Border>
-
-      <!-- ════════ ACTIONS ════════ -->
-      <Border Classes="card" Background="{DynamicResource CardDark}">
-        <StackPanel Spacing="8">
-          <TextBlock Text="Saved Configs" FontSize="15" FontWeight="SemiBold"
-                     Foreground="{DynamicResource TextPrimaryDark}" />
-          <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto" RowDefinitions="Auto,Auto" Margin="0,4,0,0">
-            <TextBox Grid.Column="0" Grid.Row="0" Text="{Binding ConfigName}" CornerRadius="8" Padding="10,8"/>
-            <Button Grid.Column="1" Grid.Row="0" Classes="pill" Command="{Binding SaveNamedConfigCommand}">
-              <TextBlock Text="Save" />
-            </Button>
-            <Button Grid.Column="2" Grid.Row="0" Classes="pill" Command="{Binding RefreshNamedConfigsCommand}">
-              <TextBlock Text="Refresh" />
-            </Button>
-            <Button Grid.Column="3" Grid.Row="0" Classes="pill" Command="{Binding LoadNamedConfigCommand}">
-              <TextBlock Text="Load" />
-            </Button>
-            <Button Grid.Column="4" Grid.Row="0" Classes="pill" Command="{Binding DeleteNamedConfigCommand}">
-              <TextBlock Text="Delete" />
-            </Button>
-
-            <ListBox Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="5" Height="140"
-                     ItemsSource="{Binding NamedConfigs}" SelectedItem="{Binding SelectedNamedConfig}"/>
-          </Grid>
-        </StackPanel>
-      </Border>
-      <StackPanel Orientation="Horizontal" Spacing="14" Margin="0,4,0,12">
-        <Button Classes="pill" Background="{DynamicResource BrandPrimary}"
-                Foreground="White" Command="{Binding ApplyCommand}"
-                ToolTip.Tip="Apply configuration changes to the running script">
-          <TextBlock Text="Apply" FontWeight="Bold" />
-        </Button>
-        <Button Classes="pill" Background="{DynamicResource CardDark}"
-                Foreground="{DynamicResource TextPrimaryDark}" Command="{Binding ResetDefaultsCommand}"
-                ToolTip.Tip="Reset all values to defaults">
-          <TextBlock Text="Reset Defaults" FontWeight="Bold" />
-        </Button>
-        <TextBlock Text="{Binding ApplyStatusText}" VerticalAlignment="Center"
-                   Foreground="{DynamicResource BrandSuccess}" FontSize="13" />
-      </StackPanel>
 
     </StackPanel>
   </ScrollViewer>

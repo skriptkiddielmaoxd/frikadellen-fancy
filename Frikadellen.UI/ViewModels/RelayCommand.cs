@@ -16,6 +16,9 @@ public sealed class RelayCommand : ICommand
 
     public RelayCommand(Action execute) : this(_ => execute()) { }
 
+    public RelayCommand(Action execute, Func<bool> canExecute)
+        : this(_ => execute(), _ => canExecute()) { }
+
     public event EventHandler? CanExecuteChanged;
 
     public bool CanExecute(object? parameter) => _canExecute?.Invoke(parameter) ?? true;

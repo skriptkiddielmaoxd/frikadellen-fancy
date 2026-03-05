@@ -6,7 +6,7 @@
         x:DataType="vm:MainWindowViewModel"
         Title="Frikadellen"
         Width="1280" Height="780"
-        MinWidth="900" MinHeight="550"
+        MinWidth="920" MinHeight="560"
         SystemDecorations="None"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
@@ -16,13 +16,66 @@
         WindowStartupLocation="CenterScreen">
 
   <Window.Styles>
-    <!-- Animate content opacity for view transitions -->
-    <Style Selector="ContentControl.viewHost">
+
+    <!-- Animated background orbs -->
+    <Style Selector="Ellipse.orb-fuchsia">
       <Style.Animations>
-        <Animation Duration="0:0:0.3" Easing="CubicEaseOut">
+        <Animation Duration="0:0:16" IterationCount="INFINITE" PlaybackDirection="Alternate" Easing="SineEaseInOut">
+          <KeyFrame Cue="0%">
+            <Setter Property="TranslateTransform.X" Value="0" />
+            <Setter Property="TranslateTransform.Y" Value="0" />
+            <Setter Property="Opacity" Value="0.12" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="TranslateTransform.X" Value="140" />
+            <Setter Property="TranslateTransform.Y" Value="80" />
+            <Setter Property="Opacity" Value="0.18" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+
+    <Style Selector="Ellipse.orb-cyan">
+      <Style.Animations>
+        <Animation Duration="0:0:20" IterationCount="INFINITE" PlaybackDirection="Alternate" Easing="SineEaseInOut">
+          <KeyFrame Cue="0%">
+            <Setter Property="TranslateTransform.X" Value="0" />
+            <Setter Property="TranslateTransform.Y" Value="0" />
+            <Setter Property="Opacity" Value="0.10" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="TranslateTransform.X" Value="-120" />
+            <Setter Property="TranslateTransform.Y" Value="-60" />
+            <Setter Property="Opacity" Value="0.16" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+
+    <Style Selector="Ellipse.orb-orange">
+      <Style.Animations>
+        <Animation Duration="0:0:14" IterationCount="INFINITE" PlaybackDirection="Alternate" Easing="SineEaseInOut">
+          <KeyFrame Cue="0%">
+            <Setter Property="TranslateTransform.X" Value="0" />
+            <Setter Property="TranslateTransform.Y" Value="0" />
+            <Setter Property="Opacity" Value="0.06" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="TranslateTransform.X" Value="80" />
+            <Setter Property="TranslateTransform.Y" Value="-90" />
+            <Setter Property="Opacity" Value="0.10" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+
+    <!-- View host fade+slide transition -->
+    <Style Selector="ContentControl.view-host">
+      <Style.Animations>
+        <Animation Duration="0:0:0.32" Easing="CubicEaseOut" FillMode="Forward">
           <KeyFrame Cue="0%">
             <Setter Property="Opacity" Value="0" />
-            <Setter Property="TranslateTransform.Y" Value="12" />
+            <Setter Property="TranslateTransform.Y" Value="20" />
           </KeyFrame>
           <KeyFrame Cue="100%">
             <Setter Property="Opacity" Value="1" />
@@ -32,202 +85,297 @@
       </Style.Animations>
     </Style>
 
-    <!-- Hero logo animation on load -->
-    <Style Selector="Image.hero-logo">
+    <!-- Chrome button base -->
+    <Style Selector="Button.chrome-btn">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="#6B5F8A" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Width" Value="34" />
+      <Setter Property="Height" Value="28" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="Button.chrome-btn:pointerover">
+      <Setter Property="Background" Value="#18FFFFFF" />
+      <Setter Property="Foreground" Value="#A78BFA" />
+    </Style>
+    <Style Selector="Button.chrome-close:pointerover">
+      <Setter Property="Background" Value="#FB7185" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
+
+    <!-- Status chip colour transition -->
+    <Style Selector="Border.status-chip">
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="Background" Duration="0:0:0.3" />
+        </Transitions>
+      </Setter>
+    </Style>
+
+    <!-- Nav bar fade-in -->
+    <Style Selector="Border.nav-strip">
       <Style.Animations>
-        <Animation Duration="0:0:0.8" Easing="CubicEaseOut" FillMode="Forward">
+        <Animation Duration="0:0:0.5" Delay="0:0:0.1" Easing="CubicEaseOut" FillMode="Forward">
           <KeyFrame Cue="0%">
             <Setter Property="Opacity" Value="0" />
-            <Setter Property="ScaleTransform.ScaleX" Value="0.5" />
-            <Setter Property="ScaleTransform.ScaleY" Value="0.5" />
+            <Setter Property="TranslateTransform.Y" Value="-8" />
           </KeyFrame>
           <KeyFrame Cue="100%">
             <Setter Property="Opacity" Value="1" />
-            <Setter Property="ScaleTransform.ScaleX" Value="1" />
-            <Setter Property="ScaleTransform.ScaleY" Value="1" />
+            <Setter Property="TranslateTransform.Y" Value="0" />
           </KeyFrame>
         </Animation>
       </Style.Animations>
     </Style>
 
-    <!-- Window chrome button hover -->
-    <Style Selector="Button.chrome-btn:pointerover">
-      <Setter Property="Background" Value="#30FFFFFF" />
-    </Style>
-    <Style Selector="Button.chrome-close:pointerover">
-      <Setter Property="Background" Value="#E74C3C" />
-      <Setter Property="Foreground" Value="White" />
-    </Style>
   </Window.Styles>
 
-  <!-- Root border: rounded + shadow -->
-  <Border CornerRadius="16"
+  <!-- Root: rounded window with drop shadow -->
+  <Border CornerRadius="18"
           ClipToBounds="True"
-          BoxShadow="0 4 24 0 #60000000"
-          Background="{DynamicResource SurfaceDark}">
-    <Border.Styles>
-      <!-- Override surface for light theme -->
-      <Style Selector="Border">
-        <!-- handled by ThemeVariant resource binding -->
-      </Style>
-    </Border.Styles>
+          BoxShadow="0 12 60 0 #90000000, 0 0 1 0 #20E879F9"
+          Background="{DynamicResource BgBaseBrush}">
 
-    <Grid RowDefinitions="44,*" ColumnDefinitions="Auto,*">
+    <Grid>
 
-      <!-- ═══ CUSTOM TITLE BAR ═══ -->
-      <Border Grid.Row="0" Grid.ColumnSpan="2"
-              Background="#181E24"
-              Name="TitleBar">
-        <Grid ColumnDefinitions="Auto,*,Auto">
-          <!-- Left: logo + title -->
-          <StackPanel Grid.Column="0" Orientation="Horizontal"
-                      Margin="14,0,0,0" VerticalAlignment="Center" Spacing="10">
-            <Image Source="avares://Frikadellen.UI/Assets/logo.png"
-                   Width="22" Height="22"
-                   Classes="hero-logo"
-                   RenderTransformOrigin="0.5,0.5">
-              <Image.RenderTransform>
-                <ScaleTransform />
-              </Image.RenderTransform>
-            </Image>
-            <TextBlock Text="Frikadellen" FontSize="14" FontWeight="Bold"
-                       Foreground="#DFE6E9" VerticalAlignment="Center" />
-            <!-- Status chip -->
-            <Border CornerRadius="8" Padding="8,3" Background="#6C5CE7"
-                    VerticalAlignment="Center">
-              <TextBlock Text="{Binding StatusText}" FontSize="11"
-                         Foreground="White" FontWeight="SemiBold" />
-            </Border>
-          </StackPanel>
+      <!-- Animated background orbs -->
+      <Canvas IsHitTestVisible="False" ClipToBounds="True">
+        <Ellipse Width="600" Height="600" Classes="orb-fuchsia"
+                 Canvas.Left="-150" Canvas.Top="-200">
+          <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
+          <Ellipse.Fill>
+            <RadialGradientBrush>
+              <GradientStop Color="#E879F9" Offset="0" />
+              <GradientStop Color="#00E879F9" Offset="1" />
+            </RadialGradientBrush>
+          </Ellipse.Fill>
+        </Ellipse>
+        <Ellipse Width="500" Height="500" Classes="orb-cyan"
+                 Canvas.Left="700" Canvas.Top="300">
+          <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
+          <Ellipse.Fill>
+            <RadialGradientBrush>
+              <GradientStop Color="#22D3EE" Offset="0" />
+              <GradientStop Color="#0022D3EE" Offset="1" />
+            </RadialGradientBrush>
+          </Ellipse.Fill>
+        </Ellipse>
+        <Ellipse Width="350" Height="350" Classes="orb-orange"
+                 Canvas.Left="900" Canvas.Top="-50">
+          <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
+          <Ellipse.Fill>
+            <RadialGradientBrush>
+              <GradientStop Color="#FB923C" Offset="0" />
+              <GradientStop Color="#00FB923C" Offset="1" />
+            </RadialGradientBrush>
+          </Ellipse.Fill>
+        </Ellipse>
+      </Canvas>
 
-          <!-- Centre: drag area -->
-          <Border Grid.Column="1" Background="Transparent" Name="DragRegion" />
+      <!-- Splash / Login (overlay phases) -->
+      <ContentControl Content="{Binding CurrentView}"
+                      IsVisible="{Binding !IsShell}"
+                      Classes="view-host">
+        <ContentControl.RenderTransform>
+          <TranslateTransform />
+        </ContentControl.RenderTransform>
+        <ContentControl.ContentTemplate>
+          <DataTemplate>
+            <ContentControl Content="{Binding}">
+              <ContentControl.DataTemplates>
+                <DataTemplate DataType="vm:SplashViewModel">
+                  <views:SplashView />
+                </DataTemplate>
+                <DataTemplate DataType="vm:LoginViewModel">
+                  <views:LoginView />
+                </DataTemplate>
+              </ContentControl.DataTemplates>
+            </ContentControl>
+          </DataTemplate>
+        </ContentControl.ContentTemplate>
+      </ContentControl>
 
-          <!-- Right: chrome buttons -->
-          <StackPanel Grid.Column="2" Orientation="Horizontal"
-                      VerticalAlignment="Center" Margin="0,0,6,0" Spacing="2">
-            <!-- Theme toggle -->
-            <Button Classes="chrome-btn" Background="Transparent" Foreground="#B2BEC3"
-                    Width="34" Height="28" FontSize="14" CornerRadius="6"
-                    Content="◐" ToolTip.Tip="Toggle theme"
-                    Command="{Binding ToggleThemeCommand}" />
-            <Button Classes="chrome-btn" Background="Transparent" Foreground="#B2BEC3"
-                    Width="34" Height="28" FontSize="14" CornerRadius="6"
-                    Content="—" ToolTip.Tip="Minimize"
-                    Name="MinimizeButton" />
-            <Button Classes="chrome-btn" Background="Transparent" Foreground="#B2BEC3"
-                    Width="34" Height="28" FontSize="14" CornerRadius="6"
-                    Content="☐" ToolTip.Tip="Maximize / Restore"
-                    Name="MaximizeButton" />
-            <Button Classes="chrome-btn chrome-close" Background="Transparent" Foreground="#B2BEC3"
-                    Width="34" Height="28" FontSize="14" CornerRadius="6"
-                    Content="✕" ToolTip.Tip="Close"
-                    Name="CloseButton" />
-          </StackPanel>
-        </Grid>
-      </Border>
+      <!-- Main Shell: Title bar + nav bar + content -->
+      <Grid RowDefinitions="42,Auto,*"
+            IsVisible="{Binding IsShell}">
 
-      <!-- ═══ SIDEBAR ═══ -->
-      <Border Grid.Row="1" Grid.Column="0"
-              Width="{Binding SidebarWidth}"
-              Background="#232B31"
-              CornerRadius="0,0,0,16"
-              Padding="8,12">
-        <Border.Transitions>
-          <Transitions>
-            <DoubleTransition Property="Width" Duration="0:0:0.25" Easing="CubicEaseInOut" />
-          </Transitions>
-        </Border.Transitions>
-        <DockPanel>
-          <!-- Collapse toggle at bottom -->
-          <Button DockPanel.Dock="Bottom" Classes="sidebar-item"
-                  HorizontalAlignment="Stretch" Margin="0,8,0,0"
-                  Command="{Binding ToggleSidebarCommand}">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-              <TextBlock Text="{Binding SidebarCollapseIcon}" FontSize="16" Width="20"
-                         TextAlignment="Center" />
-              <TextBlock Text="Collapse" FontSize="13"
-                         IsVisible="{Binding IsSidebarExpanded}" />
+        <!-- Title bar -->
+        <Border Grid.Row="0"
+                Background="#0D0A16"
+                BorderBrush="{DynamicResource BorderSubtleBrush}"
+                BorderThickness="0,0,0,1"
+                Name="TitleBar">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+
+            <!-- Left: logo + title + status chip -->
+            <StackPanel Grid.Column="0"
+                        Orientation="Horizontal"
+                        Spacing="12" Margin="16,0,0,0"
+                        VerticalAlignment="Center">
+              <Border Width="26" Height="26"
+                      CornerRadius="8"
+                      Background="#20E879F9"
+                      BorderBrush="#40E879F9"
+                      BorderThickness="1"
+                      BoxShadow="0 0 12 0 #30E879F9">
+                <TextBlock Text="&#x25C6;" FontSize="12"
+                           Foreground="{DynamicResource AccentPrimaryBrush}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+              </Border>
+              <TextBlock Text="Frikadellen"
+                         FontSize="14" FontWeight="Bold"
+                         Foreground="{DynamicResource TextPrimaryBrush}"
+                         VerticalAlignment="Center" />
+              <Border Classes="status-chip chip"
+                      Background="#4ADE8020"
+                      VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                  <Ellipse Width="6" Height="6"
+                           Fill="{DynamicResource AccentSuccessBrush}" />
+                  <TextBlock Text="{Binding StatusText}"
+                             FontSize="11" FontWeight="Medium"
+                             Foreground="{DynamicResource TextSecondaryBrush}" />
+                </StackPanel>
+              </Border>
             </StackPanel>
-          </Button>
 
-          <!-- Nav items -->
-          <StackPanel Spacing="4">
-            <Button Classes="sidebar-item"
+            <!-- Centre: drag handle -->
+            <Border Grid.Column="1" Background="Transparent" Name="DragRegion" />
+
+            <!-- Right: chrome controls -->
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        Spacing="2" Margin="0,0,8,0"
+                        VerticalAlignment="Center">
+              <Button Classes="chrome-btn"
+                      Content="&#x25D0;"
+                      ToolTip.Tip="Toggle theme"
+                      Command="{Binding ToggleThemeCommand}" />
+              <Button Classes="chrome-btn"
+                      Content="&#x2014;"
+                      ToolTip.Tip="Minimise"
+                      Name="MinimizeButton" />
+              <Button Classes="chrome-btn"
+                      Content="&#x2B1C;"
+                      ToolTip.Tip="Maximise / Restore"
+                      Name="MaximizeButton" />
+              <Button Classes="chrome-btn chrome-close"
+                      Content="&#x2715;"
+                      ToolTip.Tip="Close"
+                      Name="CloseButton" />
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- Horizontal navigation bar -->
+        <Border Grid.Row="1"
+                Classes="nav-strip"
+                Background="#0A0714"
+                BorderBrush="{DynamicResource BorderSubtleBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="16,6"
+                Opacity="0"
+                RenderTransformOrigin="0.5,0">
+          <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
+
+          <StackPanel Orientation="Horizontal" Spacing="4"
+                      HorizontalAlignment="Center">
+
+            <Button Classes="nav-item"
                     Command="{Binding NavigateCommand}"
-                    CommandParameter="Dashboard">
-              <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock Text="📊" FontSize="16" Width="20" TextAlignment="Center" />
-                <TextBlock Text="Dashboard" FontSize="13"
-                           IsVisible="{Binding IsSidebarExpanded}" />
+                    CommandParameter="Dashboard"
+                    ToolTip.Tip="Dashboard">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="&#x25C8;" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock Text="Dashboard" FontSize="13" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
 
-            <Button Classes="sidebar-item"
+            <Button Classes="nav-item"
                     Command="{Binding NavigateCommand}"
-                    CommandParameter="Events">
-              <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock Text="📋" FontSize="16" Width="20" TextAlignment="Center" />
-                <TextBlock Text="Events" FontSize="13"
-                           IsVisible="{Binding IsSidebarExpanded}" />
+                    CommandParameter="Events"
+                    ToolTip.Tip="Live Events">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="&#x26A1;" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock Text="Events" FontSize="13" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
 
-            <Button Classes="sidebar-item"
+            <Button Classes="nav-item"
                     Command="{Binding NavigateCommand}"
-                    CommandParameter="Config">
-              <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock Text="🔧" FontSize="16" Width="20" TextAlignment="Center" />
-                <TextBlock Text="Config" FontSize="13"
-                           IsVisible="{Binding IsSidebarExpanded}" />
+                    CommandParameter="Config"
+                    ToolTip.Tip="Configuration">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="&#x2699;" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock Text="Config" FontSize="13" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
-            
-            <Button Classes="sidebar-item"
+
+            <Button Classes="nav-item"
                     Command="{Binding NavigateCommand}"
-                    CommandParameter="Notifier">
-              <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock Text="🔔" FontSize="16" Width="20" TextAlignment="Center" />
-                <TextBlock Text="Notifier" FontSize="13"
-                           IsVisible="{Binding IsSidebarExpanded}" />
+                    CommandParameter="Notifier"
+                    ToolTip.Tip="Notifier">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="&#x1F514;" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock Text="Notifier" FontSize="13" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
+
+            <Button Classes="nav-item"
+                    Command="{Binding NavigateCommand}"
+                    CommandParameter="Console"
+                    ToolTip.Tip="Console">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="&#x2B1B;" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock Text="Console" FontSize="13" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+
           </StackPanel>
-        </DockPanel>
-      </Border>
+        </Border>
 
-      <!-- ═══ MAIN CONTENT ═══ -->
-      <Border Grid.Row="1" Grid.Column="1"
-              Padding="20,16" CornerRadius="0,0,16,0"
-              ClipToBounds="True">
-        <ContentControl Content="{Binding CurrentView}"
-                        Classes="viewHost">
-          <ContentControl.RenderTransform>
-            <TranslateTransform />
-          </ContentControl.RenderTransform>
-          <ContentControl.ContentTemplate>
-            <DataTemplate>
-              <ContentControl Content="{Binding}">
-                <ContentControl.DataTemplates>
-                  <DataTemplate DataType="vm:DashboardViewModel">
-                    <views:DashboardView />
-                  </DataTemplate>
-                  <DataTemplate DataType="vm:EventsViewModel">
-                    <views:EventsView />
-                  </DataTemplate>
-                  <DataTemplate DataType="vm:ConfigViewModel">
-                    <views:ConfigView />
-                  </DataTemplate>
-                  <DataTemplate DataType="vm:NotifierViewModel">
-                    <views:NotifierView />
-                  </DataTemplate>
-                </ContentControl.DataTemplates>
-              </ContentControl>
-            </DataTemplate>
-          </ContentControl.ContentTemplate>
-        </ContentControl>
-      </Border>
+        <!-- Main content area -->
+        <Border Grid.Row="2"
+                Background="Transparent"
+                CornerRadius="0,0,18,18"
+                ClipToBounds="True"
+                Padding="28,22">
+          <ContentControl Content="{Binding CurrentView}"
+                          Classes="view-host"
+                          IsVisible="{Binding IsShell}">
+            <ContentControl.RenderTransform>
+              <TranslateTransform />
+            </ContentControl.RenderTransform>
+            <ContentControl.ContentTemplate>
+              <DataTemplate>
+                <ContentControl Content="{Binding}">
+                  <ContentControl.DataTemplates>
+                    <DataTemplate DataType="vm:DashboardViewModel">
+                      <views:DashboardView />
+                    </DataTemplate>
+                    <DataTemplate DataType="vm:EventsViewModel">
+                      <views:EventsView />
+                    </DataTemplate>
+                    <DataTemplate DataType="vm:ConfigViewModel">
+                      <views:ConfigView />
+                    </DataTemplate>
+                    <DataTemplate DataType="vm:NotifierViewModel">
+                      <views:NotifierView />
+                    </DataTemplate>
+                    <DataTemplate DataType="vm:ConsoleViewModel">
+                      <views:ConsoleView />
+                    </DataTemplate>
+                  </ContentControl.DataTemplates>
+                </ContentControl>
+              </DataTemplate>
+            </ContentControl.ContentTemplate>
+          </ContentControl>
+        </Border>
 
+      </Grid>
     </Grid>
   </Border>
 </Window>

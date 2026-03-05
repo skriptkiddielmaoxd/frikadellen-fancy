@@ -1,96 +1,109 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
+using Avalonia.Threading;
 
 namespace Frikadellen.UI.Services;
 
 /// <summary>
-/// Manages the lifecycle of the Rust backend process (frikadellen_fancy).
-/// The binary is expected to live next to the UI executable, or in a known
-/// sibling directory.  Stdout/stderr are discarded (the UI reads everything
-/// via the HTTP+WebSocket API).
+/// Spawns and manages the lifecycle of the frikadellen-fancy Rust binary.
+/// All stdout/stderr lines are posted onto <see cref="Output"/> on the UI thread
+/// and also forwarded via <see cref="OutputReceived"/>.
 /// </summary>
 public sealed class RustProcessLauncher : IDisposable
 {
     private Process? _process;
+    private CancellationTokenSource? _cts;
     private bool _disposed;
 
-    /// <summary>True while the child process is alive.</summary>
+    /// <summary>All console output lines (stdout + stderr). Bound by ConsoleViewModel.</summary>
+    public ObservableCollection<ConsoleLineItem> Output { get; } = new();
+
+    /// <summary>True while the Rust process is alive.</summary>
     public bool IsRunning => _process is { HasExited: false };
 
-    /// <summary>Fires when the backend process exits unexpectedly.</summary>
-    public event Action<int>? ProcessExited;
+    /// <summary>Fires when the running state changes (true = started, false = stopped).</summary>
+    public event Action<bool>? RunningChanged;
 
-    /// <summary>Fires for each line of stdout/stderr from the Rust process.
-    /// Args: (line, isError).</summary>
+    /// <summary>Fires for each line of stdout/stderr. Args: (line, isError).</summary>
     public event Action<string, bool>? OutputReceived;
 
+    /// <summary>Fires when the backend process exits. Arg: exit code.</summary>
+    public event Action<int>? ProcessExited;
+
     /// <summary>
-    /// Locate and start the Rust binary.  Returns true on success.
-    /// If the process is already running this is a no-op that returns true.
+    /// Start the Rust binary. Auto-detects the path if not provided.
+    /// Returns true on success or if already running.
     /// </summary>
-    public bool Start()
+    public bool Start(string? exePath = null)
     {
         if (IsRunning) return true;
 
-        var exePath = ResolveBinaryPath();
-        if (exePath == null) return false;
-
-        var psi = new ProcessStartInfo
+        exePath ??= ResolveBinaryPath();
+        if (exePath == null)
         {
-            FileName = exePath,
-            WorkingDirectory = Path.GetDirectoryName(exePath)!,
-            UseShellExecute = false,
-            CreateNoWindow = true,
+            AppendLine("[launcher] Could not locate the Rust binary.", isError: true);
+            return false;
+        }
+
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = new CancellationTokenSource();
+
+        var si = new ProcessStartInfo
+        {
+            FileName               = exePath,
+            WorkingDirectory       = Path.GetDirectoryName(exePath) ?? Directory.GetCurrentDirectory(),
+            UseShellExecute        = false,
             RedirectStandardOutput = true,
-            RedirectStandardError = true,
+            RedirectStandardError  = true,
+            CreateNoWindow         = true,
         };
 
         try
         {
-            var proc = Process.Start(psi);
-            if (proc == null) return false;
-
-            // Forward stdout/stderr lines to subscribers
-            proc.OutputDataReceived += (_, e) =>
-            {
-                if (e.Data is { } line) OutputReceived?.Invoke(line, false);
-            };
-            proc.ErrorDataReceived += (_, e) =>
-            {
-                if (e.Data is { } line) OutputReceived?.Invoke(line, true);
-            };
-            proc.BeginOutputReadLine();
-            proc.BeginErrorReadLine();
-
-            proc.EnableRaisingEvents = true;
-            proc.Exited += (_, _) =>
-            {
-                var code = 0;
-                try { code = proc.ExitCode; } catch { /* already disposed */ }
-                ProcessExited?.Invoke(code);
-            };
-
-            _process = proc;
-            return true;
+            _process = Process.Start(si);
         }
-        catch
+        catch (Exception ex)
         {
+            AppendLine($"[launcher] Failed to start '{exePath}': {ex.Message}", isError: true);
             return false;
         }
+
+        if (_process is null)
+        {
+            AppendLine($"[launcher] Process.Start returned null for '{exePath}'", isError: true);
+            return false;
+        }
+
+        _process.EnableRaisingEvents = true;
+        _process.Exited += OnProcessExited;
+
+        _ = ReadStreamAsync(_process.StandardOutput, isError: false, _cts.Token);
+        _ = ReadStreamAsync(_process.StandardError,  isError: true,  _cts.Token);
+
+        AppendLine($"[launcher] Started PID {_process.Id}", isError: false);
+        RunningChanged?.Invoke(true);
+        return true;
     }
 
-    /// <summary>Gracefully stop the backend (sends SIGTERM / kill).</summary>
+    /// <summary>Stop the backend process.</summary>
     public void Stop()
     {
-        if (!IsRunning) return;
+        if (_process is null || _process.HasExited) return;
         try
         {
-            _process!.Kill(entireProcessTree: true);
+            _process.Kill(entireProcessTree: true);
             _process.WaitForExit(3000);
+            AppendLine("[launcher] Process stopped.", isError: false);
         }
-        catch { /* process may have already exited */ }
+        catch (Exception ex)
+        {
+            AppendLine($"[launcher] Stop error: {ex.Message}", isError: true);
+        }
         finally
         {
             _process?.Dispose();
@@ -102,57 +115,96 @@ public sealed class RustProcessLauncher : IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+        _cts?.Cancel();
         Stop();
+        _cts?.Dispose();
     }
 
-    // ────────── Binary resolution ──────────
+    private void OnProcessExited(object? sender, EventArgs e)
+    {
+        var code = 0;
+        try { code = _process?.ExitCode ?? -1; } catch { /* already disposed */ }
+        AppendLine($"[launcher] Process exited (code {code}).", isError: code != 0);
+        RunningChanged?.Invoke(false);
+        ProcessExited?.Invoke(code);
+    }
+
+    private async System.Threading.Tasks.Task ReadStreamAsync(
+        StreamReader reader, bool isError, CancellationToken ct)
+    {
+        try
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                var line = await reader.ReadLineAsync(ct);
+                if (line is null) break;
+                AppendLine(line, isError);
+                OutputReceived?.Invoke(line, isError);
+            }
+        }
+        catch (OperationCanceledException) { /* normal shutdown */ }
+        catch (Exception ex)
+        {
+            AppendLine($"[launcher] Stream read error: {ex.Message}", isError: true);
+        }
+    }
+
+    private void AppendLine(string text, bool isError)
+    {
+        var item = new ConsoleLineItem(DateTimeOffset.Now, text, isError);
+        Dispatcher.UIThread.Post(() =>
+        {
+            Output.Add(item);
+            if (Output.Count > 2000)
+                Output.RemoveAt(0);
+        });
+    }
 
     private static string? ResolveBinaryPath()
     {
-        // Try multiple possible binary names to be robust across build/artifact naming:
-        // - frikadellen-fancy (cargo default with hyphen)
-        // - frikadellen_fancy (underscore variant)
-        // - frikadellen_baf (legacy name)
         var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         var candidates = new[]
         {
             isWindows ? "frikadellen-fancy.exe" : "frikadellen-fancy",
             isWindows ? "frikadellen_fancy.exe" : "frikadellen_fancy",
-            isWindows ? "frikadellen_baf.exe" : "frikadellen_baf",
+            isWindows ? "frikadellen_baf.exe"   : "frikadellen_baf",
         };
 
-        // Helper to test a path for any candidate names
-        string? CheckCandidates(params string[] paths)
+        string? CheckCandidates(params string[] dirs)
         {
             foreach (var name in candidates)
-            {
-                foreach (var p in paths)
+                foreach (var d in dirs)
                 {
-                    var full = Path.Combine(p, name);
+                    var full = Path.Combine(d, name);
                     if (File.Exists(full)) return full;
                 }
-            }
             return null;
         }
 
-        // 1. Next to the UI executable
         var baseDir = AppContext.BaseDirectory;
         var found = CheckCandidates(baseDir);
         if (found != null) return found;
 
-        // 2. Sibling "target/debug" and "target/release" (development layout)
-        var dir = new DirectoryInfo(baseDir);
-        for (var i = 0; i < 6 && dir != null; i++)
+        var dirInfo = new DirectoryInfo(baseDir);
+        for (int i = 0; i < 6 && dirInfo != null; i++)
         {
-            found = CheckCandidates(Path.Combine(dir.FullName, "target", "debug"), Path.Combine(dir.FullName, "target", "release"));
+            found = CheckCandidates(
+                Path.Combine(dirInfo.FullName, "target", "debug"),
+                Path.Combine(dirInfo.FullName, "target", "release"));
             if (found != null) return found;
-            dir = dir.Parent;
+            dirInfo = dirInfo.Parent;
         }
 
-        // 3. Same directory the working directory points to (manual override)
-        found = CheckCandidates(Directory.GetCurrentDirectory());
-        if (found != null) return found;
-
-        return null;
+        return CheckCandidates(Directory.GetCurrentDirectory());
     }
+}
+
+/// <summary>A single line in the console output pane.</summary>
+public sealed record ConsoleLineItem(
+    DateTimeOffset Timestamp,
+    string Text,
+    bool IsError)
+{
+    public string TimeLabel => Timestamp.ToString("HH:mm:ss");
+    public string Foreground => IsError ? "#FB7185" : "#E2E8F0";
 }

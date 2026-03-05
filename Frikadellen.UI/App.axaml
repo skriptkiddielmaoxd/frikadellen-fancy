@@ -5,61 +5,254 @@
   <Application.Styles>
     <FluentTheme />
 
-    <!-- Global colour palette -->
+    <!-- ══════════════════════════════════════════
+         GLOBAL COLOUR PALETTE — "Obsidian Rose"
+         Deep purple-black base with fuchsia / cyan / orange accents
+    ══════════════════════════════════════════ -->
     <Style>
       <Style.Resources>
-        <SolidColorBrush x:Key="BrandPrimary" Color="#6C5CE7" />
-        <SolidColorBrush x:Key="BrandAccent" Color="#00CEC9" />
-        <SolidColorBrush x:Key="BrandDanger" Color="#FF6B6B" />
-        <SolidColorBrush x:Key="BrandSuccess" Color="#00B894" />
-        <SolidColorBrush x:Key="BrandWarning" Color="#FDCB6E" />
-        <SolidColorBrush x:Key="CardDark" Color="#2D3436" />
-        <SolidColorBrush x:Key="CardLight" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="SurfaceDark" Color="#1E272E" />
-        <SolidColorBrush x:Key="SurfaceLight" Color="#F5F6FA" />
-        <SolidColorBrush x:Key="TextPrimaryDark" Color="#DFE6E9" />
-        <SolidColorBrush x:Key="TextPrimaryLight" Color="#2D3436" />
-        <SolidColorBrush x:Key="SidebarDark" Color="#232B31" />
-        <SolidColorBrush x:Key="SidebarLight" Color="#EBEDEF" />
+        <!-- Backgrounds -->
+        <Color x:Key="BgBase">#08060D</Color>
+        <Color x:Key="BgSurface">#110E18</Color>
+        <Color x:Key="BgCard">#1A1625</Color>
+        <Color x:Key="BgSidebar">#0D0A16</Color>
+        <Color x:Key="BgElevated">#251F32</Color>
+
+        <!-- Borders -->
+        <Color x:Key="BorderSubtle">#2D2640</Color>
+        <Color x:Key="BorderMuted">#1F1A2E</Color>
+
+        <!-- Accents -->
+        <Color x:Key="AccentPrimary">#E879F9</Color>
+        <Color x:Key="AccentPrimaryDim">#C026D3</Color>
+        <Color x:Key="AccentSecondary">#22D3EE</Color>
+        <Color x:Key="AccentSuccess">#4ADE80</Color>
+        <Color x:Key="AccentDanger">#FB7185</Color>
+        <Color x:Key="AccentWarning">#FBBF24</Color>
+
+        <!-- Text -->
+        <Color x:Key="TextPrimary">#F5F3FF</Color>
+        <Color x:Key="TextSecondary">#A78BFA</Color>
+        <Color x:Key="TextMuted">#6B5F8A</Color>
+
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="BgBaseBrush"       Color="#08060D" />
+        <SolidColorBrush x:Key="BgSurfaceBrush"    Color="#110E18" />
+        <SolidColorBrush x:Key="BgCardBrush"       Color="#1A1625" />
+        <SolidColorBrush x:Key="BgSidebarBrush"    Color="#0D0A16" />
+        <SolidColorBrush x:Key="BgElevatedBrush"   Color="#251F32" />
+        <SolidColorBrush x:Key="BorderSubtleBrush" Color="#2D2640" />
+        <SolidColorBrush x:Key="AccentPrimaryBrush"   Color="#E879F9" />
+        <SolidColorBrush x:Key="AccentSecondaryBrush" Color="#22D3EE" />
+        <SolidColorBrush x:Key="AccentSuccessBrush"   Color="#4ADE80" />
+        <SolidColorBrush x:Key="AccentDangerBrush"    Color="#FB7185" />
+        <SolidColorBrush x:Key="AccentWarningBrush"   Color="#FBBF24" />
+        <SolidColorBrush x:Key="TextPrimaryBrush"     Color="#F5F3FF" />
+        <SolidColorBrush x:Key="TextSecondaryBrush"   Color="#A78BFA" />
+        <SolidColorBrush x:Key="TextMutedBrush"       Color="#6B5F8A" />
+
+        <!-- Gradient brushes -->
+        <LinearGradientBrush x:Key="AccentGradientBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+          <GradientStop Color="#E879F9" Offset="0" />
+          <GradientStop Color="#22D3EE" Offset="1" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="WarmGradientBrush" StartPoint="0%,0%" EndPoint="100%,0%">
+          <GradientStop Color="#E879F9" Offset="0" />
+          <GradientStop Color="#FB923C" Offset="1" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="SuccessGradientBrush" StartPoint="0%,0%" EndPoint="100%,0%">
+          <GradientStop Color="#059669" Offset="0" />
+          <GradientStop Color="#4ADE80" Offset="1" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="DangerGradientBrush" StartPoint="0%,0%" EndPoint="100%,0%">
+          <GradientStop Color="#DC2626" Offset="0" />
+          <GradientStop Color="#FB7185" Offset="1" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="SplashBgGradientBrush" StartPoint="50%,0%" EndPoint="50%,100%">
+          <GradientStop Color="#08060D" Offset="0" />
+          <GradientStop Color="#050308" Offset="1" />
+        </LinearGradientBrush>
       </Style.Resources>
     </Style>
 
-    <!-- Global rounded button style -->
-    <Style Selector="Button.pill">
-      <Setter Property="CornerRadius" Value="20" />
-      <Setter Property="Padding" Value="24,10" />
-      <Setter Property="FontWeight" Value="SemiBold" />
-      <Setter Property="Cursor" Value="Hand" />
-    </Style>
-
-    <!-- Card panel style -->
+    <!-- ══════════════════════════════════════════
+         CARD STYLE — Glass-like with glow border
+    ══════════════════════════════════════════ -->
     <Style Selector="Border.card">
-      <Setter Property="CornerRadius" Value="14" />
-      <Setter Property="Padding" Value="18" />
-      <Setter Property="Margin" Value="6" />
-      <Setter Property="BoxShadow" Value="0 2 8 0 #30000000" />
+      <Setter Property="Background"    Value="{DynamicResource BgCardBrush}" />
+      <Setter Property="CornerRadius"  Value="16" />
+      <Setter Property="Padding"       Value="22" />
+      <Setter Property="Margin"        Value="0,0,0,14" />
+      <Setter Property="BoxShadow"     Value="0 4 24 0 #30000000, 0 0 1 0 #18E879F9" />
+      <Setter Property="BorderBrush"   Value="{DynamicResource BorderSubtleBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
     </Style>
 
-    <!-- Sidebar item style -->
-    <Style Selector="Button.sidebar-item">
+    <Style Selector="Border.card-hover">
+      <Setter Property="Background"    Value="{DynamicResource BgCardBrush}" />
+      <Setter Property="CornerRadius"  Value="16" />
+      <Setter Property="Padding"       Value="22" />
+      <Setter Property="Margin"        Value="0,0,0,14" />
+      <Setter Property="BoxShadow"     Value="0 4 24 0 #30000000, 0 0 1 0 #18E879F9" />
+      <Setter Property="BorderBrush"   Value="{DynamicResource BorderSubtleBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Cursor"        Value="Hand" />
+    </Style>
+    <Style Selector="Border.card-hover:pointerover">
+      <Setter Property="BoxShadow"   Value="0 8 32 0 #40000000, 0 0 16 0 #25E879F9" />
+      <Setter Property="BorderBrush" Value="#40E879F9" />
+    </Style>
+
+    <!-- ══════════════════════════════════════════
+         PILL BUTTON (primary CTA) — Fuchsia
+    ══════════════════════════════════════════ -->
+    <Style Selector="Button.pill-primary">
+      <Setter Property="Background"  Value="{DynamicResource AccentPrimaryBrush}" />
+      <Setter Property="Foreground"  Value="White" />
+      <Setter Property="CornerRadius" Value="24" />
+      <Setter Property="Padding"     Value="28,12" />
+      <Setter Property="FontWeight"  Value="SemiBold" />
+      <Setter Property="FontSize"    Value="14" />
+      <Setter Property="Cursor"      Value="Hand" />
+    </Style>
+    <Style Selector="Button.pill-primary:pointerover">
+      <Setter Property="Background" Value="#F0ABFC" />
+    </Style>
+    <Style Selector="Button.pill-primary:pressed">
+      <Setter Property="Background" Value="#C026D3" />
+    </Style>
+
+    <!-- Pill button — danger -->
+    <Style Selector="Button.pill-danger">
+      <Setter Property="Background"  Value="{DynamicResource AccentDangerBrush}" />
+      <Setter Property="Foreground"  Value="White" />
+      <Setter Property="CornerRadius" Value="24" />
+      <Setter Property="Padding"     Value="28,12" />
+      <Setter Property="FontWeight"  Value="SemiBold" />
+      <Setter Property="FontSize"    Value="14" />
+      <Setter Property="Cursor"      Value="Hand" />
+    </Style>
+    <Style Selector="Button.pill-danger:pointerover">
+      <Setter Property="Background" Value="#FDA4AF" />
+    </Style>
+
+    <!-- Pill button — ghost -->
+    <Style Selector="Button.pill-ghost">
+      <Setter Property="Background"  Value="Transparent" />
+      <Setter Property="Foreground"  Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="CornerRadius" Value="24" />
+      <Setter Property="Padding"     Value="20,10" />
+      <Setter Property="FontSize"    Value="13" />
+      <Setter Property="Cursor"      Value="Hand" />
+      <Setter Property="BorderBrush"    Value="{DynamicResource BorderSubtleBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Button.pill-ghost:pointerover">
+      <Setter Property="Background"  Value="#12E879F9" />
+      <Setter Property="Foreground"  Value="{DynamicResource AccentPrimaryBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+    </Style>
+
+    <!-- Icon button (round) -->
+    <Style Selector="Button.icon-btn">
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="Foreground" Value="#B2BEC3" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
       <Setter Property="CornerRadius" Value="10" />
-      <Setter Property="Padding" Value="12,10" />
-      <Setter Property="HorizontalAlignment" Value="Stretch" />
-      <Setter Property="HorizontalContentAlignment" Value="Left" />
-      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Padding"    Value="8" />
+      <Setter Property="Cursor"     Value="Hand" />
+    </Style>
+    <Style Selector="Button.icon-btn:pointerover">
+      <Setter Property="Background" Value="#18FFFFFF" />
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
     </Style>
 
-    <Style Selector="Button.sidebar-item:pointerover">
-      <Setter Property="Background" Value="#30FFFFFF" />
-      <Setter Property="Foreground" Value="#FFFFFF" />
+    <!-- Chrome close button -->
+    <Style Selector="Button.chrome-close:pointerover">
+      <Setter Property="Background" Value="#FB7185" />
+      <Setter Property="Foreground" Value="White" />
     </Style>
 
-    <Style Selector="Button.sidebar-item.active">
-      <Setter Property="Background" Value="#6C5CE7" />
-      <Setter Property="Foreground" Value="#FFFFFF" />
+    <!-- ══════════════════════════════════════════
+         HORIZONTAL NAV ITEM — Pill style tabs
+    ══════════════════════════════════════════ -->
+    <Style Selector="Button.nav-item">
+      <Setter Property="Background"  Value="Transparent" />
+      <Setter Property="Foreground"  Value="{DynamicResource TextMutedBrush}" />
+      <Setter Property="CornerRadius" Value="20" />
+      <Setter Property="Padding"     Value="16,7" />
+      <Setter Property="Cursor"      Value="Hand" />
+      <Setter Property="FontSize"    Value="13" />
+      <Setter Property="Margin"      Value="0,0,4,0" />
+    </Style>
+    <Style Selector="Button.nav-item:pointerover">
+      <Setter Property="Background" Value="#12E879F9" />
+      <Setter Property="Foreground" Value="{DynamicResource AccentPrimaryBrush}" />
+    </Style>
+    <Style Selector="Button.nav-item.active">
+      <Setter Property="Background"  Value="#20E879F9" />
+      <Setter Property="Foreground"  Value="{DynamicResource AccentPrimaryBrush}" />
+      <Setter Property="FontWeight"  Value="SemiBold" />
+    </Style>
+
+    <!-- ══════════════════════════════════════════
+         TEXT INPUT — Purple-tinted
+    ══════════════════════════════════════════ -->
+    <Style Selector="TextBox.field">
+      <Setter Property="Background"     Value="#110E18" />
+      <Setter Property="Foreground"     Value="{DynamicResource TextPrimaryBrush}" />
+      <Setter Property="BorderBrush"    Value="{DynamicResource BorderSubtleBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius"   Value="12" />
+      <Setter Property="Padding"        Value="14,10" />
+      <Setter Property="FontSize"       Value="13" />
+      <Setter Property="CaretBrush"     Value="{DynamicResource AccentPrimaryBrush}" />
+    </Style>
+    <Style Selector="TextBox.field:focus">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentPrimaryBrush}" />
+    </Style>
+
+    <!-- ══════════════════════════════════════════
+         STATUS CHIP
+    ══════════════════════════════════════════ -->
+    <Style Selector="Border.chip">
+      <Setter Property="CornerRadius" Value="20" />
+      <Setter Property="Padding"      Value="10,4" />
+    </Style>
+
+    <!-- ══════════════════════════════════════════
+         CHECKBOX
+    ══════════════════════════════════════════ -->
+    <Style Selector="CheckBox">
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+
+    <!-- ══════════════════════════════════════════
+         SCROLLVIEWER
+    ══════════════════════════════════════════ -->
+    <Style Selector="ScrollViewer">
+      <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+    </Style>
+
+    <!-- ══════════════════════════════════════════
+         SECTION LABEL
+    ══════════════════════════════════════════ -->
+    <Style Selector="TextBlock.section-title">
+      <Setter Property="FontSize"    Value="10" />
+      <Setter Property="FontWeight"  Value="SemiBold" />
+      <Setter Property="Foreground"  Value="{DynamicResource TextMutedBrush}" />
+      <Setter Property="LetterSpacing" Value="1" />
+      <Setter Property="Margin"      Value="0,0,0,8" />
+    </Style>
+
+    <!-- ══════════════════════════════════════════
+         SEPARATOR
+    ══════════════════════════════════════════ -->
+    <Style Selector="Border.divider">
+      <Setter Property="Background" Value="{DynamicResource BorderSubtleBrush}" />
+      <Setter Property="Height"     Value="1" />
+      <Setter Property="Margin"     Value="0,12" />
     </Style>
 
   </Application.Styles>
 </Application>
+

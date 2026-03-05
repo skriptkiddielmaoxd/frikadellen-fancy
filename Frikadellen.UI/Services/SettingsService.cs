@@ -5,21 +5,22 @@ using Frikadellen.UI.Models;
 
 namespace Frikadellen.UI.Services;
 
-public static class SettingsService
+/// <summary>Persists UiSettings to ./config/ui-settings.json.</summary>
+public class SettingsService
 {
-    private static readonly string SettingsDir =
-        Path.Combine(AppContext.BaseDirectory, "config");
+    private static readonly string ConfigDir = Path.Combine(
+        AppContext.BaseDirectory, "config");
 
-    private static readonly string SettingsPath =
-        Path.Combine(SettingsDir, "ui-settings.json");
+    private static readonly string SettingsPath = Path.Combine(
+        ConfigDir, "ui-settings.json");
 
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
         WriteIndented = true,
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
     };
 
-    public static UiSettings Load()
+    public UiSettings Load()
     {
         try
         {
@@ -29,17 +30,18 @@ public static class SettingsService
                 return JsonSerializer.Deserialize<UiSettings>(json, JsonOpts) ?? new UiSettings();
             }
         }
-        catch
-        {
-            // fall through to defaults
-        }
+        catch { /* fall through to defaults */ }
         return new UiSettings();
     }
 
-    public static void Save(UiSettings settings)
+    public void Save(UiSettings settings)
     {
-        Directory.CreateDirectory(SettingsDir);
-        var json = JsonSerializer.Serialize(settings, JsonOpts);
-        File.WriteAllText(SettingsPath, json);
+        try
+        {
+            Directory.CreateDirectory(ConfigDir);
+            var json = JsonSerializer.Serialize(settings, JsonOpts);
+            File.WriteAllText(SettingsPath, json);
+        }
+        catch { /* swallow write errors */ }
     }
 }

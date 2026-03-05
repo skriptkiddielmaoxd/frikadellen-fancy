@@ -1,0 +1,125 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Frikadellen.UI.ViewModels"
+             x:Class="Frikadellen.UI.Views.LoginView"
+             x:DataType="vm:LoginViewModel">
+
+  <UserControl.Styles>
+    <Style Selector="Border.login-card">
+      <Style.Animations>
+        <Animation Duration="0:0:0.5" Easing="CubicEaseOut" FillMode="Forward">
+          <KeyFrame Cue="0%">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="TranslateTransform.Y" Value="24" />
+          </KeyFrame>
+          <KeyFrame Cue="100%">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="TranslateTransform.Y" Value="0" />
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+  </UserControl.Styles>
+
+  <Grid Background="{DynamicResource BgBaseBrush}">
+
+    <!-- Soft background glow -->
+    <Ellipse Width="600" Height="600"
+             HorizontalAlignment="Center"
+             VerticalAlignment="Center">
+      <Ellipse.Fill>
+        <RadialGradientBrush>
+          <GradientStop Color="#08E879F9" Offset="0" />
+          <GradientStop Color="#00E879F9" Offset="1" />
+        </RadialGradientBrush>
+      </Ellipse.Fill>
+    </Ellipse>
+
+    <!-- Login card -->
+    <Border Classes="login-card"
+            Width="400"
+            Background="{DynamicResource BgCardBrush}"
+            CornerRadius="20"
+            Padding="36,32"
+            BoxShadow="0 8 40 0 #40000000, 0 0 1 0 #20E879F9"
+            BorderBrush="{DynamicResource BorderSubtleBrush}"
+            BorderThickness="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Opacity="0">
+      <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
+
+      <StackPanel Spacing="0">
+
+        <!-- Icon + Title -->
+        <StackPanel Spacing="16" Margin="0,0,0,32">
+          <Border Width="60" Height="60"
+                  CornerRadius="16"
+                  Background="#20E879F9"
+                  BorderBrush="#30E879F9"
+                  BorderThickness="1"
+                  BoxShadow="0 0 24 0 #20E879F9"
+                  HorizontalAlignment="Center">
+            <TextBlock Text="&#x25C6;" FontSize="26"
+                       Foreground="{DynamicResource AccentPrimaryBrush}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+          </Border>
+          <StackPanel Spacing="6">
+            <TextBlock Text="Welcome to Frikadellen"
+                       FontSize="22" FontWeight="ExtraBold"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="Enter your Minecraft username to get started"
+                       FontSize="13"
+                       Foreground="{DynamicResource TextMutedBrush}"
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center" />
+          </StackPanel>
+        </StackPanel>
+
+        <!-- Username input -->
+        <StackPanel Spacing="8" Margin="0,0,0,16">
+          <TextBlock Text="MINECRAFT USERNAME" Classes="section-title" />
+          <TextBox Classes="field"
+                   Text="{Binding Username}"
+                   Watermark="YourUsername"
+                   IsEnabled="{Binding !IsAuthenticating}" />
+        </StackPanel>
+
+        <!-- Status -->
+        <TextBlock Text="{Binding StatusMessage}"
+                   FontSize="12"
+                   Foreground="{DynamicResource AccentSuccessBrush}"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,16"
+                   IsVisible="{Binding StatusMessage, Converter={x:Static vm:NullToBoolConverter.Instance}}" />
+
+        <!-- Actions -->
+        <StackPanel Spacing="10">
+          <Button Classes="pill-primary"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  Command="{Binding ProceedCommand}"
+                  IsEnabled="{Binding CanProceed}">
+            <TextBlock Text="{Binding IsAuthenticating, Converter={x:Static vm:ShowHideConverter.Instance}, ConverterParameter='invert'}"
+                       IsVisible="False" />
+            <Button.Content>
+              <TextBlock Text="Continue" FontSize="14" FontWeight="SemiBold" />
+            </Button.Content>
+          </Button>
+
+          <Button Classes="pill-ghost"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  Command="{Binding SkipCommand}">
+            <TextBlock Text="Skip for now" FontSize="13" />
+          </Button>
+        </StackPanel>
+
+      </StackPanel>
+    </Border>
+
+  </Grid>
+</UserControl>

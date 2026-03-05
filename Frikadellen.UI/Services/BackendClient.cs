@@ -116,6 +116,35 @@ public sealed class BackendClient : IDisposable
         catch { return null; }
     }
 
+    /// <summary>GET /api/stats — session totals (profit, flips, win rate, etc.).</summary>
+    public async Task<StatsDto?> GetStatsAsync()
+    {
+        try
+        {
+            var resp = await _http.GetAsync("/api/stats");
+            resp.EnsureSuccessStatusCode();
+            var json = await resp.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<StatsDto>(json, JsonOpts);
+        }
+        catch { return null; }
+    }
+
+    /// <summary>GET /api/flips — recent flip history.</summary>
+    public async Task<List<FlipHistoryDto>?> GetFlipsAsync(int limit = 50)
+    {
+        try
+        {
+            var resp = await _http.GetAsync($"/api/flips?limit={limit}");
+            resp.EnsureSuccessStatusCode();
+            var json = await resp.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+            if (doc.RootElement.TryGetProperty("flips", out var flipsEl))
+                return JsonSerializer.Deserialize<List<FlipHistoryDto>>(flipsEl.GetRawText(), JsonOpts);
+            return null;
+        }
+        catch { return null; }
+    }
+
     /// <summary>GET /api/configs — list saved named configs.</summary>
     public async Task<List<string>?> GetNamedConfigsAsync()
     {
@@ -381,4 +410,54 @@ public sealed record InventorySlotDto
 
     /// <summary>Stack count. 0 means the slot is empty.</summary>
     public int Count { get; init; }
+}
+
+/// <summary>Matches the JSON structure from GET /api/stats.</summary>
+public sealed record StatsDto
+{
+    [JsonPropertyName("session_profit")]
+    public long SessionProfit { get; init; }
+
+    [JsonPropertyName("total_coins_spent")]
+    public long TotalCoinsSpent { get; init; }
+
+    [JsonPropertyName("total_coins_earned")]
+    public long TotalCoinsEarned { get; init; }
+
+    [JsonPropertyName("total_flips")]
+    public int TotalFlips { get; init; }
+
+    [JsonPropertyName("win_count")]
+    public int WinCount { get; init; }
+
+    [JsonPropertyName("session_duration_secs")]
+    public long SessionDurationSecs { get; init; }
+}
+
+/// <summary>Matches one entry from GET /api/flips.</summary>
+public sealed record FlipHistoryDto
+{
+    [JsonPropertyName("item")]
+    public string Item { get; init; } = "";
+
+    [JsonPropertyName("buy_price")]
+    public long BuyPrice { get; init; }
+
+    [JsonPropertyName("sell_price")]
+    public long SellPrice { get; init; }
+
+    [JsonPropertyName("profit")]
+    public long Profit { get; init; }
+
+    [JsonPropertyName("outcome")]
+    public string Outcome { get; init; } = "pending";
+
+    [JsonPropertyName("timestamp")]
+    public long Timestamp { get; init; }
+
+    [JsonPropertyName("buy_speed_ms")]
+    public long? BuySpeedMs { get; init; }
+
+    [JsonPropertyName("tag")]
+    public string? Tag { get; init; }
 }
