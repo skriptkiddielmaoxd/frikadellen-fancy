@@ -320,6 +320,38 @@ public sealed class MainWindowViewModel : ViewModelBase
         {
             StatusText = connected ? "Connected" : "Disconnected";
         });
+
+        // On reconnect, sync the real inventory so the grid shows actual game state
+        if (connected)
+            _ = RefreshInventoryAsync();
+    }
+
+    /// <summary>
+    /// Fetch the real Minecraft inventory from /api/inventory and update InventorySlots.
+    /// Slots with actual items are populated with name and count; empty slots are cleared.
+    /// Any flip context (sell/buy/profit) from relist events will be overlaid afterwards
+    /// when the bot fires relist WebSocket messages.
+    /// </summary>
+    private async Task RefreshInventoryAsync()
+    {
+        var slots = await _backend.GetInventoryAsync();
+        if (slots == null)
+        {
+            System.Diagnostics.Debug.WriteLine("[UI] RefreshInventoryAsync: no inventory data returned");
+            return;
+        }
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            for (int i = 0; i < slots.Length && i < InventorySlots.Count; i++)
+            {
+                var dto = slots[i];
+                if (!string.IsNullOrEmpty(dto.Name) && dto.Count > 0)
+                    InventorySlots[i].FillFromInventory(dto.Name, dto.Count);
+                else
+                    InventorySlots[i].Clear();
+            }
+        });
     }
 
     private void OnRustOutput(string raw, bool isError)

@@ -24,6 +24,10 @@
           </ItemsControl.ItemTemplate>
         </ItemsControl>
 
+        <!-- Count badge (only shown when stack > 1) -->
+        <TextBlock Text="{Binding CountText}" FontSize="11" Foreground="#FFAA00" FontWeight="SemiBold"
+                   IsVisible="{Binding HasCount}" />
+
         <Border Height="1" Background="#30FFFFFF" />
 
         <!-- Price details -->

@@ -84,6 +84,9 @@ public sealed class InventorySlot : Frikadellen.UI.ViewModels.ViewModelBase
     private string? _itemTag;
     public string? ItemTag { get => _itemTag; set { if (SetField(ref _itemTag, value)) OnPropertyChanged(nameof(ImageUrl)); } }
 
+    private int _count;
+    public int Count { get => _count; set { if (SetField(ref _count, value)) { OnPropertyChanged(nameof(CountText)); OnPropertyChanged(nameof(HasCount)); } } }
+
     private bool _listed;
     public bool Listed { get => _listed; set { if (SetField(ref _listed, value)) { OnPropertyChanged(nameof(StatusText)); OnPropertyChanged(nameof(StatusColor)); OnPropertyChanged(nameof(SlotBorder)); } } }
 
@@ -97,6 +100,8 @@ public sealed class InventorySlot : Frikadellen.UI.ViewModels.ViewModelBase
     public double ProfitPercent => BuyCost > 0 ? (double)Profit / BuyCost * 100 : 0;
     public string ProfitPercentFormatted => BuyCost > 0 ? $"{ProfitPercent:F1}%" : "";
     public string ProfitColor => Profit > 0 ? "#00B894" : "#FF6B6B";
+    public string CountText => Count > 1 ? $"x{Count}" : "";
+    public bool HasCount => Count > 1;
     public string StatusText => Listed ? "Listed ✓" : "Pending";
     public string StatusColor => Listed ? "#00B894" : "#FFAA00";
     public string SlotBorder => HasItem ? (Listed ? "#00B894" : "#6C5CE7") : "#20FFFFFF";
@@ -115,12 +120,35 @@ public sealed class InventorySlot : Frikadellen.UI.ViewModels.ViewModelBase
     {
         HasItem = false;
         ItemName = string.Empty;
+        Count = 0;
         SellPrice = 0;
         BuyCost = 0;
         Profit = 0;
         ItemTag = null;
         Listed = false;
         NameSpans = new();
+        OnPropertyChanged(nameof(SlotBackground));
+        OnPropertyChanged(nameof(SlotBorder));
+        OnPropertyChanged(nameof(SlotCursor));
+        OnPropertyChanged(nameof(ToolTipData));
+    }
+
+    /// <summary>
+    /// Populate slot from the real Minecraft inventory (name + count only).
+    /// Flip context (sell price, buy cost, profit, tag) is reset since this is
+    /// a fresh sync from the actual game state.
+    /// </summary>
+    public void FillFromInventory(string itemName, int count)
+    {
+        ItemName = itemName;
+        Count = count;
+        SellPrice = 0;
+        BuyCost = 0;
+        Profit = 0;
+        ItemTag = null;
+        Listed = false;
+        NameSpans = MinecraftColorParser.Parse(itemName);
+        HasItem = true;
         OnPropertyChanged(nameof(SlotBackground));
         OnPropertyChanged(nameof(SlotBorder));
         OnPropertyChanged(nameof(SlotCursor));
