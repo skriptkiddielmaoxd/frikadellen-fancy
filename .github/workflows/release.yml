@@ -149,7 +149,7 @@ jobs:
 
       - name: Run installer build script
         shell: pwsh
-        run: .\installer\build-installer.ps1
+        run: .\installer\build-installer.ps1 -Version "${{ needs.get-tag.outputs.tag }}"
 
       - name: Upload installer assets to release
         uses: softprops/action-gh-release@v2

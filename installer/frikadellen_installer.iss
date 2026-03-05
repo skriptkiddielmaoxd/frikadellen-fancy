@@ -1,11 +1,11 @@
 [Setup]
 AppName=Frikadellen BAF
-AppVersion=3.0.0
+AppVersion={#AppVersion}
 AppPublisher=TreXito
 DefaultDirName={pf}\Frikadellen BAF
 DefaultGroupName=Frikadellen BAF
 OutputDir=installer\output
-OutputBaseFilename=FrikadellenBAF_Setup_v3.0.0
+OutputBaseFilename=FrikadellenBAF_Setup_{#AppVersion}
 Compression=lzma
 SolidCompression=yes
 PrivilegesRequired=admin

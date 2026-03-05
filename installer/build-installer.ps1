@@ -1,6 +1,9 @@
 # Packaging script for Frikadellen BAF installer
 # Usage: run from repo root in an elevated PowerShell session:
-#   .\installer\build-installer.ps1
+#   .\installer\build-installer.ps1 [-Version v3.0.1]
+param(
+    [string]$Version = "v3.0.0"
+)
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 # Repo root is the parent of the installer script directory
@@ -39,8 +42,8 @@ if (-Not $inno) {
     exit 0
 }
 
-# Provide a preprocessor define so the .iss can reference the absolute staging path via {#StagingPath}
-$innoArgs = '/DStagingPath="' + ($staging -replace '\\','\\\\') + '"'
+# Provide preprocessor defines so the .iss can reference the staging path and version
+$innoArgs = '/DStagingPath="' + ($staging -replace '\\','\\\\') + '" /DAppVersion="' + $Version + '"'
 Write-Host "Running ISCC: $inno $innoArgs $iss"
 & $inno $innoArgs $iss
 
