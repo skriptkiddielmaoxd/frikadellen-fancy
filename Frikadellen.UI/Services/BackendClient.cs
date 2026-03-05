@@ -1,6 +1,9 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Frikadellen.UI.Models;
@@ -8,20 +11,6 @@ using Frikadellen.UI.Models;
 namespace Frikadellen.UI.Services;
 
 // ────────── DTOs (mirrors frikadellen-fancy REST API) ──────────
-
-/// <summary>Response from GET /api/stats</summary>
-public record StatsDto(
-    long   SessionProfit,
-    long   TotalCoinsSpent,
-    long   TotalCoinsEarned,
-    int    TotalFlips,
-    int    WinCount,
-    int    LossCount)
-{
-    public double WinRate => TotalFlips > 0
-        ? Math.Round(WinCount / (double)TotalFlips * 100, 1)
-        : 0.0;
-}
 
 /// <summary>Single flip entry from GET /api/flips</summary>
 public record FlipDto(
@@ -40,6 +29,11 @@ public record FlipDto(
 public sealed class BackendClient : IDisposable
 {
     private readonly HttpClient _http;
+
+    private static readonly JsonSerializerOptions JsonOpts = new()
+    {
+        PropertyNameCaseInsensitive = true,
+    };
 
     public BackendClient(string baseUrl = "http://localhost:8080")
     {
@@ -64,7 +58,7 @@ public sealed class BackendClient : IDisposable
 
     // ── Stats ──
 
-    /// <summary>GET /api/stats — returns null when backend is offline.</summary>
+    /// <summary>GET /api/stats — session totals (profit, flips, win rate, etc.). Returns null when backend is offline.</summary>
     public async Task<StatsDto?> GetStatsAsync(CancellationToken ct = default)
     {
         try
@@ -89,18 +83,6 @@ public sealed class BackendClient : IDisposable
         catch { return null; }
     }
 
-    /// <summary>GET /api/stats — session totals (profit, flips, win rate, etc.).</summary>
-    public async Task<StatsDto?> GetStatsAsync()
-    {
-        try
-        {
-            var resp = await _http.GetAsync("/api/stats");
-            resp.EnsureSuccessStatusCode();
-            var json = await resp.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<StatsDto>(json, JsonOpts);
-        }
-        catch { return null; }
-    }
 
     /// <summary>GET /api/flips — recent flip history.</summary>
     public async Task<List<FlipHistoryDto>?> GetFlipsAsync(int limit = 50)

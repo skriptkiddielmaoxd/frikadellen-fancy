@@ -40,7 +40,7 @@ public sealed class RustProcessLauncher : IDisposable
     /// </summary>
     public bool Start(string? exePath = null)
     {
-        if (IsRunning) return;
+        if (IsRunning) return true;
 
         exePath ??= ResolveBinaryPath();
         if (exePath == null)
@@ -107,10 +107,6 @@ public sealed class RustProcessLauncher : IDisposable
         {
             AppendLine($"[launcher] Stop error: {ex.Message}", isError: true);
         }
-        finally
-        {
-            AppendLine($"[launcher] Kill failed: {ex.Message}", isError: true);
-        }
     }
 
     public void Dispose()
@@ -162,7 +158,7 @@ public sealed class RustProcessLauncher : IDisposable
         });
     }
 
-    private void OnProcessExited(object? sender, EventArgs e)
+    private string? ResolveBinaryPath()
     {
         var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         var candidates = new[]
@@ -196,7 +192,6 @@ public sealed class RustProcessLauncher : IDisposable
             if (found != null) return found;
             dirInfo = dirInfo.Parent;
         }
-    }
 
         return CheckCandidates(Directory.GetCurrentDirectory());
     }

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Frikadellen.UI.Models;
 
 namespace Frikadellen.UI.Services;
@@ -93,4 +95,73 @@ public static class MockDataService
         Fmt.Coins((long)Rng.Next(50_000_000, 2_000_000_000));
 
     public static int RandomQueue() => Rng.Next(0, 15);
+
+    public static List<double> GetProfitTimeline()
+    {
+        var result = new List<double>();
+        double running = 0;
+        for (int i = 0; i < 30; i++)
+        {
+            running += Rng.Next(-2_000_000, 15_000_000);
+            result.Add(Math.Max(0, running));
+        }
+        return result;
+    }
+
+    public static List<double> GetHourlyEarnings()
+    {
+        var result = new List<double>();
+        for (int i = 0; i < 24; i++)
+            result.Add(Rng.Next(0, 80_000_000));
+        return result;
+    }
+
+    public static IEnumerable<BazaarOrder> GetBazaarOrders()
+    {
+        var items = new[] { "Enchanted Iron", "Enchanted Gold", "Enchanted Lapis", "Booster Cookie", "Hyper Catalyst" };
+        for (int i = 0; i < 5; i++)
+            yield return new BazaarOrder
+            {
+                ItemName     = items[i % items.Length],
+                OrderType    = i % 2 == 0 ? "BUY" : "SELL",
+                Amount       = Rng.Next(64, 640),
+                PricePerUnit = Rng.Next(10_000, 500_000),
+                PlacedAt     = DateTimeOffset.Now.AddMinutes(-Rng.Next(1, 60)),
+            };
+    }
+
+    public static IEnumerable<FlipRecord> GetInitialFlips()
+    {
+        for (int i = 0; i < 5; i++)
+            yield return RandomFlip();
+    }
+
+    public static AnalyticsData GetAnalyticsData()
+    {
+        var topItems = new List<(string, int, long, long, long)>();
+        foreach (var item in Items.Take(10))
+        {
+            int cnt     = Rng.Next(5, 80);
+            long best   = Rng.Next(1_000_000, 30_000_000);
+            long total  = best * cnt / 2;
+            long avg    = total / cnt;
+            topItems.Add((item, cnt, total, avg, best));
+        }
+        topItems.Sort((a, b) => b.Item3.CompareTo(a.Item3));
+
+        long totalProfit = topItems.Sum(t => t.Item3);
+        int totalFlips   = topItems.Sum(t => t.Item2);
+
+        return new AnalyticsData
+        {
+            TotalProfit      = totalProfit,
+            AvgProfitPerFlip = totalFlips > 0 ? totalProfit / totalFlips : 0,
+            BestFlipItem     = topItems[0].Item1,
+            BestFlipProfit   = topItems[0].Item5,
+            FlipsPerHour     = Math.Round(totalFlips / 12.0, 1),
+            AvgBuySpeedMs    = Rng.Next(150, 450),
+            WinRate          = 0.78,
+            TopItems         = topItems,
+        };
+    }
 }

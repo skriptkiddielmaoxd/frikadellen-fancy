@@ -18,9 +18,6 @@ Frikadellen.UI/publish/
 installer/output/
 installer/staging/
 
-# Inno Setup output
-*.exe
-
 # Local recovery clone used for packaging/dev — ignore to avoid accidental commits
 recover_clone/
 
