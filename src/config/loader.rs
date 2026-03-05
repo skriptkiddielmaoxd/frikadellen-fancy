@@ -84,7 +84,7 @@ impl ConfigLoader {
 
     /// List named configs saved under the `configs/` subdirectory next to the main config.
     pub fn list_named_configs(&self) -> Result<Vec<String>> {
-        let mut configs_dir = self
+        let configs_dir = self
             .config_path
             .parent()
             .map(|p| p.join("configs"))
