@@ -184,7 +184,7 @@ impl BazaarFlipHandler {
         let total_price = data
             .get("totalPrice")
             .and_then(|v| v.as_f64())
-            .or_else(|| Some(price_per_unit * amount as f64));
+            .or(Some(price_per_unit * amount as f64));
 
         // Determine order type
         let is_buy_order = if let Some(v) = data.get("isBuyOrder") {

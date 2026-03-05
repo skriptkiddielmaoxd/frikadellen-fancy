@@ -388,7 +388,7 @@ impl BotClient {
         };
         // Sort entries by score descending (matches mineflayer sidebar order)
         let mut entries: Vec<(&String, &(String, u32))> = objective.iter().collect();
-        entries.sort_by(|a, b| b.1 .1.cmp(&a.1 .1));
+        entries.sort_by_key(|b| std::cmp::Reverse(b.1 .1));
         // Build a member -> (prefix+suffix) lookup from team data for proper display
         let teams = self.scoreboard_teams.read();
         let mut member_display: HashMap<String, String> = HashMap::new();
@@ -889,7 +889,7 @@ fn format_price_for_sign(price: f64) -> String {
     let mut with_commas = String::new();
     let len = digits.len();
     for (i, &c) in digits.iter().enumerate() {
-        if i > 0 && (len - i) % 3 == 0 {
+        if i > 0 && (len - i).is_multiple_of(3) {
             with_commas.push(',');
         }
         with_commas.push(c);
@@ -1785,10 +1785,7 @@ async fn execute_command(bot: &Client, command: &QueuedCommand, state: &BotClien
             *state.bazaar_step.write() = BazaarStep::Initial;
 
             // Use itemTag when available (skips search results page), else title-case itemName
-            let search_term = item_tag
-                .as_ref()
-                .map(|s| s.as_str())
-                .unwrap_or_else(|| item_name.as_str());
+            let search_term = item_tag.as_deref().unwrap_or(item_name.as_str());
             let cmd = if item_tag.is_some() {
                 format!("/bz {}", search_term)
             } else {
@@ -1812,10 +1809,7 @@ async fn execute_command(bot: &Client, command: &QueuedCommand, state: &BotClien
             *state.bazaar_step.write() = BazaarStep::Initial;
 
             // Use itemTag when available, else title-case itemName
-            let search_term = item_tag
-                .as_ref()
-                .map(|s| s.as_str())
-                .unwrap_or_else(|| item_name.as_str());
+            let search_term = item_tag.as_deref().unwrap_or(item_name.as_str());
             let cmd = if item_tag.is_some() {
                 format!("/bz {}", search_term)
             } else {

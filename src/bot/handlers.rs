@@ -80,7 +80,7 @@ impl BotEventHandlers {
                 // Try to extract from "extra" array first
                 if let Some(extra) = json.get("extra") {
                     if let Some(extra_array) = extra.as_array() {
-                        if let Some(first) = extra_array.get(0) {
+                        if let Some(first) = extra_array.first() {
                             if let Some(text) = first.get("text") {
                                 if let Some(text_str) = text.as_str() {
                                     return text_str.to_string();
