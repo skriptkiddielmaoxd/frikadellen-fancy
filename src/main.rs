@@ -28,9 +28,9 @@ const VERSION: &str = "af-3.0";
 /// - ≥100M → 2.5%
 fn calculate_ah_fee(price: u64) -> u64 {
     if price < 10_000_000 {
-                    item_name,
-                    price,
-                    buyer,
+        price / 100
+    } else if price < 100_000_000 {
+        price * 2 / 100
     } else {
         price * 25 / 1000
     }

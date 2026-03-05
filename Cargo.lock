@@ -1573,7 +1573,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "frikadellen_baf"
+name = "frikadellen-fancy"
 version = "3.0.0"
 dependencies = [
  "anyhow",

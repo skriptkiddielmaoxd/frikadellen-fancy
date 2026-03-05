@@ -1,9 +1,9 @@
 [package]
-name = "frikadellen_baf"
+name = "frikadellen-fancy"
 version = "3.0.0"
 edition = "2021"
 authors = ["TreXito"]
-description = "Frikadellen BAF (Bazaar Auction Flipper) for Hypixel Skyblock - Rust port using Azalea"
+description = "Frikadellen BAFF (Bazaar Auction Flipper *Fancy*) for Hypixel Skyblock - Rust port using Azalea"
 license = "MIT"
 
 [dependencies]
