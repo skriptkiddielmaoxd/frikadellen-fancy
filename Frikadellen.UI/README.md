@@ -1,122 +1,127 @@
-# Frikadellen UI – Avalonia Desktop Prototype
+# Frikadellen UI – Overhauled Avalonia Desktop UI
 
-A standalone Avalonia 11 desktop application that visually resembles the Frikadellen
-localhost web UI but runs entirely on mocked data. The window uses custom chrome
-(no native title bar), rounded corners, drop shadow, and animated interactions.
+A complete visual overhaul of the Frikadellen Avalonia desktop UI, built for easy merge into `frikadellen-fancy`. All backend logic has been stubbed out with clear `// INTEGRATION POINT` comments — drop in the real `BackendClient`, `BackendSocket` and `RustProcessLauncher` calls to go live.
 
 ---
 
-## Prerequisites
+## Design
 
-| Requirement | Version |
+| Attribute | Detail |
 |---|---|
-| .NET SDK | **8.0** or later |
-| OS | Windows 10+, Linux, or macOS (built primarily for Windows) |
+| Theme | Deep midnight-navy dark (`#0A0F1E` base) |
+| Accent | Indigo/violet `#818CF8` + sky-blue `#38BDF8` |
+| Corners | 12–24 px radius **everywhere** — zero sharp corners |
+| Font | Inter (bundled via `Avalonia.Fonts.Inter`) |
+| Animations | Splash bounce-in, staggered card entrance, sidebar width transition, button colour morph, view fade+slide |
 
-Avalonia packages are pulled automatically via NuGet – no Avalonia workload or
-template install is required.
+---
 
-## Build
+## Screens
+
+### Splash Screen
+- Logo mark scales in with a `BackEaseOut` spring bounce
+- `FRIKADELLEN` title slides up and fades in
+- Tagline and progress bar reveal with staggered delays
+- Shimmer gradient progress bar (`#818CF8 → #38BDF8`)
+- "Ready." status then transitions to the main shell
+
+### Account Setup (Login)
+- Shown on first run (when `config/ui-settings.json → FirstRunComplete: false`)
+- Card slides up from below with `CubicEaseOut`
+- Form fields stagger in individually
+- `Connect Account` → fires Microsoft device-code auth (INTEGRATION POINT)
+- `Skip for now` → proceeds directly to main shell
+
+### Main Shell
+- **Custom chrome**: no native title bar; draggable top bar with logo, status chip, theme toggle, min/max/close
+- **Collapsible sidebar**: 220 px expanded / 60 px collapsed; smooth width transition
+- **Page transitions**: fade + 16 px slide-up per view change
+
+### Dashboard
+- Live **stat cards** (Script state, Purse, Queue depth, Session profit) with staggered entrance
+- Big pill **Start / Stop** button with colour-morph transition (violet ↔ red)
+- **Latest Flip** highlight card
+- **Recent Flips** table with item, buy/sell prices, profit (+colour), speed badge
+- Empty state with friendly placeholder when no flips yet
+- Keyboard shortcuts: `Ctrl+S` = Start, `Ctrl+T` = Stop
+
+### Events
+- Slide-in feed of purchases, sales, bazaar trades, listings and errors
+- Type badge + timestamp per row
+- Right panel shows expanded detail for selected event
+
+### Config
+- Grouped settings cards: Flip Modes, Timing & Delays, Behaviour, Skip Filter, Network
+- All fields bound to `UiSettings` and saved to `config/ui-settings.json`
+- Save button with "Saved ✓" flash confirmation
+
+### Notifier
+- Discord bot token field with show/hide toggle
+- Channel ID, Webhook URL inputs
+- Bot command quick-reference table (`!start`, `!stop`, `!status`)
+
+---
+
+## Build & Run
+
+**Requirements:** .NET 8 SDK
 
 ```bash
-dotnet build src/Frikadellen.UI/Frikadellen.UI.sln
-```
+# Build
+dotnet build Frikadellen.UI/Frikadellen.UI.sln
 
-## Run
+# Run (dev)
+dotnet run --project Frikadellen.UI/Frikadellen.UI.csproj
 
-```bash
-dotnet run --project src/Frikadellen.UI/Frikadellen.UI.csproj -c Debug
-```
-
-## Publish (single-file Windows exe)
-
-```bash
-dotnet publish src/Frikadellen.UI/Frikadellen.UI.csproj \
+# Publish single-file Windows exe
+dotnet publish Frikadellen.UI/Frikadellen.UI.csproj \
   -c Release -r win-x64 \
   -p:SelfContained=true \
   -p:PublishSingleFile=true
 ```
 
-The output will be in `src/Frikadellen.UI/bin/Release/net8.0/win-x64/publish/`.
-
 ---
 
-## Features
+## Integration Guide
 
-### Custom Window Chrome
-- Native title bar removed (`SystemDecorations=None`)
-- Draggable custom top bar with logo, app title, and status chip
-- Rounded 16 px corners with soft drop shadow
-- Animated close / minimize / maximize buttons (double-click title bar to maximise)
-- Light / dark theme toggle (◐ button) with smooth crossfade
+Search for `// INTEGRATION POINT` across the ViewModels — each comment describes exactly what real call to substitute:
 
-### Dashboard (mocked)
-- Big pill-shaped Start/Stop toggle with colour morph animation
-  - Keyboard shortcuts: **Ctrl+S** = Start, **Ctrl+T** = Stop
-- Four status cards (Script state, Purse, Queue Depth, Bot Status)
-  - Staggered entrance animation (translate + fade)
-  - Hover lift (scale + shadow)
-- Metrics update on 1.5 s timer when running
+| File | What to plug in |
+|---|---|
+| `MainWindowViewModel.cs` | `_launcher.Start()` / `_socket.ConnectAsync()` / `_launcher.Stop()` |
+| `LoginViewModel.cs` | Real Microsoft device-code auth flow |
+| `DashboardViewModel.cs` | Wire `ToggleRequested` to `MainWindowViewModel.StartScript/StopScript` |
 
-### Live Events (mocked)
-- Random events appended every 2.5 s while script runs
-- Slide-in animation per item, avatar & tag chips
-- Click item to expand details in the right panel
-
-### Settings
-- Token (masked), Channel ID, Publish Path inputs
-- Save button persists to `./config/ui-settings.json`
-
-### Sidebar
-- Collapsible sidebar with icon + label navigation
-- Smooth width transition animation
-
-### Accessibility
-- Keyboard navigation & focus visuals (Avalonia Fluent theme)
-- Accessible labels / tooltips on all interactive controls
-- High-contrast readable colour palette
+The `SettingsService` already reads/writes `config/ui-settings.json` — replace/extend `UiSettings` to match your real `config.toml` schema.
 
 ---
 
 ## Project Structure
 
 ```
-src/Frikadellen.UI/
-├── Frikadellen.UI.sln
-├── Frikadellen.UI.csproj
-├── app.manifest
-├── Program.cs
-├── App.axaml / App.axaml.cs
-├── Assets/
-│   ├── logo.png          # 128×128 brand logo
-│   ├── logo.svg          # Vector version
-│   └── icon.ico          # 32×32 app icon
-├── Models/
-│   └── Models.cs         # EventItem, UiSettings
+Frikadellen.UI/
+├── Frikadellen.UI.sln / .csproj
+├── Program.cs                        entry point
+├── App.axaml / .cs                   global theme + startup
+├── Models/Models.cs                  EventItem, FlipRecord, UiSettings, Fmt
 ├── Services/
-│   ├── MockDataService.cs
-│   └── SettingsService.cs
+│   ├── MockDataService.cs            random events/flips for demo
+│   └── SettingsService.cs            JSON persistence
 ├── ViewModels/
-│   ├── ViewModelBase.cs
-│   ├── RelayCommand.cs
-│   ├── BoolToStringConverter.cs
-│   ├── MainWindowViewModel.cs
-│   ├── DashboardViewModel.cs
-│   ├── EventsViewModel.cs
-│   └── SettingsViewModel.cs
-├── Views/
-│   ├── MainWindow.axaml / .axaml.cs
-│   ├── DashboardView.axaml / .axaml.cs
-│   ├── EventsView.axaml / .axaml.cs
-│   └── SettingsView.axaml / .axaml.cs
-└── README.md
+│   ├── MainWindowViewModel.cs        root lifecycle: Splash → Login → Shell
+│   ├── SplashViewModel.cs            animated progress steps
+│   ├── LoginViewModel.cs             first-run account setup
+│   ├── DashboardViewModel.cs         stats, toggle, flip feed
+│   ├── EventsViewModel.cs            live event collection
+│   ├── ConfigViewModel.cs            all config.toml fields
+│   ├── NotifierViewModel.cs          Discord bot + webhook
+│   └── BoolToStringConverter.cs      IValueConverter helpers
+└── Views/
+    ├── MainWindow.axaml/.cs          custom chrome + phase routing
+    ├── SplashView.axaml/.cs
+    ├── LoginView.axaml/.cs
+    ├── DashboardView.axaml/.cs
+    ├── EventsView.axaml/.cs
+    ├── ConfigView.axaml/.cs
+    └── NotifierView.axaml/.cs
 ```
-
----
-
-## Note
-
-This app is a **standalone prototype** – all data is mocked locally.
-No network calls, no real tokens, no external dependencies beyond Avalonia.
-Settings are stored as plain JSON on disk for convenience; this is acceptable
-for prototype use only.

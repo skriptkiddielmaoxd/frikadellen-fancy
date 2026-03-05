@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace Frikadellen.UI.Views;
 
-public partial class SettingsView : UserControl
+public partial class ConsoleView : UserControl
 {
-    public SettingsView()
+    public ConsoleView()
     {
         InitializeComponent();
     }

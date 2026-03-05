@@ -1,232 +1,192 @@
 using System;
-using System.Collections.ObjectModel;
-using System.Threading;
-using Avalonia.Threading;
+using System.Collections.Generic;
 using Frikadellen.UI.Models;
 
 namespace Frikadellen.UI.Services;
 
-public sealed class MockDataService : IDisposable
+public class MockDataService
 {
-    private Timer? _metricsTimer;
-    private Timer? _eventsTimer;
-    private Timer? _flipsTimer;
-    private Timer? _chatTimer;
-    private readonly Random _rng = new();
+    private static readonly Random Rng = new();
 
-    public bool IsRunning { get; private set; }
-    public int Purse { get; private set; } = 12_450;
-    public int QueueDepth { get; private set; } = 7;
-    public string BotStatus { get; private set; } = "Idle";
-
-    // Flip tracking
-    public int TotalFlips { get; private set; }
-    public long TotalProfit { get; private set; }
-    public long SessionProfit { get; private set; }
-    public double AvgBuySpeed { get; private set; }
-    private int _speedCount;
-    private long _speedSum;
-
-    public ObservableCollection<EventItem> Events { get; } = new();
-    public ObservableCollection<FlipRecord> Flips { get; } = new();
-    public ObservableCollection<ChatMessage> ChatLog { get; } = new();
-
-    public event Action? MetricsUpdated;
-
-    private static readonly string[] EventTypes = { "Trade", "Alert", "Info", "Warning", "Error" };
-    private static readonly string[] EventMessages =
+    private static readonly (string Name, string Rarity, long BasePrice)[] RichItems =
     {
-        "Auction flip purchased successfully",
-        "Queue flushed – 3 pending orders sent",
-        "Heartbeat OK – latency 12 ms",
-        "Rate-limit warning – 429 from API",
-        "WebSocket reconnected successfully",
-        "New channel message processed",
-        "Purse rebalanced automatically",
-        "Inventory snapshot saved",
-        "Webhook delivered to endpoint",
-        "Config reloaded from disk",
-        "Bazaar order filled – ready to collect",
-        "Cookie check passed – 3 days remaining",
-        "Listed BIN auction for resale"
-    };
-    private static readonly string[] Avatars = { "🟢", "🔵", "🟡", "🔴", "🟣" };
-    private static readonly string[] Tags = { "trade", "system", "bot", "network", "config" };
-
-    private static readonly string[] FlipItems =
-    {
-        "Hyperion", "Terminator", "Divan's Alloy", "Necron's Handle",
-        "Giant's Sword", "Wither Blade", "Shadow Fury", "Juju Shortbow",
-        "Spirit Sceptre", "Aspect of the End", "Livid Dagger",
-        "Flower of Truth", "Bonzo's Staff", "Last Breath",
-        "Ice Spray Wand", "Midas' Sword", "Pigman Sword",
-        "Warden Helmet", "Storm's Boots", "Goldor's Chestplate"
-    };
-    private static readonly string[] Finders = { "SNIPER", "USER", "SKINS", "TFM", "STONKS", "FLIPPER" };
-
-    private static readonly string[] ChatSenders = { "[BAF]", "Coflnet", "System", "Hypixel" };
-    private static readonly string[] ChatMessages =
-    {
-        "Auction bought in {0}ms",
-        "You purchased {1} for {2} coins!",
-        "[Auction] {3} bought {1} for {4} coins CLICK",
-        "Putting coins in escrow...",
-        "Visit the Auction House to collect your item!",
-        "Your bazaar order was filled!",
-        "Booster Cookie expiring in 2d 14h",
-        "Claimed BIN auction successfully!",
-        "Profit so far this session: {5} coins",
-        "Bed Wars (★142): Technoblade joined the lobby!",
-        "RARE DROP! (Wither Catalyst)",
-        "Bazaar buy order placed: 64x Enchanted Diamond"
+        ("Hyperion", "LEGENDARY", 180_000_000),
+        ("Terminator", "LEGENDARY", 620_000_000),
+        ("Necron's Handle", "LEGENDARY", 280_000_000),
+        ("Shadow Fury", "LEGENDARY", 90_000_000),
+        ("Wither Shield", "LEGENDARY", 110_000_000),
+        ("Aspect of the Dragon", "LEGENDARY", 24_000_000),
+        ("Livid Dagger", "LEGENDARY", 45_000_000),
+        ("Midas Sword", "LEGENDARY", 100_000_000),
+        ("Spirit Sceptre", "EPIC", 22_000_000),
+        ("Astraea", "LEGENDARY", 160_000_000),
+        ("Scylla", "LEGENDARY", 170_000_000),
+        ("Valkyrie", "LEGENDARY", 190_000_000),
+        ("Stonk", "EPIC", 11_000_000),
+        ("Legendary Wolf Pet", "LEGENDARY", 35_000_000),
+        ("Ender Dragon Pet", "LEGENDARY", 250_000_000),
+        ("Golden Dragon Pet", "LEGENDARY", 550_000_000),
+        ("Bal Pet", "LEGENDARY", 75_000_000),
+        ("Scatha Pet", "LEGENDARY", 120_000_000),
+        ("Florid Zombie Sword", "EPIC", 18_000_000),
+        ("Jujubee", "RARE", 8_000_000),
+        ("Midas Staff", "LEGENDARY", 220_000_000),
+        ("Giant Sword", "LEGENDARY", 310_000_000),
+        ("Thick Scorpion Foil", "EPIC", 14_000_000),
+        ("Leaping Sword", "RARE", 6_500_000),
+        ("Frozen Blaze", "EPIC", 32_000_000),
+        ("Lapis Armor Set", "UNCOMMON", 2_000_000),
+        ("Glacite Armor Set", "RARE", 9_000_000),
+        ("Skeleton Master", "EPIC", 12_000_000),
+        ("Enchanted Book (TURBO-CROPS V)", "RARE", 5_500_000),
+        ("Enchanted Book (LOOTING V)", "EPIC", 7_800_000),
+        ("Strong Dragon Helmet", "EPIC", 15_000_000),
+        ("Tarantula Helmet", "LEGENDARY", 48_000_000),
     };
 
-    public void Start()
+    private static readonly string[] EventTypes = { "purchase", "sold", "bazaar", "listing", "error", "info" };
+    private static readonly string[] Finders = { "SNIPER", "STONKS", "COFL", "MEDIAN", "SNIPING" };
+
+    public static EventItem RandomEvent()
     {
-        if (IsRunning) return;
-        IsRunning = true;
-        BotStatus = "Running";
-        SessionProfit = 0;
+        var type = EventTypes[Rng.Next(EventTypes.Length)];
+        var item = RichItems[Rng.Next(RichItems.Length)];
+        var price = item.BasePrice + (long)(Rng.NextDouble() * item.BasePrice * 0.2 - item.BasePrice * 0.1);
+        var target = price + (long)(price * (0.03 + Rng.NextDouble() * 0.12));
+        var profit = target - price;
 
-        _metricsTimer = new Timer(_ => UpdateMetrics(), null, 0, 1500);
-        _eventsTimer = new Timer(_ => AddRandomEvent(), null, 500, 2500);
-        _flipsTimer = new Timer(_ => AddRandomFlip(), null, 1200, 4000);
-        _chatTimer = new Timer(_ => AddRandomChat(), null, 300, 1800);
+        var avatar = type switch { "purchase" => "🛒", "sold" => "⚡", "bazaar" => "📦", "listing" => "🏷️", "error" => "🔴", _ => "🔵" };
+        var typeLabel = type switch { "purchase" => "Purchase", "sold" => "Sale", "bazaar" => "Bazaar", "listing" => "Listing", "error" => "Error", _ => "Info" };
+        var message = type switch
+        {
+            "purchase" => $"Bought {item.Name} for {Fmt.Coins(price)} (target {Fmt.Coins(target)}, +{Fmt.Coins(profit)})",
+            "sold"     => $"Sold {item.Name} for {Fmt.Coins(target)} — profit: +{Fmt.Coins(profit)}",
+            "bazaar"   => $"[BZ] {(Rng.Next(2) == 0 ? "BUY" : "SELL")}: {item.Name} x{Rng.Next(1, 64)} @ {Fmt.Coins(price / 64)}/unit",
+            "listing"  => $"Listed {item.Name} at {Fmt.Coins(target)} (24h)",
+            "error"    => "Coflnet WS disconnected — reconnecting…",
+            _          => $"Script status OK — queue: {Rng.Next(0, 12)} flips pending",
+        };
 
-        MetricsUpdated?.Invoke();
+        return new EventItem { Type = typeLabel, Message = message, Tag = type, Avatar = avatar, Timestamp = DateTimeOffset.Now };
     }
 
-    public void Stop()
+    public static FlipRecord RandomFlip()
     {
-        IsRunning = false;
-        BotStatus = "Stopped";
-        _metricsTimer?.Dispose();
-        _eventsTimer?.Dispose();
-        _flipsTimer?.Dispose();
-        _chatTimer?.Dispose();
-        _metricsTimer = null;
-        _eventsTimer = null;
-        _flipsTimer = null;
-        _chatTimer = null;
-
-        Dispatcher.UIThread.Post(() =>
+        var item = RichItems[Rng.Next(RichItems.Length)];
+        var buy = item.BasePrice + (long)(Rng.NextDouble() * item.BasePrice * 0.1 - item.BasePrice * 0.05);
+        var sell = buy + (long)(buy * (0.02 + Rng.NextDouble() * 0.15));
+        return new FlipRecord
         {
-            ChatLog.Add(new ChatMessage
+            ItemName = item.Name,
+            BuyPrice = buy,
+            SellPrice = sell,
+            BuySpeedMs = Rng.Next(60, 700),
+            Finder = Finders[Rng.Next(Finders.Length)],
+        };
+    }
+
+    public static List<FlipRecord> GetInitialFlips()
+    {
+        var list = new List<FlipRecord>();
+        for (int i = 0; i < 25; i++)
+        {
+            var item = RichItems[Rng.Next(RichItems.Length)];
+            var buy = item.BasePrice + (long)(Rng.NextDouble() * item.BasePrice * 0.1 - item.BasePrice * 0.05);
+            var sell = buy + (long)(buy * (0.01 + Rng.NextDouble() * 0.18));
+            list.Add(new FlipRecord
             {
-                Sender = "[BAF]",
-                Text = $"Session stopped. Profit: {SessionProfit:N0} coins across {TotalFlips} flips.",
-                Color = "#FDCB6E",
-                IsSystem = true
+                ItemName = item.Name,
+                BuyPrice = buy,
+                SellPrice = sell,
+                BuySpeedMs = Rng.Next(50, 800),
+                Finder = Finders[Rng.Next(Finders.Length)],
+                ItemTag = item.Rarity,
             });
-        });
-
-        MetricsUpdated?.Invoke();
+        }
+        return list;
     }
 
-    private void UpdateMetrics()
+    public static List<double> GetProfitTimeline()
     {
-        Purse += _rng.Next(-200, 400);
-        if (Purse < 0) Purse = 500;
-        QueueDepth = Math.Max(0, QueueDepth + _rng.Next(-3, 5));
-        MetricsUpdated?.Invoke();
+        var list = new List<double>();
+        double val = 0;
+        for (int i = 0; i < 200; i++)
+        {
+            val += (Rng.NextDouble() - 0.35) * 5_000_000;
+            if (val < 0) val = 0;
+            list.Add(val);
+        }
+        return list;
     }
 
-    private void AddRandomEvent()
+    public static List<double> GetHourlyEarnings()
     {
-        var idx = _rng.Next(EventMessages.Length);
-        var evt = new EventItem
+        var list = new List<double>();
+        for (int h = 0; h < 24; h++)
         {
-            Type = EventTypes[_rng.Next(EventTypes.Length)],
-            Message = EventMessages[idx],
-            Details = $"Triggered at {DateTime.Now:HH:mm:ss.fff} – mock detail for event #{Events.Count + 1}.",
-            Tag = Tags[_rng.Next(Tags.Length)],
-            Avatar = Avatars[_rng.Next(Avatars.Length)]
-        };
-        Dispatcher.UIThread.Post(() => Events.Add(evt));
+            double base_ = h >= 8 && h <= 22 ? 15_000_000 : 5_000_000;
+            list.Add(base_ + Rng.NextDouble() * 20_000_000);
+        }
+        return list;
     }
 
-    private void AddRandomFlip()
+    public static List<BazaarOrder> GetBazaarOrders()
     {
-        var item = FlipItems[_rng.Next(FlipItems.Length)];
-        var buyPrice = _rng.Next(50_000, 15_000_000);
-        var profitMargin = 0.05 + _rng.NextDouble() * 0.45; // 5-50%
-        var sellPrice = (long)(buyPrice * (1 + profitMargin));
-        // Occasionally a loss
-        if (_rng.NextDouble() < 0.12)
-            sellPrice = (long)(buyPrice * (0.7 + _rng.NextDouble() * 0.25));
-
-        var speed = _rng.Next(180, 1800);
-        var flip = new FlipRecord
+        var statuses = new[] { "ACTIVE", "FILLED", "CANCELLED" };
+        var list = new List<BazaarOrder>();
+        for (int i = 0; i < 20; i++)
         {
-            ItemName = item,
-            BuyPrice = buyPrice,
-            SellPrice = sellPrice,
-            BuySpeedMs = speed,
-            Finder = Finders[_rng.Next(Finders.Length)]
-        };
-
-        TotalFlips++;
-        TotalProfit += flip.Profit;
-        SessionProfit += flip.Profit;
-        _speedCount++;
-        _speedSum += speed;
-        AvgBuySpeed = (double)_speedSum / _speedCount;
-        Purse += (int)flip.Profit;
-
-        Dispatcher.UIThread.Post(() =>
-        {
-            Flips.Insert(0, flip); // newest first
-            if (Flips.Count > 200) Flips.RemoveAt(Flips.Count - 1);
-        });
-
-        MetricsUpdated?.Invoke();
-    }
-
-    private void AddRandomChat()
-    {
-        var sender = ChatSenders[_rng.Next(ChatSenders.Length)];
-        var template = ChatMessages[_rng.Next(ChatMessages.Length)];
-        var item = FlipItems[_rng.Next(FlipItems.Length)];
-        var price = _rng.Next(100_000, 10_000_000);
-        var speed = _rng.Next(200, 1500);
-        var buyer = "Player" + _rng.Next(100, 9999);
-        var sellP = (long)(price * 1.2);
-
-        var text = template
-            .Replace("{0}", speed.ToString())
-            .Replace("{1}", item)
-            .Replace("{2}", price.ToString("N0"))
-            .Replace("{3}", buyer)
-            .Replace("{4}", sellP.ToString("N0"))
-            .Replace("{5}", SessionProfit.ToString("N0"));
-
-        var isSystem = sender == "[BAF]" || sender == "System";
-        var color = sender switch
-        {
-            "[BAF]" => "#00CEC9",
-            "Coflnet" => "#6C5CE7",
-            "Hypixel" => "#FDCB6E",
-            _ => "#DFE6E9"
-        };
-
-        Dispatcher.UIThread.Post(() =>
-        {
-            ChatLog.Add(new ChatMessage
+            var item = RichItems[Rng.Next(RichItems.Length)];
+            list.Add(new BazaarOrder
             {
-                Sender = sender,
-                Text = text,
-                Color = color,
-                IsSystem = isSystem
+                ItemName = item.Name,
+                OrderType = Rng.Next(2) == 0 ? "BUY" : "SELL",
+                Price = item.BasePrice + (long)(Rng.NextDouble() * 2_000_000 - 1_000_000),
+                Amount = Rng.Next(1, 160),
+                Status = statuses[Rng.Next(statuses.Length)],
+                PlacedAt = DateTimeOffset.Now.AddMinutes(-Rng.Next(1, 480)),
             });
-            if (ChatLog.Count > 300) ChatLog.RemoveAt(0);
-        });
+        }
+        return list;
     }
 
-    public void Dispose()
+    public static AnalyticsData GetAnalyticsData()
     {
-        _metricsTimer?.Dispose();
-        _eventsTimer?.Dispose();
-        _flipsTimer?.Dispose();
-        _chatTimer?.Dispose();
+        var flips = GetInitialFlips();
+        long total = 0;
+        long best = 0;
+        string bestItem = "";
+        long totalBuy = 0;
+        int wins = 0;
+        long totalSpeed = 0;
+        var itemDict = new Dictionary<string, (int cnt, long tp, long bp)>();
+
+        foreach (var f in flips)
+        {
+            total += f.Profit; totalBuy += f.BuyPrice; totalSpeed += f.BuySpeedMs ?? 300;
+            if (f.Profit > best) { best = f.Profit; bestItem = f.ItemName; }
+            if (f.Profit > 0) wins++;
+            if (!itemDict.ContainsKey(f.ItemName)) itemDict[f.ItemName] = (0, 0, 0);
+            var e = itemDict[f.ItemName]; itemDict[f.ItemName] = (e.cnt + 1, e.tp + f.Profit, Math.Max(e.bp, f.Profit));
+        }
+
+        var topItems = new List<(string, int, long, long, long)>();
+        foreach (var kv in itemDict) topItems.Add((kv.Key, kv.Value.cnt, kv.Value.tp, kv.Value.cnt > 0 ? kv.Value.tp / kv.Value.cnt : 0, kv.Value.bp));
+        topItems.Sort((a, b) => b.Item3.CompareTo(a.Item3));
+
+        return new AnalyticsData
+        {
+            TotalProfit = total,
+            AvgProfitPerFlip = flips.Count > 0 ? total / flips.Count : 0,
+            BestFlipItem = bestItem,
+            BestFlipProfit = best,
+            FlipsPerHour = 8.4 + Rng.NextDouble() * 4,
+            AvgBuySpeedMs = totalSpeed / (double)flips.Count,
+            WinRate = flips.Count > 0 ? (double)wins / flips.Count : 0.87,
+            TopItems = topItems,
+        };
     }
+
+    public static string RandomPurse() => Fmt.Coins((long)Rng.Next(50_000_000, 2_000_000_000));
+    public static int RandomQueue() => Rng.Next(0, 15);
 }

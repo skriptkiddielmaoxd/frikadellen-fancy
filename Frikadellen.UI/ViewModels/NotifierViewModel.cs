@@ -1,71 +1,70 @@
-using System;
-using System.IO;
-using System.Text.Json;
-using System.Threading.Tasks;
 using System.Windows.Input;
+using Frikadellen.UI.Models;
+using Frikadellen.UI.Services;
 
 namespace Frikadellen.UI.ViewModels;
 
+/// <summary>Discord bot / webhook notifier settings.</summary>
 public sealed class NotifierViewModel : ViewModelBase
 {
-    private string _botToken = string.Empty;
+    private readonly SettingsService _svc;
+    private UiSettings _cfg;
 
-    public NotifierViewModel()
+    private bool _isTokenVisible;
+    private string _saveStatus = "";
+
+    public string DiscordBotToken
     {
-        SaveTokenCommand = new RelayCommand(async () => await SaveTokenAsync());
-        ClearTokenCommand = new RelayCommand(async () => await ClearTokenAsync());
-        _ = LoadTokenAsync();
+        get => _cfg.DiscordBotToken;
+        set { _cfg.DiscordBotToken = value; OnPropertyChanged(); }
     }
 
-    public string BotToken { get => _botToken; set => SetField(ref _botToken, value); }
-
-    public ICommand SaveTokenCommand { get; }
-    public ICommand ClearTokenCommand { get; }
-
-    private string GetNotifierDir()
+    public string DiscordChannelId
     {
-        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var dir = Path.Combine(appData, "Frikadellen", "notifier");
-        Directory.CreateDirectory(dir);
-        return dir;
+        get => _cfg.DiscordChannelId;
+        set { _cfg.DiscordChannelId = value; OnPropertyChanged(); }
     }
 
-    private string GetTokenFile() => Path.Combine(GetNotifierDir(), "notifier.json");
-
-    private async Task SaveTokenAsync()
+    public string WebhookUrl
     {
-        try
+        get => _cfg.WebhookUrl;
+        set { _cfg.WebhookUrl = value; OnPropertyChanged(); }
+    }
+
+    public bool IsTokenVisible
+    {
+        get => _isTokenVisible;
+        set
         {
-            var file = GetTokenFile();
-            var json = JsonSerializer.Serialize(new { botToken = BotToken ?? string.Empty }, new JsonSerializerOptions { WriteIndented = true });
-            await File.WriteAllTextAsync(file, json);
+            if (SetField(ref _isTokenVisible, value))
+                OnPropertyChanged(nameof(TokenPasswordChar));
         }
-        catch { }
     }
 
-    private async Task ClearTokenAsync()
+    public char? TokenPasswordChar => IsTokenVisible ? null : '•';
+
+    public string SaveStatus
     {
-        try
-        {
-            var file = GetTokenFile();
-            if (File.Exists(file)) File.Delete(file);
-        }
-        catch { }
-        BotToken = string.Empty;
-        await Task.CompletedTask;
+        get => _saveStatus;
+        set => SetField(ref _saveStatus, value);
     }
 
-    private async Task LoadTokenAsync()
+    public ICommand ToggleTokenVisibilityCommand { get; }
+    public ICommand SaveCommand { get; }
+
+    public NotifierViewModel(SettingsService svc)
     {
-        try
-        {
-            var file = GetTokenFile();
-            if (!File.Exists(file)) return;
-            var json = await File.ReadAllTextAsync(file);
-            var doc = JsonDocument.Parse(json);
-            if (doc.RootElement.TryGetProperty("botToken", out var t))
-                BotToken = t.GetString() ?? string.Empty;
-        }
-        catch { }
+        _svc = svc;
+        _cfg = svc.Load();
+        ToggleTokenVisibilityCommand = new RelayCommand(() => IsTokenVisible = !IsTokenVisible);
+        SaveCommand = new RelayCommand(Save);
+    }
+
+    private async void Save()
+    {
+        _svc.Save(_cfg);
+        SaveStatus = "Saved ✓";
+        await System.Threading.Tasks.Task.Delay(2000);
+        SaveStatus = "";
     }
 }
