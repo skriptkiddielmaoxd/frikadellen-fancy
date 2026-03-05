@@ -1,3 +1,20 @@
+# Builds Windows artifacts and packages an installer, then uploads it to the GitHub Release.
+# Triggers:
+#  - release.created (when you create a Release in GitHub)
+#  - push of tags matching v* (e.g. v1.2.3)
+#  - manual workflow_dispatch
+on:
+  release:
+    types: [created]
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
   build-linux-and-publish:
     name: Build Linux binary & publish release asset
     runs-on: ubuntu-latest
