@@ -1138,8 +1138,9 @@ async fn main() -> Result<()> {
 
                     // Store flip in tracker so ItemPurchased / ItemSold webhooks can include profit
                     {
-                        let key = frikadellen_fancy::utils::remove_minecraft_colors(&flip.item_name)
-                            .to_lowercase();
+                        let key =
+                            frikadellen_fancy::utils::remove_minecraft_colors(&flip.item_name)
+                                .to_lowercase();
                         match flip_tracker_ws.lock() {
                             Ok(mut tracker) => {
                                 let now = Instant::now();
