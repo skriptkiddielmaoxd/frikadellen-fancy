@@ -1007,18 +1007,16 @@ async fn main() -> Result<()> {
                         let purse = bot_client_clone.get_purse();
                         let uuid_str = opt_auction_uuid.clone();
                         tokio::spawn(async move {
-                            n.notify_item_sold(
-                                frikadellen_fancy::discord::NotifyItemSoldParams {
-                                    item_name: item,
-                                    price,
-                                    buyer: b,
-                                    profit: opt_profit,
-                                    buy_price: opt_buy_price,
-                                    time_to_sell_secs: opt_time_secs,
-                                    purse,
-                                    auction_uuid: uuid_str,
-                                },
-                            )
+                            n.notify_item_sold(frikadellen_fancy::discord::NotifyItemSoldParams {
+                                item_name: item,
+                                price,
+                                buyer: b,
+                                profit: opt_profit,
+                                buy_price: opt_buy_price,
+                                time_to_sell_secs: opt_time_secs,
+                                purse,
+                                auction_uuid: uuid_str,
+                            })
                             .await;
                         });
                     }

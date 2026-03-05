@@ -457,7 +457,8 @@ impl BazaarFlipHandler {
 
         // Prefer itemTag over itemName for /bz command
         let search_term = recommendation
-            .item_tag.as_deref()
+            .item_tag
+            .as_deref()
             .unwrap_or_else(|| &recommendation.item_name);
 
         let search_term_formatted = if recommendation.item_tag.is_some() {
