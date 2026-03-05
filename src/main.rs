@@ -349,8 +349,20 @@ async fn main() -> Result<()> {
         let premium_init = cofl_premium.clone();
         tokio::spawn(async move {
             tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
-            let conn_id = conn_id_init.lock().ok().and_then(|g| g.clone());
-            let premium = premium_init.lock().ok().and_then(|g| g.clone());
+            let conn_id = match conn_id_init.lock() {
+                Ok(g) => g.clone(),
+                Err(poison) => {
+                    warn!("cofl_connection_id mutex poisoned at startup webhook; recovering");
+                    poison.into_inner().clone()
+                }
+            };
+            let premium = match premium_init.lock() {
+                Ok(g) => g.clone(),
+                Err(poison) => {
+                    warn!("cofl_premium mutex poisoned at startup webhook; recovering");
+                    poison.into_inner().clone()
+                }
+            };
             frikadellen_fancy::webhook::send_webhook_initialized(
                 &name,
                 ah,
@@ -593,11 +605,20 @@ async fn main() -> Result<()> {
                         let name = ingame_name_for_events.clone();
                         let ah = config_for_events.enable_ah_flips;
                         let bz = config_for_events.enable_bazaar_flips;
-                        let conn_id = cofl_connection_id_events
-                            .lock()
-                            .ok()
-                            .and_then(|g| g.clone());
-                        let premium = cofl_premium_events.lock().ok().and_then(|g| g.clone());
+                        let conn_id = match cofl_connection_id_events.lock() {
+                            Ok(g) => g.clone(),
+                            Err(poison) => {
+                                warn!("cofl_connection_id_events mutex poisoned when sending startup webhook; recovering");
+                                poison.into_inner().clone()
+                            }
+                        };
+                        let premium = match cofl_premium_events.lock() {
+                            Ok(g) => g.clone(),
+                            Err(poison) => {
+                                warn!("cofl_premium_events mutex poisoned when sending startup webhook; recovering");
+                                poison.into_inner().clone()
+                            }
+                        };
                         tokio::spawn(async move {
                             frikadellen_fancy::webhook::send_webhook_startup_complete(
                                 &name,
@@ -617,11 +638,20 @@ async fn main() -> Result<()> {
                         let n = notifier.clone();
                         let ah = config_for_events.enable_ah_flips;
                         let bz = config_for_events.enable_bazaar_flips;
-                        let conn_id = cofl_connection_id_events
-                            .lock()
-                            .ok()
-                            .and_then(|g| g.clone());
-                        let premium = cofl_premium_events.lock().ok().and_then(|g| g.clone());
+                        let conn_id = match cofl_connection_id_events.lock() {
+                            Ok(g) => g.clone(),
+                            Err(poison) => {
+                                warn!("cofl_connection_id_events mutex poisoned when notifying startup-complete; recovering");
+                                poison.into_inner().clone()
+                            }
+                        };
+                        let premium = match cofl_premium_events.lock() {
+                            Ok(g) => g.clone(),
+                            Err(poison) => {
+                                warn!("cofl_premium_events mutex poisoned when notifying startup-complete; recovering");
+                                poison.into_inner().clone()
+                            }
+                        };
                         tokio::spawn(async move {
                             n.notify_startup_complete(
                                 orders_cancelled,
@@ -717,11 +747,14 @@ async fn main() -> Result<()> {
                             let key =
                                 frikadellen_fancy::utils::remove_minecraft_colors(&colored_name)
                                     .to_lowercase();
-                            flip_tracker_events
-                                .lock()
-                                .ok()
-                                .and_then(|t| t.get(&key).map(|e| e.0.tag.clone()))
-                                .flatten()
+                            match flip_tracker_events.lock() {
+                                Ok(t) => t.get(&key).map(|e| e.0.tag.clone()),
+                                Err(poison) => {
+                                    warn!("flip_tracker_events mutex poisoned when reading tag; recovering");
+                                    let t = poison.into_inner();
+                                    t.get(&key).map(|e| e.0.tag.clone())
+                                }
+                            }
                         };
                         let _ = ui_tx_events.send(
                             serde_json::json!({
@@ -1107,9 +1140,17 @@ async fn main() -> Result<()> {
                     {
                         let key = frikadellen_fancy::utils::remove_minecraft_colors(&flip.item_name)
                             .to_lowercase();
-                        if let Ok(mut tracker) = flip_tracker_ws.lock() {
-                            let now = Instant::now();
-                            tracker.insert(key, (flip.clone(), 0, now, now));
+                        match flip_tracker_ws.lock() {
+                            Ok(mut tracker) => {
+                                let now = Instant::now();
+                                tracker.insert(key, (flip.clone(), 0, now, now));
+                            }
+                            Err(poison) => {
+                                warn!("flip_tracker_ws mutex poisoned when inserting flip; recovering");
+                                let mut tracker = poison.into_inner();
+                                let now = Instant::now();
+                                tracker.insert(key, (flip.clone(), 0, now, now));
+                            }
                         }
                     }
 
@@ -1252,8 +1293,13 @@ async fn main() -> Result<()> {
                             rest.chars().take_while(|c| c.is_ascii_hexdigit()).collect();
                         if conn_id.len() == 32 {
                             info!("[Coflnet] Connection ID: {}", conn_id);
-                            if let Ok(mut g) = cofl_connection_id_ws.lock() {
-                                *g = Some(conn_id);
+                            match cofl_connection_id_ws.lock() {
+                                Ok(mut g) => *g = Some(conn_id),
+                                Err(poison) => {
+                                    warn!("cofl_connection_id_ws poisoned when writing connection id; recovering");
+                                    let mut g = poison.into_inner();
+                                    *g = Some(conn_id);
+                                }
                             }
                         }
                     }
@@ -1271,8 +1317,13 @@ async fn main() -> Result<()> {
                             let expires = expires.trim().to_string();
                             if !tier.is_empty() && !expires.is_empty() {
                                 info!("[Coflnet] Premium: {} until {}", tier, expires);
-                                if let Ok(mut g) = cofl_premium_ws.lock() {
-                                    *g = Some((tier, expires));
+                                match cofl_premium_ws.lock() {
+                                    Ok(mut g) => *g = Some((tier, expires)),
+                                    Err(poison) => {
+                                        warn!("cofl_premium_ws poisoned when writing premium info; recovering");
+                                        let mut g = poison.into_inner();
+                                        *g = Some((tier, expires));
+                                    }
                                 }
                             }
                         }
