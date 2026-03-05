@@ -1,0 +1,53 @@
+name: Autoformat Rust
+
+on:
+  push:
+    branches:
+      - '**'
+
+permissions:
+  contents: write
+
+jobs:
+  rustfmt:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Rust nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          components: rustfmt
+
+      - name: Run rustfmt
+        run: cargo fmt --all
+        shell: bash
+
+      - name: Commit and push formatting changes
+        if: env.GH_PAT != ''
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if ! git diff --quiet; then
+            git config user.name "github-actions"
+            git config user.email "github-actions@users.noreply.github.com"
+            git add .
+            git commit -m "chore: apply rustfmt"
+            git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${GITHUB_REPOSITORY}.git
+            git push origin HEAD:${GITHUB_REF#refs/heads/}
+          else
+            echo "No formatting changes to commit."
+          fi
+        shell: bash
+
+      - name: Warn if GH_PAT is not set
+        if: env.GH_PAT == ''
+        run: echo "GH_PAT secret not set; skipping push."
+        shell: bash
