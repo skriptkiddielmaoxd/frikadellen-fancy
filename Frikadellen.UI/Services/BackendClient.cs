@@ -190,6 +190,57 @@ public sealed class BackendClient : IDisposable
         catch { return false; }
     }
 
+    /// <summary>GET /api/inventory — real Minecraft player inventory (36 slots, name + count).</summary>
+    public async Task<InventorySlotDto[]?> GetInventoryAsync()
+    {
+        try
+        {
+            var resp = await _http.GetAsync("/api/inventory");
+            resp.EnsureSuccessStatusCode();
+            var json = await resp.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+
+            // Response: { "inventory": { "slots": [...46 items...], "inventoryStart": 9, "inventoryEnd": 45 } }
+            if (!doc.RootElement.TryGetProperty("inventory", out var inv) ||
+                inv.ValueKind == JsonValueKind.Null)
+                return null;
+
+            if (!inv.TryGetProperty("slots", out var slotsEl) ||
+                slotsEl.ValueKind != JsonValueKind.Array)
+                return null;
+
+            var slots = new InventorySlotDto[36];
+            for (int i = 0; i < 36; i++)
+                slots[i] = new InventorySlotDto();
+
+            // The slots array has 46 entries (0-45). Mineflayer indices 9-44 are the
+            // 36 player inventory slots; we map them to 0-based display indices 0-35.
+            int arrIdx = 0;
+            foreach (var slot in slotsEl.EnumerateArray())
+            {
+                if (arrIdx >= 9 && arrIdx <= 44)
+                {
+                    int displayIdx = arrIdx - 9;
+                    if (slot.ValueKind != JsonValueKind.Null)
+                    {
+                        var name = slot.TryGetProperty("name", out var nameEl) ? nameEl.GetString() ?? "" : "";
+                        var count = slot.TryGetProperty("count", out var countEl) ? countEl.GetInt32() : 1;
+                        slots[displayIdx] = new InventorySlotDto { Name = name, Count = count };
+                    }
+                }
+                arrIdx++;
+                if (arrIdx > 44) break;
+            }
+
+            return slots;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[BackendClient] GetInventoryAsync failed: {ex.Message}");
+            return null;
+        }
+    }
+
     public void Dispose() => _http.Dispose();
 }
 
@@ -320,4 +371,14 @@ public sealed record SkipDto
 
     [JsonPropertyName("min_price")]
     public long? MinPrice { get; init; }
+}
+
+/// <summary>One slot from GET /api/inventory (real Minecraft inventory data).</summary>
+public sealed record InventorySlotDto
+{
+    /// <summary>Item type name (e.g. "minecraft:diamond_sword"). Empty string when slot is empty.</summary>
+    public string Name { get; init; } = string.Empty;
+
+    /// <summary>Stack count. 0 means the slot is empty.</summary>
+    public int Count { get; init; }
 }
