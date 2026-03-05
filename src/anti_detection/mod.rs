@@ -108,7 +108,7 @@ pub fn compute_jittered_ms(base_ms: u64, profile: JitterProfile) -> u64 {
             let result = (base_ms as f64 + jitter_ms).round().max(1.0) as u64;
             return result.min(base_ms.saturating_mul(2));
         }
-        JitterProfile::AhNormal => 0.15,   // ±15 % ≈ ±10–20 ms at 150 ms base
+        JitterProfile::AhNormal => 0.15, // ±15 % ≈ ±10–20 ms at 150 ms base
         JitterProfile::GuiNavigation => 0.20, // ±20 % (within ±10–30 % band)
         JitterProfile::BazaarAndIdle => 0.30, // ±30 %
     };
@@ -149,10 +149,7 @@ pub async fn sign_typing_delay(min_ms: u64, max_ms: u64) {
         let base_ms: u64 = rand::thread_rng().gen_range(min_ms..=max_ms);
         compute_jittered_ms(base_ms, JitterProfile::AhNormal)
     };
-    info!(
-        "[anti_detection] sign_typing_delay actual={}ms",
-        actual_ms
-    );
+    info!("[anti_detection] sign_typing_delay actual={}ms", actual_ms);
     sleep(Duration::from_millis(actual_ms)).await;
 }
 
@@ -181,7 +178,10 @@ pub async fn human_pause_after_flip(min_ms: u64, max_ms: u64, long_pause_probabi
             let short_ms: u64 = rng.gen_range(min_ms..=max_ms);
             (short_ms, "short")
         };
-        (compute_jittered_ms(base_ms, JitterProfile::BazaarAndIdle), lbl)
+        (
+            compute_jittered_ms(base_ms, JitterProfile::BazaarAndIdle),
+            lbl,
+        )
     };
     info!(
         "[anti_detection] human_pause_after_flip type={} actual={}ms",
@@ -318,24 +318,28 @@ pub fn spawn_movement_simulation(
         // All RNG calls are scoped to temporary blocks so `ThreadRng` is never
         // held across an `.await` point (ThreadRng is not Send).
         let now = tokio::time::Instant::now();
-        let mut next_rotation = now + Duration::from_secs({
-            let s: u64 = rand::thread_rng().gen_range(1..=config.rotation_interval_min_secs);
-            s
-        });
-        let mut next_jump = now + Duration::from_secs({
-            let s: u64 = rand::thread_rng().gen_range(5..=config.jump_interval_min_secs);
-            s
-        });
-        let mut next_walk = now + Duration::from_secs({
-            let s: u64 = rand::thread_rng().gen_range(10..=config.walk_interval_min_secs);
-            s
-        });
-        let mut next_island_hop = now + Duration::from_secs({
-            let s: u64 = rand::thread_rng().gen_range(
-                config.island_hop_interval_min_secs..=config.island_hop_interval_max_secs,
-            );
-            s
-        });
+        let mut next_rotation = now
+            + Duration::from_secs({
+                let s: u64 = rand::thread_rng().gen_range(1..=config.rotation_interval_min_secs);
+                s
+            });
+        let mut next_jump = now
+            + Duration::from_secs({
+                let s: u64 = rand::thread_rng().gen_range(5..=config.jump_interval_min_secs);
+                s
+            });
+        let mut next_walk = now
+            + Duration::from_secs({
+                let s: u64 = rand::thread_rng().gen_range(10..=config.walk_interval_min_secs);
+                s
+            });
+        let mut next_island_hop = now
+            + Duration::from_secs({
+                let s: u64 = rand::thread_rng().gen_range(
+                    config.island_hop_interval_min_secs..=config.island_hop_interval_max_secs,
+                );
+                s
+            });
         // Track previously used walk directions to avoid identical repeats.
         let mut last_walk_yaw: Option<f32> = None;
 
@@ -367,24 +371,26 @@ pub fn spawn_movement_simulation(
                     yaw: current_yaw,
                     pitch: current_pitch,
                 });
-                next_rotation = now + Duration::from_secs({
-                    let s: u64 = rand::thread_rng().gen_range(
-                        config.rotation_interval_min_secs..=config.rotation_interval_max_secs,
-                    );
-                    s
-                });
+                next_rotation = now
+                    + Duration::from_secs({
+                        let s: u64 = rand::thread_rng().gen_range(
+                            config.rotation_interval_min_secs..=config.rotation_interval_max_secs,
+                        );
+                        s
+                    });
             }
 
             // ── Jump ──────────────────────────────────────────────────────
             if now >= next_jump {
                 info!("[movement_sim] Jump");
                 send_fn(MovementPacket::Jump);
-                next_jump = now + Duration::from_secs({
-                    let s: u64 = rand::thread_rng().gen_range(
-                        config.jump_interval_min_secs..=config.jump_interval_max_secs,
-                    );
-                    s
-                });
+                next_jump = now
+                    + Duration::from_secs({
+                        let s: u64 = rand::thread_rng().gen_range(
+                            config.jump_interval_min_secs..=config.jump_interval_max_secs,
+                        );
+                        s
+                    });
             }
 
             // ── Short walk ───────────────────────────────────────────────
@@ -396,8 +402,9 @@ pub fn spawn_movement_simulation(
                     loop {
                         let candidate: f32 = rng.gen_range(0.0..360.0);
                         if let Some(last) = last_walk_yaw {
-                            let diff =
-                                (candidate - last).abs().min(360.0 - (candidate - last).abs());
+                            let diff = (candidate - last)
+                                .abs()
+                                .min(360.0 - (candidate - last).abs());
                             if diff > 30.0 {
                                 break candidate;
                             }
@@ -409,10 +416,7 @@ pub fn spawn_movement_simulation(
                 };
                 last_walk_yaw = Some(walk_yaw);
                 let blocks: u8 = rand::thread_rng().gen_range(1..=config.max_walk_blocks);
-                info!(
-                    "[movement_sim] Walk yaw={:.1}° blocks={}",
-                    walk_yaw, blocks
-                );
+                info!("[movement_sim] Walk yaw={:.1}° blocks={}", walk_yaw, blocks);
                 send_fn(MovementPacket::Walk {
                     yaw_deg: walk_yaw,
                     blocks,
@@ -426,12 +430,13 @@ pub fn spawn_movement_simulation(
                     send_fn(MovementPacket::ToggleSneak { sneaking });
                 }
 
-                next_walk = now + Duration::from_secs({
-                    let s: u64 = rand::thread_rng().gen_range(
-                        config.walk_interval_min_secs..=config.walk_interval_max_secs,
-                    );
-                    s
-                });
+                next_walk = now
+                    + Duration::from_secs({
+                        let s: u64 = rand::thread_rng().gen_range(
+                            config.walk_interval_min_secs..=config.walk_interval_max_secs,
+                        );
+                        s
+                    });
             }
 
             // ── Island hop ───────────────────────────────────────────────
@@ -448,12 +453,14 @@ pub fn spawn_movement_simulation(
                     yaw_deg: hop_yaw,
                     blocks: hop_blocks,
                 });
-                next_island_hop = now + Duration::from_secs({
-                    let s: u64 = rand::thread_rng().gen_range(
-                        config.island_hop_interval_min_secs..=config.island_hop_interval_max_secs,
-                    );
-                    s
-                });
+                next_island_hop = now
+                    + Duration::from_secs({
+                        let s: u64 = rand::thread_rng().gen_range(
+                            config.island_hop_interval_min_secs
+                                ..=config.island_hop_interval_max_secs,
+                        );
+                        s
+                    });
             }
 
             // Sleep briefly before next tick to avoid busy-loop.
@@ -625,7 +632,10 @@ mod tests {
         for _ in 0..100 {
             stats.push(150);
         }
-        assert!(stats.std_dev() < 1.0, "constant series should have ~0 std-dev");
+        assert!(
+            stats.std_dev() < 1.0,
+            "constant series should have ~0 std-dev"
+        );
 
         // Push a high-variance series
         let mut stats2 = IntervalStats::new();

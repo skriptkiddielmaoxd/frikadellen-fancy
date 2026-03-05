@@ -3,9 +3,9 @@ use atty::Stream;
 use dialoguer::{Confirm, Input};
 use frikadellen_fancy::{
     anti_detection::{
-        bazaar_check_interval, human_pause_after_flip, movement_stop_channel,
-        random_idle_gap, random_session_duration, spawn_movement_simulation, IntervalStats,
-        JitterProfile, MovementPacket, MovementSimConfig, SessionConfig,
+        bazaar_check_interval, human_pause_after_flip, movement_stop_channel, random_idle_gap,
+        random_session_duration, spawn_movement_simulation, IntervalStats, JitterProfile,
+        MovementPacket, MovementSimConfig, SessionConfig,
     },
     bot::BotClient,
     config::ConfigLoader,
@@ -2060,24 +2060,22 @@ async fn main() -> Result<()> {
         // BotClient which manages its own physics loop internally.
         let bot_client_mov = bot_client.clone();
         let send_fn: frikadellen_fancy::anti_detection::SendPacketFn =
-            Box::new(move |pkt: MovementPacket| {
-                match &pkt {
-                    MovementPacket::Rotate { yaw, pitch } => {
-                        debug!("[movement_sim] → Rotate yaw={:.1} pitch={:.1}", yaw, pitch);
-                        bot_client_mov.simulate_rotation(*yaw, *pitch);
-                    }
-                    MovementPacket::Jump => {
-                        debug!("[movement_sim] → Jump");
-                        bot_client_mov.simulate_jump();
-                    }
-                    MovementPacket::Walk { yaw_deg, blocks } => {
-                        debug!("[movement_sim] → Walk yaw={:.1} blocks={}", yaw_deg, blocks);
-                        bot_client_mov.simulate_walk(*yaw_deg, *blocks);
-                    }
-                    MovementPacket::ToggleSneak { sneaking } => {
-                        debug!("[movement_sim] → ToggleSneak {}", sneaking);
-                        bot_client_mov.simulate_sneak(*sneaking);
-                    }
+            Box::new(move |pkt: MovementPacket| match &pkt {
+                MovementPacket::Rotate { yaw, pitch } => {
+                    debug!("[movement_sim] → Rotate yaw={:.1} pitch={:.1}", yaw, pitch);
+                    bot_client_mov.simulate_rotation(*yaw, *pitch);
+                }
+                MovementPacket::Jump => {
+                    debug!("[movement_sim] → Jump");
+                    bot_client_mov.simulate_jump();
+                }
+                MovementPacket::Walk { yaw_deg, blocks } => {
+                    debug!("[movement_sim] → Walk yaw={:.1} blocks={}", yaw_deg, blocks);
+                    bot_client_mov.simulate_walk(*yaw_deg, *blocks);
+                }
+                MovementPacket::ToggleSneak { sneaking } => {
+                    debug!("[movement_sim] → ToggleSneak {}", sneaking);
+                    bot_client_mov.simulate_sneak(*sneaking);
                 }
             });
         spawn_movement_simulation(mov_cfg, movement_stop_rx, send_fn);

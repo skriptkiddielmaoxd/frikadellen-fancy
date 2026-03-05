@@ -108,7 +108,6 @@ pub struct Config {
     pub discord_channel_id: Option<u64>,
 
     // ── Anti-detection / humanization ────────────────────────────────────────
-
     /// Anti-detection configuration block.
     #[serde(default)]
     pub anti_detection: AntiDetectionConfig,
@@ -128,7 +127,6 @@ pub struct AntiDetectionConfig {
     pub enabled: bool,
 
     // ── AH jitter ────────────────────────────────────────────────────────────
-
     /// Profit threshold (coins) above which a flip is treated as "high-value"
     /// and the minimum jitter profile is used.  Default: 5 000 000.
     #[serde(default = "default_high_value_threshold")]
@@ -140,7 +138,6 @@ pub struct AntiDetectionConfig {
     // in the root config.
 
     // ── Bazaar / sign timing ──────────────────────────────────────────────────
-
     /// Minimum human-like typing delay before sending ServerboundSignUpdate
     /// (ms).  Default: 300.
     #[serde(default = "default_sign_typing_min_ms")]
@@ -152,7 +149,6 @@ pub struct AntiDetectionConfig {
     pub sign_typing_max_ms: u64,
 
     // ── Human pause after flip ────────────────────────────────────────────────
-
     /// Minimum short pause after a successful flip (ms).  Default: 1 000.
     #[serde(default = "default_human_pause_min_ms")]
     pub human_pause_min_ms: u64,
@@ -167,7 +163,6 @@ pub struct AntiDetectionConfig {
     pub long_pause_probability: f64,
 
     // ── Movement simulation ───────────────────────────────────────────────────
-
     /// Enable the background movement simulation task.  Default: `true`.
     #[serde(default = "default_true")]
     pub movement_simulation_enabled: bool,
@@ -221,7 +216,6 @@ pub struct AntiDetectionConfig {
     pub island_hop_interval_max_secs: u64,
 
     // ── Session management ────────────────────────────────────────────────────
-
     /// Enable automatic session cycling (disconnect → idle → reconnect).
     /// Default: `false` (opt-in).
     #[serde(default)]
@@ -244,7 +238,6 @@ pub struct AntiDetectionConfig {
     pub idle_gap_max_secs: u64,
 
     // ── Dummy activity ────────────────────────────────────────────────────────
-
     /// Enable random dummy activities (harmless `/ah`, `/bz`, inventory
     /// open/close).  Default: `true`.
     #[serde(default = "default_true")]
@@ -535,8 +528,7 @@ impl Config {
     /// Returns `true` when a flip with the given profit (coins) qualifies as
     /// "high value" and should use the minimum-jitter AH hot-path profile.
     pub fn is_high_value_flip(&self, profit_coins: u64) -> bool {
-        self.anti_detection.enabled
-            && profit_coins >= self.anti_detection.high_value_flip_threshold
+        self.anti_detection.enabled && profit_coins >= self.anti_detection.high_value_flip_threshold
     }
 }
 

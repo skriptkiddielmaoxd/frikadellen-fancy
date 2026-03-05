@@ -15,7 +15,9 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tracing::{debug, error, info, warn};
 
-use crate::anti_detection::{confirm_retry_delay, jittered_delay, sign_typing_delay, JitterProfile};
+use crate::anti_detection::{
+    confirm_retry_delay, jittered_delay, sign_typing_delay, JitterProfile,
+};
 use crate::gui::{WindowHandler, WindowSlot};
 use crate::types::{BazaarFlipRecommendation, BotState};
 use crate::utils::to_title_case;
@@ -379,7 +381,10 @@ impl BazaarFlipHandler {
                         confirm_retry_delay(attempt - 1).await;
                         // Additionally, wait the base backoff so the server has recovered.
                         let backoff_delay = RETRY_BACKOFF_BASE_MS * 2_u64.pow(attempt as u32 - 1);
-                        info!("Retry after confirm_retry_delay + {}ms backoff", backoff_delay);
+                        info!(
+                            "Retry after confirm_retry_delay + {}ms backoff",
+                            backoff_delay
+                        );
                         *bot_state.write() = BotState::Idle;
                         jittered_delay(backoff_delay, JitterProfile::BazaarAndIdle).await;
                     } else {

@@ -2267,9 +2267,12 @@ async fn handle_window_interaction(
                     .unwrap_or(false)
                 {
                     click_window_slot(bot, window_id, 11).await;
-                    let step_ms = crate::anti_detection::CONFIRM_RETRY_STEPS_MS
-                        [confirm_retry_step.min(crate::anti_detection::CONFIRM_RETRY_STEPS_MS.len() - 1)];
-                    let jittered = crate::anti_detection::compute_jittered_ms(step_ms, JitterProfile::GuiNavigation);
+                    let step_ms = crate::anti_detection::CONFIRM_RETRY_STEPS_MS[confirm_retry_step
+                        .min(crate::anti_detection::CONFIRM_RETRY_STEPS_MS.len() - 1)];
+                    let jittered = crate::anti_detection::compute_jittered_ms(
+                        step_ms,
+                        JitterProfile::GuiNavigation,
+                    );
                     tokio::time::sleep(tokio::time::Duration::from_millis(jittered)).await;
                     confirm_retry_step += 1;
                 }
