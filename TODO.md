@@ -139,9 +139,9 @@ Items are grouped by area and roughly ordered by impact.
   Guide for new contributors: how to set up the dev environment, run tests,
   and submit PRs.
 
-- [ ] **Changelog**
-  Start a `CHANGELOG.md` (or use GitHub Releases notes consistently) so
-  users can see what changed between versions.
+- [x] **Changelog**
+  `CHANGELOG.md` added at repo root (Keep a Changelog format). Keep it
+  updated with every release.
 
 ---
 
