@@ -606,7 +606,7 @@ async fn main() -> Result<()> {
                         "kind": "purchase",
                         "message": format!("✦ PURCHASED {} for {} coins{}{}",
                             frikadellen_baf::utils::remove_minecraft_colors(&colored_name),
-                            format_coins(price as i64), 
+                            format_coins(price as i64),
                             opt_profit.map(|p| format!(" | Expected profit: {}", format_coins(p))).unwrap_or_default(),
                             event_buy_speed_ms.map(|ms| format!(" | Buy speed: {}ms", ms)).unwrap_or_default())
                     }).to_string());
