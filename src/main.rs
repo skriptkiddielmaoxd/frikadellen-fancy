@@ -16,7 +16,6 @@ use frikadellen_fancy::{
     web::{WebEventLog, WebState},
     websocket::CoflWebSocket,
 };
-use serde_json;
 use std::collections::HashMap;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
@@ -213,7 +212,7 @@ async fn main() -> Result<()> {
     if config
         .discord_bot_token
         .as_deref()
-        .map_or(false, |t| !t.is_empty())
+        .is_some_and(|t| !t.is_empty())
         && config.discord_channel_id.is_none()
     {
         let channel_id: String = Input::new()
@@ -261,7 +260,7 @@ async fn main() -> Result<()> {
         if config
             .discord_bot_token
             .as_deref()
-            .map_or(false, |t| !t.is_empty())
+            .is_some_and(|t| !t.is_empty())
         {
             "ENABLED"
         } else {
@@ -1422,7 +1421,7 @@ async fn main() -> Result<()> {
                     let lowercase_cmd = cmd.trim().to_lowercase();
                     if lowercase_cmd.starts_with("/cofl") || lowercase_cmd.starts_with("/baf") {
                         // Parse /cofl command like the console handler does
-                        let parts: Vec<&str> = cmd.trim().split_whitespace().collect();
+                        let parts: Vec<&str> = cmd.split_whitespace().collect();
                         if parts.len() > 1 {
                             let command = parts[1].to_string(); // Clone to own the data
                             let args = parts[2..].join(" ");

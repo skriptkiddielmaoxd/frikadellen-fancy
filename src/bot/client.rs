@@ -2063,7 +2063,7 @@ async fn handle_window_interaction(
                         let remaining_secs = {
                             let menu = bot.menu();
                             let slots = menu.slots();
-                            slots.get(31).and_then(|s| parse_bed_remaining_secs(s))
+                            slots.get(31).and_then(parse_bed_remaining_secs)
                         };
 
                         if let Some(remaining_ms) = remaining_ms_from_purchase_at {
@@ -2857,7 +2857,7 @@ async fn handle_window_interaction(
                         info!("[Auction] Co-op AH: jumped straight to Create BIN Auction, handling as SelectBIN");
                         let player_start = *menu.player_slots_range().start();
                         let target_slot = if let Some(mj_slot) = item_slot_opt {
-                            if mj_slot >= 9 && mj_slot <= 44 {
+                            if (9..=44).contains(&mj_slot) {
                                 let offset = (mj_slot as usize) - 9;
                                 let ws = player_start + offset;
                                 if ws < slots.len() && !slots[ws].is_empty() {
@@ -2903,7 +2903,7 @@ async fn handle_window_interaction(
                         info!("[Auction] ClickCreate: jumped straight to Create BIN Auction, handling as SelectBIN");
                         let player_start = *menu.player_slots_range().start();
                         let target_slot = if let Some(mj_slot) = item_slot_opt {
-                            if mj_slot >= 9 && mj_slot <= 44 {
+                            if (9..=44).contains(&mj_slot) {
                                 let offset = (mj_slot as usize) - 9;
                                 let ws = player_start + offset;
                                 if ws < slots.len() && !slots[ws].is_empty() {
@@ -2946,7 +2946,7 @@ async fn handle_window_interaction(
                         let target_slot = if let Some(mj_slot) = item_slot_opt {
                             // TypeScript: itemSlot = data.slot - bot.inventory.inventoryStart + sellWindow.inventoryStart
                             // mineflayer inventoryStart = 9; slots 9-44 are player inventory (36 slots)
-                            if mj_slot >= 9 && mj_slot <= 44 {
+                            if (9..=44).contains(&mj_slot) {
                                 let offset = (mj_slot as usize) - 9;
                                 let ws = player_start + offset;
                                 if ws < slots.len() && !slots[ws].is_empty() {
