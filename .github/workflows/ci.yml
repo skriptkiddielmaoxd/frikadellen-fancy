@@ -83,10 +83,10 @@ jobs:
         run: cargo clippy --all-targets --all-features
 
       - name: Build Rust backend (release)
-        run: cargo build -p frikadellen-baf-121 --release
+        run: cargo build -p frikadellen-fancy --release
 
       - name: Run Rust tests
-        run: cargo test -p frikadellen-baf-121 --all-features -- --nocapture
+        run: cargo test -p frikadellen-fancy --all-features -- --nocapture
 
       - name: Cache NuGet packages
         uses: actions/cache@v4

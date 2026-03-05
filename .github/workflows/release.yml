@@ -50,7 +50,7 @@ jobs:
           cargo --version
 
       - name: Build Rust backend (release)
-        run: cargo build -p frikadellen-baf-121 --release
+        run: cargo build -p frikadellen-fancy --release
 
       # Create a release only when the workflow was triggered by a tag push.
       - name: Create release (when not a release event)
@@ -81,7 +81,7 @@ jobs:
           script: |
             const fs = require('fs');
             const path = require('path');
-            const binPath = path.join(process.cwd(), 'target', 'release', 'frikadellen-baf-121');
+            const binPath = path.join(process.cwd(), 'target', 'release', 'frikadellen-fancy');
             if (!fs.existsSync(binPath)) {
               core.setFailed(`Linux binary not found: ${binPath}`);
               return;
@@ -92,7 +92,7 @@ jobs:
               return;
             }
             const stat = fs.statSync(binPath);
-            const name = `frikadellen-baf-121-${process.env.GITHUB_REF_NAME || process.env.GITHUB_REF || 'artifact'}-linux`;
+            const name = `frikadellen-fancy-${process.env.GITHUB_REF_NAME || process.env.GITHUB_REF || 'artifact'}-linux`;
             const data = fs.readFileSync(binPath);
             await github.repos.uploadReleaseAsset({
               owner: context.repo.owner,
@@ -151,7 +151,7 @@ jobs:
           cargo --version
 
       - name: Build Rust backend (release)
-        run: cargo build -p frikadellen-baf-121 --release
+        run: cargo build -p frikadellen-fancy --release
 
       - name: Publish Avalonia UI (Windows single-file exe)
         run: |
